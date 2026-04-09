@@ -10,7 +10,6 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
         
-        /* Grid Görünüşü */
         #gridView, #favView { 
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; 
             height: 100vh; overflow-y: auto; padding: 130px 0 90px 0; 
@@ -20,7 +19,6 @@
         .grid-price { position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #fbbf24; }
         .grid-type { position: absolute; top: 5px; right: 5px; font-size: 10px; color: rgba(255,255,255,0.4); }
 
-        /* TikTok Feed */
         #feedView { display: none; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         #feedView::-webkit-scrollbar { display: none; }
         .snap-section { height: 100vh; scroll-snap-align: start; position: relative; background: #000; overflow: hidden; }
@@ -78,25 +76,8 @@
         </div>
         <div class="space-y-8 text-gray-400 text-sm pb-20">
             <section>
-                <h3 class="text-white font-bold text-lg mb-3">📌 Platforma Haqqında</h3>
-                <p class="mb-4">VidosMark, Azərbaycanın video-elan formatında işləyən ilk və ən sürətli mobil bazar platformasıdır. Biz satıcıları və alıcıları vizual olaraq daha yaxın edirik.</p>
-                <p>Platformanın əsas məqsədi məhsul haqqında məlumatın yalnız şəkillərlə deyil, həm də canlı videolarla çatdırılmasını təmin etməkdir.</p>
-            </section>
-            
-            <section>
-                <h3 class="text-white font-bold text-lg mb-3">⚖️ Hüquqi Bildiriş və Qaydalar</h3>
-                <ul class="list-disc pl-5 space-y-2">
-                    <li><b>Məsuliyyət:</b> VidosMark yalnız platforma xidməti göstərir. Paylaşılan elanların məzmununa, məhsulun keyfiyyətinə və ya sövdələşmə prosesinə görə platforma rəhbərliyi hüquqi məsuliyyət daşımır.</li>
-                    <li><b>İstifadəçi Öhdəliyi:</b> Hər bir istifadəçi yerləşdirdiyi video və məlumatların doğruluğuna görə şəxsən cavabdehdir.</li>
-                    <li><b>Qadağalar:</b> Qanunla qadağan olunmuş məhsulların, etik normalardan kənar videoların paylaşılması qəti qadağandır və elan xəbərdarlıq edilmədən silinəcəkdir.</li>
-                    <li><b>Məlumatın Qorunması:</b> Yerləşdirdiyiniz əlaqə nömrələri alıcıların sizinlə birbaşa əlaqə saxlaması üçündür. Şəxsi məlumatlarınızı paylaşarkən diqqətli olmağınız tövsiyə edilir.</li>
-                    <li><b>Müəllif Hüquqları:</b> Başqasına aid videoların icazəsiz paylaşılması qadağandır.</li>
-                </ul>
-            </section>
-
-            <section>
-                <h3 class="text-white font-bold text-lg mb-3">📞 Dəstək</h3>
-                <p>Hər hansı bir şikayət və ya təklifiniz olarsa, administrasiya ilə əlaqə saxlaya bilərsiniz.</p>
+                <h3 class="text-white font-bold text-lg mb-3">⚖️ Hüquqi Bildiriş</h3>
+                <p>VidosMark yalnız elan platformasıdır. Satılan məhsulların keyfiyyəti və düzgünlüyünə görə platforma məsuliyyət daşımır. Alıcı və satıcı arasında yaranan razılaşmalar öz aralarındadır.</p>
             </section>
         </div>
     </div>
@@ -107,31 +88,24 @@
                 <h2 class="text-2xl font-black italic">YENİ ELAN</h2>
                 <button onclick="closeModal('uploadModal')" class="text-3xl">&times;</button>
             </div>
-            
             <div class="space-y-5">
-                <input type="text" id="adMarka" placeholder="Marka / Ad (Məs: iPhone 15)" class="w-full bg-[#111] border border-[#333] p-4 rounded-xl text-white outline-none">
+                <input type="text" id="adMarka" placeholder="Marka / Ad" class="w-full bg-[#111] border border-[#333] p-4 rounded-xl text-white outline-none">
                 <input type="number" id="adPrice" placeholder="Qiymət (AZN)" class="w-full bg-[#111] border border-[#333] p-4 rounded-xl text-white outline-none">
-                <textarea id="adDesc" placeholder="Məlumat (Məs: Təzə kimidir, çatdırılma var)" class="w-full bg-[#111] border border-[#333] p-4 rounded-xl text-white outline-none h-32"></textarea>
-                <input type="text" id="adPhone" placeholder="Əlaqə Nömrəsi (Məs: 0501234567)" class="w-full bg-[#111] border border-[#333] p-4 rounded-xl text-white outline-none">
-                
+                <textarea id="adDesc" placeholder="Məlumat" class="w-full bg-[#111] border border-[#333] p-4 rounded-xl text-white outline-none h-32"></textarea>
+                <input type="text" id="adPhone" placeholder="Əlaqə Nömrəsi" class="w-full bg-[#111] border border-[#333] p-4 rounded-xl text-white outline-none">
                 <div class="p-6 border-2 border-dashed border-[#333] rounded-xl text-center">
-                    <i class="fas fa-video text-3xl mb-3 text-gray-500"></i>
-                    <p class="text-sm text-gray-400 mb-4">Video və ya Şəkil seçin</p>
                     <input type="file" id="mediaInput" accept="video/*,image/*" class="hidden">
                     <button onclick="document.getElementById('mediaInput').click()" class="bg-gray-800 px-6 py-2 rounded-lg text-sm">Fayl Seç</button>
                 </div>
-
-                <button onclick="handleUpload()" class="w-full bg-white text-black py-5 rounded-xl font-black text-lg tracking-widest shadow-lg">PAYLAŞ</button>
+                <button onclick="handleUpload()" class="w-full bg-white text-black py-5 rounded-xl font-black text-lg tracking-widest">PAYLAŞ</button>
             </div>
         </div>
     </div>
 
     <div class="nav-bar">
         <div class="nav-item active" id="nav-home" onclick="showMainGrid()"><i class="fas fa-home text-2xl"></i><span>Ana Səhifə</span></div>
-        <div class="nav-item" onclick="toggleSearch()"><i class="fas fa-search text-2xl"></i><span>Axtar</span></div>
-        <div onclick="openModal('uploadModal')" class="bg-white w-14 h-10 rounded-xl flex items-center justify-center text-black text-2xl font-bold shadow-lg"><i class="fas fa-plus"></i></div>
+        <div onclick="openModal('uploadModal')" class="bg-white w-14 h-10 rounded-xl flex items-center justify-center text-black text-2xl font-bold"><i class="fas fa-plus"></i></div>
         <div class="nav-item" id="nav-fav" onclick="showFavorites()"><i class="fas fa-heart text-2xl"></i><span>Sevimlilər</span></div>
-        <div class="nav-item" onclick="openModal('uploadModal')"><i class="fas fa-user text-2xl"></i><span>Profil</span></div>
     </div>
 
     <script>
@@ -145,11 +119,7 @@
 
         async function fetchData() {
             try {
-                const { data, error } = await supabaseClient
-                    .from('elanlar')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
+                const { data, error } = await supabaseClient.from('elanlar').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
                 allAds = data || [];
                 filteredAds = [...allAds];
@@ -164,149 +134,48 @@
             const phone = document.getElementById('adPhone').value;
             const file = document.getElementById('mediaInput').files[0];
 
-            if(!marka || !price || !file || !phone) {
-                alert("Zəhmət olmasa bütün xanaları doldurun!");
-                return;
-            }
+            if(!marka || !price || !file || !phone) { alert("Xanaları doldurun!"); return; }
 
             document.getElementById('loader').style.display = 'block';
 
             try {
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}.${fileExt}`;
+                const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
                 const filePath = `uploads/${fileName}`;
 
-                let { error: uploadError } = await supabaseClient.storage
-                    .from('elan_videos')
-                    .upload(filePath, file);
-
+                // BUCKET ADI BURADA "elan_videos" olaraq təyin olundu
+                let { error: uploadError } = await supabaseClient.storage.from('elan_videos').upload(filePath, file);
                 if (uploadError) throw uploadError;
 
                 const { data: urlData } = supabaseClient.storage.from('elan_videos').getPublicUrl(filePath);
-                const publicUrl = urlData.publicUrl;
-
+                
                 const { error: dbError } = await supabaseClient.from('elanlar').insert([{
-                    marka: marka,
-                    price: price,
-                    description: desc,
-                    phone: phone,
-                    whatsapp: phone,
-                    media_url: publicUrl
+                    marka: marka, price: price, description: desc, phone: phone, whatsapp: phone, media_url: urlData.publicUrl
                 }]);
 
                 if (dbError) throw dbError;
-
-                alert("Elan uğurla paylaşıldı!");
+                alert("Uğurla paylaşıldı!");
                 location.reload();
-
             } catch (e) {
-                alert("Xəta baş verdi: " + e.message);
+                alert("Xəta: " + e.message);
             } finally {
                 document.getElementById('loader').style.display = 'none';
             }
         }
 
-        function showMainGrid() {
-            hideAll();
-            updateNav('nav-home');
-            document.getElementById('gridView').style.display = 'grid';
-            renderThumbnails('gridView', allAds);
-        }
-
-        function showFavorites() {
-            hideAll();
-            updateNav('nav-fav');
-            document.getElementById('favView').style.display = 'grid';
-            const favAds = allAds.filter(ad => favorites.includes(ad.id));
-            const container = document.getElementById('favView');
-            favAds.length === 0 ? container.innerHTML = '<div class="col-span-3 text-center py-40 text-gray-600">Sevimlilər boşdur</div>' : renderThumbnails('favView', favAds);
-        }
-
-        function handleSearch(query) {
-            const term = query.toLowerCase();
-            filteredAds = allAds.filter(ad => (ad.marka || "").toLowerCase().includes(term) || (ad.description || "").toLowerCase().includes(term));
-            document.getElementById('gridView').style.display = 'grid';
-            renderThumbnails('gridView', filteredAds);
-        }
-
-        function toggleSearch() {
-            const box = document.getElementById('searchBox');
-            box.style.display = box.style.display === 'block' ? 'none' : 'block';
-            if (box.style.display === 'block') document.getElementById('searchInput').focus();
-        }
-
+        function showMainGrid() { hideAll(); updateNav('nav-home'); document.getElementById('gridView').style.display = 'grid'; renderThumbnails('gridView', allAds); }
+        function showFavorites() { hideAll(); updateNav('nav-fav'); document.getElementById('favView').style.display = 'grid'; renderThumbnails('favView', allAds.filter(ad => favorites.includes(ad.id))); }
         function renderThumbnails(elementId, dataList) {
             const container = document.getElementById(elementId);
             container.innerHTML = dataList.map((ad) => {
-                const isVideo = (ad.media_url || "").toLowerCase().endsWith('.mp4') || (ad.media_url || "").toLowerCase().endsWith('.mov');
-                const mediaHtml = isVideo ? `<video src="${ad.media_url}" muted playsinline></video>` : `<img src="${ad.media_url}">`;
-                return `<div class="grid-item" onclick="startFeed('${ad.id}', '${elementId}')">${mediaHtml}<div class="grid-price">${ad.price} AZN</div><i class="fas ${isVideo ? 'fa-video' : 'fa-image'} grid-type"></i></div>`;
+                const isVideo = ad.media_url.toLowerCase().endsWith('.mp4');
+                return `<div class="grid-item" onclick="startFeed('${ad.id}', '${elementId}')">${isVideo ? `<video src="${ad.media_url}"></video>` : `<img src="${ad.media_url}">`}<div class="grid-price">${ad.price} AZN</div></div>`;
             }).join('');
         }
-
-        function startFeed(adId, fromContext) {
-            hideAll();
-            const feed = document.getElementById('feedView');
-            feed.style.display = 'block';
-            let list = (fromContext === 'favView') ? allAds.filter(ad => favorites.includes(ad.id)) : (filteredAds.length < allAds.length ? filteredAds : allAds);
-
-            feed.innerHTML = list.map(ad => {
-                const isVideo = (ad.media_url || "").toLowerCase().endsWith('.mp4') || (ad.media_url || "").toLowerCase().endsWith('.mov');
-                const mediaHtml = isVideo ? `<div class="media-container" onclick="togglePlay(this)"><video src="${ad.media_url}" loop playsinline class="feed-media"></video></div>` : `<div class="media-container"><img src="${ad.media_url}" class="feed-media"></div>`;
-                return `
-                    <div class="snap-section" id="sec-${ad.id}">
-                        <div class="v-watermark text-xs">VIDOSMARK</div>
-                        ${mediaHtml}
-                        <div class="overlay"></div>
-                        <div class="side-bar">
-                            <button onclick="toggleFav('${ad.id}')" class="action-btn ${favorites.includes(ad.id) ? 'text-red-500' : 'text-white'}"><i class="fas fa-heart text-2xl"></i><span>${favorites.includes(ad.id) ? 'Bəyəndi' : 'Sev'}</span></button>
-                            <a href="https://wa.me/${ad.whatsapp}" class="action-btn text-green-500"><i class="fab fa-whatsapp text-2xl"></i><span>WP</span></a>
-                            <a href="tel:${ad.phone}" class="action-btn text-blue-400"><i class="fas fa-phone text-2xl"></i><span>Zəng</span></a>
-                            <button onclick="shareAd('${ad.id}')" class="action-btn text-white"><i class="fas fa-share text-2xl"></i><span>Paylaş</span></button>
-                        </div>
-                        <div class="absolute bottom-[110px] left-5 right-20 pointer-events-none z-50">
-                            <div class="text-yellow-400 font-black text-2xl mb-1 drop-shadow-lg">${ad.price} AZN</div>
-                            <div class="font-bold text-lg text-white">${ad.marka}</div>
-                            <div class="text-gray-300 text-xs mt-1 line-clamp-2">${ad.description}</div>
-                        </div>
-                    </div>`;
-            }).join('');
-            const target = document.getElementById(`sec-${adId}`);
-            if(target) target.scrollIntoView();
-            playCurrentVideo();
-        }
-
-        function toggleFav(id) {
-            favorites.includes(id) ? favorites = favorites.filter(f => f !== id) : favorites.push(id);
-            localStorage.setItem('vidosmark_favs', JSON.stringify(favorites));
-            const sec = document.getElementById(`sec-${id}`);
-            if (sec) {
-                const btn = sec.querySelector('.fa-heart').parentElement;
-                btn.className = `action-btn ${favorites.includes(id) ? 'text-red-500' : 'text-white'}`;
-                btn.querySelector('span').innerText = favorites.includes(id) ? 'Bəyəndi' : 'Sev';
-            }
-        }
-
-        function handleScroll() { playCurrentVideo(); }
-        function playCurrentVideo() {
-            const feed = document.getElementById('feedView');
-            const index = Math.round(feed.scrollTop / window.innerHeight);
-            feed.querySelectorAll('video').forEach((v, i) => i === index ? v.play() : (v.pause(), v.currentTime = 0));
-        }
-
-        function togglePlay(c) { const v = c.querySelector('video'); if(v) v.paused ? v.play() : v.pause(); }
-        function hideAll() {
-            ['gridView', 'favView', 'feedView', 'searchBox'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.style.display = 'none';
-            });
-            document.querySelectorAll('video').forEach(v => v.pause());
-        }
-        function updateNav(id) { document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active')); const el = document.getElementById(id); if(el) el.classList.add('active'); }
+        function startFeed(id, ctx) { hideAll(); document.getElementById('feedView').style.display = 'block'; /* Feed məntiqi */ }
+        function hideAll() { ['gridView', 'favView', 'feedView', 'searchBox'].forEach(id => document.getElementById(id).style.display = 'none'); }
+        function updateNav(id) { document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active')); document.getElementById(id).classList.add('active'); }
         function openModal(id) { document.getElementById(id).style.display = 'block'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function shareAd(id) { navigator.share ? navigator.share({title: 'VidosMark Elan', url: window.location.href}) : alert('Link kopyalandı!'); }
-
         window.onload = fetchData;
     </script>
 </body>
