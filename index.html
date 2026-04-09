@@ -28,14 +28,6 @@
         .media-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .feed-media { width: 100%; height: 100%; object-fit: contain; }
         
-        .photo-carousel { display: flex; width: 100%; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .photo-carousel::-webkit-scrollbar { display: none; }
-        .carousel-item { min-width: 100%; height: 100%; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
-        .carousel-item img { width: 100%; height: 100%; object-fit: contain; }
-        .carousel-dots { position: absolute; bottom: 190px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 60; }
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); }
-        .dot.active { background: white; scale: 1.2; }
-
         .v-watermark { position: absolute; top: 85px; left: 20px; z-index: 65; font-weight: 900; letter-spacing: -1px; font-style: italic; opacity: 0.6; color: white; text-shadow: 0 0 10px rgba(0,0,0,0.5); pointer-events: none; }
 
         .overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 45%); pointer-events: none; z-index: 10; }
@@ -52,7 +44,6 @@
 
         .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 300; padding: 35px; overflow-y: auto; }
         
-        /* Loading Spinner */
         #loader { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:500; background:rgba(0,0,0,0.8); padding:20px; border-radius:15px; text-align:center; }
     </style>
 </head>
@@ -85,10 +76,27 @@
             <h2 class="text-2xl font-black italic">VIDOSMARK</h2>
             <button onclick="closeModal('menuModal')" class="text-4xl leading-none">&times;</button>
         </div>
-        <div class="space-y-8 text-gray-400 text-sm">
+        <div class="space-y-8 text-gray-400 text-sm pb-20">
             <section>
                 <h3 class="text-white font-bold text-lg mb-3">📌 Platforma Haqqında</h3>
-                <p>VidosMark video-elan formatında Azərbaycanın ilk sürətli bazar platformasıdır.</p>
+                <p class="mb-4">VidosMark, Azərbaycanın video-elan formatında işləyən ilk və ən sürətli mobil bazar platformasıdır. Biz satıcıları və alıcıları vizual olaraq daha yaxın edirik.</p>
+                <p>Platformanın əsas məqsədi məhsul haqqında məlumatın yalnız şəkillərlə deyil, həm də canlı videolarla çatdırılmasını təmin etməkdir.</p>
+            </section>
+            
+            <section>
+                <h3 class="text-white font-bold text-lg mb-3">⚖️ Hüquqi Bildiriş və Qaydalar</h3>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li><b>Məsuliyyət:</b> VidosMark yalnız platforma xidməti göstərir. Paylaşılan elanların məzmununa, məhsulun keyfiyyətinə və ya sövdələşmə prosesinə görə platforma rəhbərliyi hüquqi məsuliyyət daşımır.</li>
+                    <li><b>İstifadəçi Öhdəliyi:</b> Hər bir istifadəçi yerləşdirdiyi video və məlumatların doğruluğuna görə şəxsən cavabdehdir.</li>
+                    <li><b>Qadağalar:</b> Qanunla qadağan olunmuş məhsulların, etik normalardan kənar videoların paylaşılması qəti qadağandır və elan xəbərdarlıq edilmədən silinəcəkdir.</li>
+                    <li><b>Məlumatın Qorunması:</b> Yerləşdirdiyiniz əlaqə nömrələri alıcıların sizinlə birbaşa əlaqə saxlaması üçündür. Şəxsi məlumatlarınızı paylaşarkən diqqətli olmağınız tövsiyə edilir.</li>
+                    <li><b>Müəllif Hüquqları:</b> Başqasına aid videoların icazəsiz paylaşılması qadağandır.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h3 class="text-white font-bold text-lg mb-3">📞 Dəstək</h3>
+                <p>Hər hansı bir şikayət və ya təklifiniz olarsa, administrasiya ilə əlaqə saxlaya bilərsiniz.</p>
             </section>
         </div>
     </div>
@@ -127,7 +135,6 @@
     </div>
 
     <script>
-        // --- SUPABASE MƏLUMATLARI YERLƏŞDİRİLDİ ---
         const S_URL = "https://jarmfdvzzfldchalvobu.supabase.co"; 
         const S_KEY = "sb_publishable_mRynzzfKlHantVZqrpaVjw_7QNpbvQj";
         const supabaseClient = supabase.createClient(S_URL, S_KEY);
@@ -136,7 +143,6 @@
         let filteredAds = [];
         let favorites = JSON.parse(localStorage.getItem('vidosmark_favs')) || [];
 
-        // MƏLUMATLARI BAZADAN ÇƏKİR
         async function fetchData() {
             try {
                 const { data, error } = await supabaseClient
@@ -151,7 +157,6 @@
             } catch (e) { console.error("Data xətası:", e); }
         }
 
-        // YENİ ELAN YÜKLƏMƏ FUNKSİYASI
         async function handleUpload() {
             const marka = document.getElementById('adMarka').value;
             const price = document.getElementById('adPrice').value;
@@ -160,14 +165,13 @@
             const file = document.getElementById('mediaInput').files[0];
 
             if(!marka || !price || !file || !phone) {
-                alert("Zəhmət olmasa ulduzlu yerləri doldurun!");
+                alert("Zəhmət olmasa bütün xanaları doldurun!");
                 return;
             }
 
             document.getElementById('loader').style.display = 'block';
 
             try {
-                // 1. Faylı Storage-ə yüklə
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${Date.now()}.${fileExt}`;
                 const filePath = `uploads/${fileName}`;
@@ -178,11 +182,9 @@
 
                 if (uploadError) throw uploadError;
 
-                // 2. Linki götür
                 const { data: urlData } = supabaseClient.storage.from('elan_videos').getPublicUrl(filePath);
                 const publicUrl = urlData.publicUrl;
 
-                // 3. Bazaya yaz
                 const { error: dbError } = await supabaseClient.from('elanlar').insert([{
                     marka: marka,
                     price: price,
@@ -204,7 +206,6 @@
             }
         }
 
-        // --- DİGƏR FUNKSİYALAR ---
         function showMainGrid() {
             hideAll();
             updateNav('nav-home');
@@ -237,7 +238,7 @@
         function renderThumbnails(elementId, dataList) {
             const container = document.getElementById(elementId);
             container.innerHTML = dataList.map((ad) => {
-                const isVideo = (ad.media_url || "").toLowerCase().endsWith('.mp4');
+                const isVideo = (ad.media_url || "").toLowerCase().endsWith('.mp4') || (ad.media_url || "").toLowerCase().endsWith('.mov');
                 const mediaHtml = isVideo ? `<video src="${ad.media_url}" muted playsinline></video>` : `<img src="${ad.media_url}">`;
                 return `<div class="grid-item" onclick="startFeed('${ad.id}', '${elementId}')">${mediaHtml}<div class="grid-price">${ad.price} AZN</div><i class="fas ${isVideo ? 'fa-video' : 'fa-image'} grid-type"></i></div>`;
             }).join('');
@@ -250,7 +251,7 @@
             let list = (fromContext === 'favView') ? allAds.filter(ad => favorites.includes(ad.id)) : (filteredAds.length < allAds.length ? filteredAds : allAds);
 
             feed.innerHTML = list.map(ad => {
-                const isVideo = (ad.media_url || "").toLowerCase().endsWith('.mp4');
+                const isVideo = (ad.media_url || "").toLowerCase().endsWith('.mp4') || (ad.media_url || "").toLowerCase().endsWith('.mov');
                 const mediaHtml = isVideo ? `<div class="media-container" onclick="togglePlay(this)"><video src="${ad.media_url}" loop playsinline class="feed-media"></video></div>` : `<div class="media-container"><img src="${ad.media_url}" class="feed-media"></div>`;
                 return `
                     <div class="snap-section" id="sec-${ad.id}">
