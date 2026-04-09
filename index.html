@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>VidosMark - Sürətli Video Bazar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
+        
+        /* Grid Görünüşü */
+        #gridView, #favView { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; 
+            height: 100vh; overflow-y: auto; padding: 130px 0 90px 0; 
+        }
+        .grid-item { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; border-radius: 4px; overflow: hidden; }
+        .grid-item media { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .grid-price { position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #fbbf24; }
+        .grid-type { position: absolute; top: 5px; right: 5px; font-size: 10px; color: rgba(255,255,255,0.4); }
+
+        /* TikTok Feed */
+        #feedView { display: none; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        #feedView::-webkit-scrollbar { display: none; }
+        .snap-section { height: 100vh; scroll-snap-align: start; position: relative; background: #000; overflow: hidden; }
+        
+        /* Media Elements */
+        .media-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .feed-media { width: 100%; height: 100%; object-fit: contain; }
+        
+        /* Foto Karusel (Sağa-Sola) */
+        .photo-carousel { display: flex; width: 100%; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .photo-carousel::-webkit-scrollbar { display: none; }
+        .carousel-item { min-width: 100%; height: 100%; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
+        .carousel-item img { width: 100%; height: 100%; object-fit: contain; }
+        .carousel-dots { position: absolute; bottom: 190px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 60; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+        .dot.active { background: white; scale: 1.2; }
+
+        /* Video Üstü Loqo (Watermark) */
+        .v-watermark { position: absolute; top: 85px; left: 20px; z-index: 65; font-weight: 900; letter-spacing: -1px; font-style: italic; opacity: 0.6; color: white; text-shadow: 0 0 10px rgba(0,0,0,0.5); pointer-events: none; }
+
+        /* Sidebar & UI */
+        .overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 45%); pointer-events: none; z-index: 10; }
+        .side-bar { position: absolute; right: 12px; bottom: 150px; display: flex; flex-direction: column; gap: 20px; z-index: 70; }
+        .action-btn { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .action-btn span { font-size: 10px; margin-top: 3px; font-weight: 500; }
+
+        /* Naviqasiya */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 80px; background: #000; border-top: 1px solid #1a1a1a; display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: 10px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #666; font-size: 11px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: white; }
+
+        /* Axtarış */
+        .search-container { position: fixed; top: 75px; left: 0; width: 100%; padding: 12px 18px; z-index: 115; display: none; background: black; border-bottom: 1px solid #111; }
+        .search-input { width: 100%; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 12px 16px; color: white; outline: none; font-size: 14px; }
+
+        .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 300; padding: 35px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="fixed top-0 w-full p-6 flex justify-between items-center z-[130] bg-gradient-to-b from-black to-transparent">
+        <h1 class="text-2xl font-black italic tracking-tighter text-white" onclick="showMainGrid()">VIDOSMARK</h1>
+        <div class="flex gap-5 items-center">
+            <button onclick="toggleSearch()" class="text-xl"><i class="fas fa-search"></i></button>
+            <button onclick="showMainGrid()" class="text-xl"><i class="fas fa-th-large"></i></button>
+            <button onclick="openModal('menuModal')" class="text-xl"><i class="fas fa-ellipsis-v"></i></button>
+        </div>
+    </div>
+
+    <div id="searchBox" class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Məhsul, marka və ya mövzu axtar..." oninput="handleSearch(this.value)">
+    </div>
+
+    <div id="gridView"></div>
+    <div id="favView" style="display:none;"></div>
+    <div id="feedView" onscroll="handleScroll()"></div>
+
+    <div id="menuModal" class="modal">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-2xl font-black italic">VIDOSMARK</h2>
+            <button onclick="closeModal('menuModal')" class="text-4xl leading-none">&times;</button>
+        </div>
+        <div class="space-y-8 text-gray-400 text-sm">
+            <section>
+                <h3 class="text-white font-bold text-lg mb-3">📌 Platforma Haqqında</h3>
+                <p>VidosMark video-elan formatında Azərbaycanın ilk sürətli bazar platformasıdır. Burada məhsullarınızı saniyələr içində nümayiş etdirə bilərsiniz.</p>
+            </section>
+            <section>
+                <h3 class="text-white font-bold text-lg mb-3">📜 Qaydalar</h3>
+                <p>1. Etikadan kənar və qanunsuz videolar dərhal silinir.<br>2. Hər bir istifadəçi yerləşdirdiyi kontentə görə özü məsuliyyət daşıyır.</p>
+            </section>
+            <section>
+                <h3 class="text-white font-bold text-lg mb-3">🔐 Məxfilik</h3>
+                <p>Sizin əlaqə nömrəniz yalnız alıcıların sizə zəng etməsi üçün istifadə olunur. Məlumatlar qorunur.</p>
+            </section>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal text-center">
+        <div class="mt-24">
+            <div class="w-24 h-24 bg-white text-black rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                <i class="fas fa-plus text-4xl"></i>
+            </div>
+            <h2 class="text-2xl font-black mb-4">ELAN YERLƏŞDİR</h2>
+            <p class="text-gray-400 mb-10 px-6">Video və ya şəkil yükləmək üçün VidosMark Telegram botuna keçid edin. Sürətli və asan!</p>
+            <a href="https://t.me/OkoTokBot" target="_blank" class="bg-white text-black px-12 py-5 rounded-full font-black text-lg inline-block tracking-widest">BOTA GET</a>
+            <button onclick="closeModal('uploadModal')" class="block w-full mt-10 text-gray-600 underline text-sm">Geri qayıt</button>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" id="nav-home" onclick="showMainGrid()"><i class="fas fa-home text-2xl"></i><span>Ana Səhifə</span></div>
+        <div class="nav-item" onclick="toggleSearch()"><i class="fas fa-search text-2xl"></i><span>Axtar</span></div>
+        <div onclick="openModal('uploadModal')" class="bg-white w-14 h-10 rounded-xl flex items-center justify-center text-black text-2xl font-bold shadow-lg"><i class="fas fa-plus"></i></div>
+        <div class="nav-item" id="nav-fav" onclick="showFavorites()"><i class="fas fa-heart text-2xl"></i><span>Sevimlilər</span></div>
+        <div class="nav-item" onclick="openModal('uploadModal')"><i class="fas fa-user text-2xl"></i><span>Profil</span></div>
+    </div>
+
+    <script>
+        // Supabase Ayarları
+        const S_URL = "https://jarmfdvzzfldchalvobu.supabase.co"; 
+        const S_KEY = "sb_publishable_mRynzzfKlHantVZqrpaVjw_7QNpbvQj";
+
+        let allAds = [];
+        let filteredAds = [];
+        let favorites = JSON.parse(localStorage.getItem('vidosmark_favs')) || [];
+
+        async function fetchData() {
+            try {
+                const res = await fetch(`${S_URL}/rest/v1/elanlar?select=*&order=created_at.desc`, {
+                    headers: { "apikey": S_KEY, "Authorization": `Bearer ${S_KEY}` }
+                });
+                allAds = await res.json();
+                filteredAds = [...allAds];
+                showMainGrid();
+            } catch (e) { console.error("Data xətası:", e); }
+        }
+
+        function showMainGrid() {
+            hideAll();
+            updateNav('nav-home');
+            document.getElementById('gridView').style.display = 'grid';
+            renderThumbnails('gridView', allAds);
+        }
+
+        function showFavorites() {
+            hideAll();
+            updateNav('nav-fav');
+            document.getElementById('favView').style.display = 'grid';
+            const favAds = allAds.filter(ad => favorites.includes(ad.id));
+            if (favAds.length === 0) {
+                document.getElementById('favView').innerHTML = '<div class="col-span-3 text-center py-40 text-gray-600">Sevimlilər boşdur</div>';
+            } else {
+                renderThumbnails('favView', favAds);
+            }
+        }
+
+        function handleSearch(query) {
+            const term = query.toLowerCase();
+            filteredAds = allAds.filter(ad => 
+                ad.marka.toLowerCase().includes(term) || 
+                ad.description.toLowerCase().includes(term)
+            );
+            document.getElementById('gridView').style.display = 'grid';
+            renderThumbnails('gridView', filteredAds);
+        }
+
+        function toggleSearch() {
+            const box = document.getElementById('searchBox');
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
+            if (box.style.display === 'block') document.getElementById('searchInput').focus();
+        }
+
+        function renderThumbnails(elementId, dataList) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = dataList.map((ad) => {
+                const mediaUrls = ad.media_url.split(',');
+                const isVideo = mediaUrls[0].toLowerCase().endsWith('.mp4');
+                const mediaHtml = isVideo 
+                    ? `<video src="${mediaUrls[0]}" muted playsinline></video>`
+                    : `<img src="${mediaUrls[0]}" class="w-full h-full object-cover">`;
+                
+                return `
+                    <div class="grid-item" onclick="startFeed('${ad.id}', '${elementId}')">
+                        ${mediaHtml}
+                        <div class="grid-price">${ad.price} AZN</div>
+                        <i class="fas ${isVideo ? 'fa-video' : 'fa-images'} grid-type"></i>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function startFeed(adId, fromContext) {
+            hideAll();
+            const feed = document.getElementById('feedView');
+            feed.style.display = 'block';
+            
+            let list = allAds;
+            if (fromContext === 'favView') list = allAds.filter(ad => favorites.includes(ad.id));
+            if (fromContext === 'gridView' && filteredAds.length < allAds.length) list = filteredAds;
+
+            feed.innerHTML = list.map(ad => {
+                const mediaUrls = ad.media_url.split(',');
+                const isVideo = mediaUrls[0].toLowerCase().endsWith('.mp4');
+                
+                let mediaHtml = '';
+                if (isVideo) {
+                    mediaHtml = `<div class="media-container" onclick="togglePlay(this)"><video src="${mediaUrls[0]}" loop playsinline class="feed-media"></video></div>`;
+                } else {
+                    const dots = mediaUrls.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('');
+                    mediaHtml = `
+                        <div class="media-container relative">
+                            <div class="photo-carousel" onscroll="handleCarouselScroll(this)">
+                                ${mediaUrls.map(url => `<div class="carousel-item"><img src="${url}"></div>`).join('')}
+                            </div>
+                            <div class="carousel-dots">${dots}</div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="snap-section" id="sec-${ad.id}">
+                        <div class="v-watermark text-xs">VIDOSMARK</div>
+                        ${mediaHtml}
+                        <div class="overlay"></div>
+                        <div class="side-bar">
+                            <button onclick="toggleFav('${ad.id}')" class="action-btn ${favorites.includes(ad.id) ? 'text-red-500' : 'text-white'}">
+                                <i class="fas fa-heart text-2xl"></i><span>${favorites.includes(ad.id) ? 'Bəyəndi' : 'Sev'}</span>
+                            </button>
+                            <a href="https://wa.me/${ad.whatsapp}" class="action-btn text-green-500"><i class="fab fa-whatsapp text-2xl"></i><span>WP</span></a>
+                            <a href="tel:${ad.phone}" class="action-btn text-blue-400"><i class="fas fa-phone text-2xl"></i><span>Zəng</span></a>
+                            <button onclick="shareAd('${ad.id}')" class="action-btn text-white"><i class="fas fa-share text-2xl"></i><span>Paylaş</span></button>
+                        </div>
+                        <div class="absolute bottom-[110px] left-5 right-20 pointer-events-none z-50">
+                            <div class="text-yellow-400 font-black text-2xl mb-1 drop-shadow-lg">${ad.price} AZN</div>
+                            <div class="font-bold text-lg text-white">${ad.marka}</div>
+                            <div class="text-gray-300 text-xs mt-1 line-clamp-2">${ad.description}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById(`sec-${adId}`).scrollIntoView();
+            playCurrentVideo();
+        }
+
+        function toggleFav(id) {
+            favorites.includes(id) ? favorites = favorites.filter(f => f !== id) : favorites.push(id);
+            localStorage.setItem('vidosmark_favs', JSON.stringify(favorites));
+            const sec = document.getElementById(`sec-${id}`);
+            if (sec) {
+                const btn = sec.querySelector('.fa-heart').parentElement;
+                btn.className = `action-btn ${favorites.includes(id) ? 'text-red-500' : 'text-white'}`;
+                btn.querySelector('span').innerText = favorites.includes(id) ? 'Bəyəndi' : 'Sev';
+            }
+        }
+
+        function handleScroll() { playCurrentVideo(); }
+        function playCurrentVideo() {
+            const feed = document.getElementById('feedView');
+            const index = Math.round(feed.scrollTop / window.innerHeight);
+            const videos = feed.querySelectorAll('video');
+            videos.forEach((v, i) => i === index ? v.play() : (v.pause(), v.currentTime = 0));
+        }
+
+        function handleCarouselScroll(carousel) {
+            const dots = carousel.parentElement.querySelectorAll('.dot');
+            const index = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+            dots.forEach((dot, i) => dot.className = `dot ${i === index ? 'active' : ''}`);
+        }
+
+        function togglePlay(c) { const v = c.querySelector('video'); v.paused ? v.play() : v.pause(); }
+        function hideAll() {
+            ['gridView', 'favView', 'feedView', 'searchBox'].forEach(id => document.getElementById(id).style.display = 'none');
+            document.querySelectorAll('video').forEach(v => v.pause());
+        }
+        function updateNav(id) { document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function shareAd(id) { navigator.share ? navigator.share({title: 'VidosMark Elan', url: window.location.href}) : alert('Kopyalandı!'); }
+
+        window.onload = fetchData;
+    </script>
+</body>
+      </html>
