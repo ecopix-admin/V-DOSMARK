@@ -11,7 +11,7 @@
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
         
         /* Grid Views */
-        #gridView, #favView, #myAdsView { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; height: 100vh; overflow-y: auto; padding: 130px 0 90px 0; }
+        #gridView, #favView { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; height: 100vh; overflow-y: auto; padding: 130px 0 90px 0; }
         .grid-item { aspect-ratio: 1/1; background: #111; position: relative; overflow: hidden; border: 0.1px solid #222; }
         .grid-item video { width: 100%; height: 100%; object-fit: cover; }
         .grid-price { position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.7); font-size: 10px; padding: 2px 5px; border-radius: 4px; color: #fbbf24; font-weight: bold; }
@@ -22,45 +22,50 @@
         .media-holder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         .feed-media { width: 100%; height: 100%; object-fit: contain; }
         
-        /* Sidebar Buttons */
-        .side-bar { position: absolute; right: 12px; bottom: 180px; display: flex; flex-direction: column; gap: 18px; z-index: 100; }
-        .action-btn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        /* Sidebar Action Buttons */
+        .side-bar { position: absolute; right: 12px; bottom: 180px; display: flex; flex-direction: column; gap: 20px; z-index: 100; }
+        .action-btn { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
         .action-btn i { font-size: 22px; }
         .action-btn span { font-size: 8px; margin-top: 3px; font-weight: bold; }
 
-        /* Açıqlama Paneli */
-        .desc-panel { position: absolute; bottom: 95px; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.9) 30%); z-index: 60; }
-        .desc-content { display: none; background: rgba(20,20,20,0.98); padding: 25px; border-radius: 25px 25px 0 0; border-top: 2px solid #fbbf24; margin-top: 15px; max-height: 50vh; overflow-y: auto; position: relative; }
+        /* Description Panel */
+        .desc-panel { position: absolute; bottom: 95px; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.9) 50%); z-index: 60; }
+        .desc-content { display: none; background: rgba(10,10,10,0.98); padding: 25px; border-radius: 25px 25px 0 0; border-top: 2px solid #fbbf24; margin-top: 15px; max-height: 45vh; overflow-y: auto; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
 
-        /* Nav Bar - Yenilənmiş Dizayn */
+        /* Nav Bar - Mükəmməl Simmetriya */
         .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 200; padding-bottom: 20px; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; font-size: 10px; font-weight: bold; width: 20%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; font-size: 10px; font-weight: bold; width: 30%; transition: 0.3s; }
         .nav-item.active { color: white; }
 
+        /* Modals & Loader */
         .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 500; padding: 25px; overflow-y: auto; }
         #loader { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; background:black; padding:35px; border-radius:25px; text-align:center; border: 1px solid #fbbf24; width: 85%; }
         
-        .user-tag { background: #fbbf24; color: black; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 900; margin-bottom: 5px; display: inline-block; }
+        .search-container { position: fixed; top: 80px; left: 0; width: 100%; padding: 10px 20px; z-index: 140; background: black; display: none; }
+        .search-input { width: 100%; background: #111; border: 1px solid #333; padding: 14px 20px; outline: none; color: white; border-radius: 15px; font-size: 14px; }
     </style>
 </head>
 <body>
 
     <div id="loader">
         <i class="fas fa-circle-notch fa-spin text-5xl text-yellow-500 mb-4"></i>
-        <p class="font-black text-white text-lg tracking-widest uppercase">ELAN YÜKLƏNİR</p>
+        <p class="font-black text-white text-lg tracking-widest uppercase">ELAN HAZIRLANIR</p>
     </div>
 
     <div class="fixed top-0 w-full p-5 flex justify-between items-center z-[150] bg-gradient-to-b from-black to-transparent">
         <h1 class="text-2xl font-black italic tracking-tighter" onclick="location.reload()">VIDOSMARK</h1>
         <div class="flex gap-5 items-center">
             <i class="fas fa-search text-xl" onclick="toggleSearchUI()"></i>
-            <i class="fas fa-bars text-xl" onclick="openModal('infoModal')"></i>
+            <i class="fas fa-info-circle text-xl" onclick="openModal('infoModal')"></i>
         </div>
+    </div>
+
+    <div id="searchUI" class="search-container">
+        <input type="text" id="searchInput" oninput="filterAds()" placeholder="Model və ya qiymət yazaraq tap..." class="search-input">
     </div>
 
     <div id="gridView"></div>
     <div id="favView" class="hidden"></div>
-    <div id="myAdsView" class="hidden"></div>
     <div id="feedView"></div>
 
     <div id="uploadModal" class="modal">
@@ -69,19 +74,18 @@
             <span onclick="closeModal('uploadModal')" class="text-4xl text-gray-500">&times;</span>
         </div>
         <div class="space-y-4">
-            <input type="text" id="userName" placeholder="Adınız (Profil üçün)" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800 focus:border-yellow-500">
-            <input type="text" id="adMarka" placeholder="Məhsulun Adı" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800">
+            <input type="text" id="adMarka" placeholder="Məhsulun Modeli (iPhone 15, BMW və s.)" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800">
             <input type="number" id="adPrice" placeholder="Qiymət (AZN)" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800">
-            <textarea id="adDesc" placeholder="Məhsul haqqında məlumat..." class="w-full bg-zinc-900 p-4 rounded-xl outline-none h-28 border border-zinc-800"></textarea>
-            <input type="text" id="adPhone" placeholder="Əlaqə nömrəsi" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800">
+            <textarea id="adDesc" placeholder="Məhsul haqqında ətraflı..." class="w-full bg-zinc-900 p-4 rounded-xl outline-none h-32 border border-zinc-800"></textarea>
+            <input type="text" id="adPhone" placeholder="Əlaqə: 050 123 45 67" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800">
             
-            <div class="border-2 border-dashed border-zinc-800 p-10 rounded-2xl text-center bg-zinc-900/30" onclick="document.getElementById('mediaInput').click()">
-                <i class="fas fa-video text-4xl mb-3 text-yellow-500"></i>
-                <p class="text-xs text-gray-400 font-bold">MEDİA SEÇİN</p>
-                <input type="file" id="mediaInput" accept="video/*,image/*" class="hidden">
+            <div class="border-2 border-dashed border-zinc-800 p-12 rounded-2xl text-center bg-zinc-900/30" onclick="document.getElementById('mediaInput').click()">
+                <i class="fas fa-camera text-4xl mb-3 text-yellow-500"></i>
+                <p class="text-xs text-gray-400 font-bold uppercase" id="fileStatus">MEDİA SEÇİN</p>
+                <input type="file" id="mediaInput" accept="video/*,image/*" class="hidden" onchange="document.getElementById('fileStatus').innerText = 'FAYL SEÇİLDİ!'">
             </div>
             
-            <button onclick="handleUpload()" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-lg">PAYLAŞ</button>
+            <button onclick="handleUpload()" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-transform">PAYLAŞ</button>
         </div>
     </div>
 
@@ -90,22 +94,22 @@
             <h2 class="text-2xl font-black italic text-yellow-500">MƏLUMAT</h2>
             <span onclick="closeModal('infoModal')" class="text-4xl text-gray-500">&times;</span>
         </div>
-        <div class="space-y-6 text-gray-400">
-            <p>VidosMark video elan platformasıdır.</p>
-            <button onclick="closeModal('infoModal')" class="w-full border border-zinc-800 py-4 rounded-xl">BAĞLA</button>
+        <div class="space-y-6 text-gray-300 text-sm">
+            <p>VidosMark videolu elan platformasıdır. Burada məhsulunuzu vizual olaraq təqdim edə bilərsiniz.</p>
+            <p class="text-xs text-gray-500 italic">© 2026 VidosMark. Bütün hüquqlar qorunur.</p>
+            <button onclick="closeModal('infoModal')" class="w-full bg-zinc-900 py-4 rounded-xl border border-zinc-800">BAĞLA</button>
         </div>
     </div>
 
     <div class="nav-bar">
         <div class="nav-item active" id="btn-home" onclick="showView('gridView')">
-            <i class="fas fa-home text-2xl"></i><span>VİTRİN</span>
+            <i class="fas fa-th-large text-2xl"></i><span>ANA SƏHİFƏ</span>
         </div>
+        
         <div class="nav-item" onclick="openModal('uploadModal')">
-            <div class="bg-white text-black w-12 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg"><i class="fas fa-plus"></i></div>
+            <div class="bg-white text-black w-14 h-11 rounded-2xl flex items-center justify-center text-2xl shadow-lg transform active:scale-90 transition-all"><i class="fas fa-plus"></i></div>
         </div>
-        <div class="nav-item" id="btn-profile" onclick="showMyAds()">
-            <i class="fas fa-user-circle text-2xl"></i><span>PROFİL</span>
-        </div>
+
         <div class="nav-item" id="btn-fav" onclick="showView('favView')">
             <i class="fas fa-heart text-2xl text-red-500"></i><span>SEVİMLİLƏR</span>
         </div>
@@ -115,14 +119,12 @@
         const SUPA_URL = "https://dpdrejpbnbbfwusqudxq.supabase.co";
         const SUPA_KEY = "sb_publishable_qOtB3HU91l0eQY8qaq0PDw_jzyO9Pze";
         const TG_TOKEN = "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE";
-        const TG_CHAT_ID = "@vidosmarkarxiv"; // @ ilə başladıldı
-        const WORKER_URL = "https://red-butterfly-8a1f.samohasan777.workers.dev"; 
+        const TG_CHAT_ID = "@vidosmarkarxiv";
+        const WORKER_URL = "https://red-butterfly-8a1f.samohasan777.workers.dev";
         
         const supabaseClient = supabase.createClient(SUPA_URL, SUPA_KEY);
         let allAds = [];
         let favs = JSON.parse(localStorage.getItem('vmark_favs')) || [];
-        let myId = localStorage.getItem('vmark_user_id') || 'u_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('vmark_user_id', myId);
 
         async function loadAds() {
             const { data, error } = await supabaseClient.from('elanlar').select('*').order('created_at', { ascending: false });
@@ -138,15 +140,19 @@
                     <div class="grid-price">${ad.price} AZN</div>
                 </div>
             `).join('');
+            if(list.length === 0 && containerId === 'favView') {
+                container.innerHTML = `<div class="col-span-3 text-center py-40 text-zinc-700 font-bold">SEVİMLİ ELAN YOXDUR</div>`;
+            }
         }
 
         async function handleUpload() {
             const file = document.getElementById('mediaInput').files[0];
-            const name = document.getElementById('userName').value;
-            if(!file || !name) return alert("Ad və Media mütləqdir!");
+            const marka = document.getElementById('adMarka').value;
+            const price = document.getElementById('adPrice').value;
+            
+            if(!file || !marka || !price) return alert("Zəhmət olmasa bütün məlumatları doldurun!");
             
             document.getElementById('loader').style.display = 'block';
-            localStorage.setItem('vmark_user_name', name);
 
             const isVideo = file.type.startsWith('video');
             const formData = new FormData();
@@ -162,18 +168,21 @@
                     const proxiedUrl = `${WORKER_URL}/?file_id=${fileId}`;
 
                     const { error } = await supabaseClient.from('elanlar').insert([{
-                        marka: document.getElementById('adMarka').value,
-                        price: document.getElementById('adPrice').value,
+                        marka: marka,
+                        price: price,
                         description: document.getElementById('adDesc').value,
                         phone: document.getElementById('adPhone').value,
-                        user_id: myId,
-                        user_name: name,
                         media_url: proxiedUrl
                     }]);
+                    
                     if(error) throw error;
                     location.reload();
+                } else {
+                    alert("Yükləmə xətası: " + tg.description);
                 }
-            } catch (e) { alert("Xəta: " + e.message); }
+            } catch (e) { 
+                alert("Sistem xətası! Supabase cədvəlinin 'elanlar' olduğundan və sütunların (marka, price, description, phone, media_url) düzgünlüyündən əmin olun."); 
+            }
             finally { document.getElementById('loader').style.display = 'none'; }
         }
 
@@ -193,26 +202,26 @@
                         </div>
                         <a href="tel:${ad.phone}" class="action-btn text-blue-400"><i class="fas fa-phone"></i><span>ZƏNG</span></a>
                         <a href="https://wa.me/${ad.phone.replace(/\D/g,'')}" class="action-btn text-green-500"><i class="fab fa-whatsapp"></i><span>WP</span></a>
-                        <div class="action-btn text-yellow-500" onclick="shareAd('${ad.id}')">
-                            <i class="fas fa-share"></i><span>LİNK</span>
+                        <div class="action-btn text-white" onclick="shareAd('${ad.id}')">
+                            <i class="fas fa-share-alt"></i><span>PAYLAŞ</span>
                         </div>
                     </div>
 
                     <div class="desc-panel">
-                        <div class="user-tag"><i class="fas fa-user mr-1"></i> ${ad.user_name || 'Satıcı'}</div>
                         <p class="text-yellow-500 font-black text-4xl mb-1">${ad.price} AZN</p>
                         <p class="font-black text-xl uppercase tracking-tighter">${ad.marka}</p>
-                        <button onclick="toggleDesc('${ad.id}')" class="mt-4 bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-2 rounded-full font-bold text-[10px]">ƏTRAFLI OXU</button>
+                        <button onclick="toggleDesc('${ad.id}')" class="mt-4 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full font-bold text-[10px] border border-white/20">DETALLARA BAX</button>
                         
                         <div id="desc-content-${ad.id}" class="desc-content">
-                            <h4 class="text-yellow-500 font-black mb-2 uppercase text-xs">Məhsul Haqqında</h4>
-                            <p class="text-sm text-gray-300">${ad.description}</p>
-                            <button onclick="toggleDesc('${ad.id}')" class="w-full mt-6 bg-zinc-900 py-3 rounded-lg text-xs font-bold">BAĞLA</button>
+                            <h4 class="text-yellow-500 font-black mb-3 text-xs tracking-widest">TƏSVİR</h4>
+                            <p class="text-sm text-gray-300 leading-relaxed">${ad.description || 'Məlumat yoxdur.'}</p>
+                            <button onclick="toggleDesc('${ad.id}')" class="w-full mt-6 bg-yellow-500 text-black py-3 rounded-xl text-xs font-black">BAĞLA</button>
                         </div>
                     </div>
                 </div>
             `).join('');
-            document.getElementById(`post-${id}`).scrollIntoView();
+            const target = document.getElementById(`post-${id}`);
+            if(target) target.scrollIntoView();
             handleAutoPlay();
         }
 
@@ -221,25 +230,32 @@
             content.style.display = content.style.display === 'block' ? 'none' : 'block';
         }
 
-        function showMyAds() {
-            hideAllViews();
-            const view = document.getElementById('myAdsView');
-            view.style.display = 'grid';
-            document.getElementById('btn-profile').classList.add('active');
-            const myAds = allAds.filter(a => a.user_id === myId);
-            myAds.length === 0 ? view.innerHTML = `<div class="col-span-3 text-center py-20 text-gray-700">ELANINIZ YOXDUR</div>` : renderGrid('myAdsView', myAds);
-        }
-
         function showView(viewId) {
             hideAllViews();
             document.getElementById(viewId).style.display = 'grid';
             const btnId = viewId === 'gridView' ? 'btn-home' : 'btn-fav';
             document.getElementById(btnId).classList.add('active');
             if(viewId === 'favView') renderGrid('favView', allAds.filter(a => favs.includes(a.id.toString())));
+            if(viewId === 'gridView') renderGrid('gridView', allAds);
+        }
+
+        function filterAds() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allAds.filter(ad => 
+                ad.marka.toLowerCase().includes(term) || 
+                ad.price.toString().includes(term)
+            );
+            renderGrid('gridView', filtered);
+        }
+
+        function toggleSearchUI() {
+            const s = document.getElementById('searchUI');
+            s.style.display = (s.style.display === 'block') ? 'none' : 'block';
+            if(s.style.display === 'block') document.getElementById('searchInput').focus();
         }
 
         function hideAllViews() {
-            ['gridView', 'favView', 'myAdsView', 'feedView'].forEach(id => document.getElementById(id).style.display = 'none');
+            ['gridView', 'favView', 'feedView', 'searchUI'].forEach(id => document.getElementById(id).style.display = 'none');
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         }
 
@@ -265,7 +281,7 @@
 
         function shareAd(id) {
             const url = window.location.href.split('?')[0] + '?ad=' + id;
-            if (navigator.share) navigator.share({ title: 'VidosMark', url: url });
+            if (navigator.share) navigator.share({ title: 'VidosMark Elan', url: url });
             else { alert("Link kopyalandı!"); navigator.clipboard.writeText(url); }
         }
 
