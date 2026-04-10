@@ -2,221 +2,239 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ecopix Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>VidosMark Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --accent: #ffcc00; --bg: #000; --glass: rgba(255, 255, 255, 0.1); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); font-family: 'Inter', sans-serif; color: #fff; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
+        
+        /* Grid Styles */
+        #gridView, #favView { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; height: 100vh; overflow-y: auto; padding: 120px 0 100px 0; scrollbar-width: none; }
+        .grid-item { aspect-ratio: 9/16; background: #111; position: relative; overflow: hidden; border: 0.5px solid #222; }
+        .grid-item video, .grid-item img { width: 100%; height: 100%; object-fit: cover; }
+        .grid-stats { position: absolute; bottom: 5px; left: 5px; display: flex; gap: 8px; font-size: 9px; color: #fbbf24; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; }
 
-        /* Full Screen Feed */
-        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .post { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        /* Full Feed */
+        #feedView { display: none; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .snap-section { height: 100vh; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; }
+        .media-holder { width: 100%; height: 100%; }
+        .feed-media { width: 100%; height: 100%; object-fit: contain; }
 
-        /* Header UI */
-        header { position: fixed; top: 0; width: 100%; z-index: 10; display: flex; justify-content: space-between; padding: 20px; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
-        .search-box { flex: 1; margin: 0 15px; background: var(--glass); border-radius: 20px; padding: 8px 15px; backdrop-filter: blur(10px); }
-        .search-box input { background: none; border: none; color: #fff; width: 100%; outline: none; }
+        /* Interaction Sidebar */
+        .side-bar { position: absolute; right: 15px; bottom: 180px; display: flex; flex-direction: column; gap: 22px; z-index: 100; align-items: center; }
+        .action-btn { background: none; border: none; color: white; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.3s; }
+        .action-btn i { font-size: 28px; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .action-btn span { font-size: 11px; font-weight: bold; }
 
-        /* Right Side Actions */
-        .actions { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 5; }
-        .action-btn { display: flex; flex-direction: column; align-items: center; cursor: pointer; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .action-btn i { font-size: 32px; margin-bottom: 5px; }
-        .action-btn span { font-size: 12px; font-weight: 500; }
-        .fa-whatsapp { color: #25D366; }
+        /* Info Panel */
+        .info-overlay { position: absolute; bottom: 110px; left: 15px; right: 80px; z-index: 50; pointer-events: none; }
+        .info-overlay * { pointer-events: auto; }
+        .price-tag { font-size: 28px; font-weight: 900; color: #fbbf24; margin-bottom: 2px; }
+        .model-name { font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Bottom Info */
-        .bottom-info { position: absolute; bottom: 100px; left: 15px; right: 80px; z-index: 5; pointer-events: none; }
-        .bottom-info * { pointer-events: auto; }
-        .shop-name { font-size: 18px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .post-desc { font-size: 14px; opacity: 0.9; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .price-tag { background: var(--accent); color: #000; padding: 4px 12px; border-radius: 5px; font-weight: 800; display: inline-block; }
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(0,0,0,0.95); border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 200; padding-bottom: 15px; }
+        .nav-item { color: #666; font-size: 10px; font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-item.active { color: #fbbf24; }
+        .add-btn { background: #fbbf24; color: black; width: 55px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
 
-        /* Bottom Navbar */
-        nav { position: fixed; bottom: 0; width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); background: #000; border-top: 1px solid #222; padding: 15px 0; z-index: 100; }
-        .nav-link { text-align: center; font-size: 22px; color: #777; transition: 0.3s; }
-        .nav-link.active { color: var(--accent); }
-
-        /* Modern Modals */
-        .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; padding: 25px; overflow-y: auto; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .close-modal { font-size: 30px; float: right; margin-bottom: 20px; }
-
-        input, textarea { width: 100%; padding: 16px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: #111; color: #fff; font-size: 16px; }
-        .submit-btn { background: var(--accent); color: #000; border: none; width: 100%; padding: 18px; font-weight: 900; border-radius: 12px; margin-top: 20px; letter-spacing: 1px; }
-
-        /* Profile Style */
-        .profile-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; margin-top: 20px; }
-        .grid-item { aspect-ratio: 1/1; background: #111; position: relative; }
-        .grid-item img, .grid-item video { width: 100%; height: 100%; object-fit: cover; }
+        /* Modals */
+        .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; padding: 25px; overflow-y: auto; }
+        .input-box { width: 100%; background: #111; border: 1px solid #222; padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px; outline: none; }
+        #loader { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2000; background:rgba(0,0,0,0.8); padding:40px; border-radius:30px; border: 1px solid #fbbf24; text-align:center; }
     </style>
 </head>
 <body>
 
-    <header>
-        <i class="fas fa-bars" onclick="openMod('menuMod')"></i>
-        <div class="search-box">
-            <input type="text" placeholder="Axtarış..." id="searchQuery">
-        </div>
-        <i class="fas fa-user-circle" style="font-size: 24px;" onclick="openProfile()"></i>
-    </header>
-
-    <div class="feed" id="feed">
-        </div>
-
-    <nav>
-        <div class="nav-link active" onclick="location.reload()"><i class="fas fa-home"></i></div>
-        <div class="nav-link" onclick="openMod('addMod')"><i class="fas fa-plus-circle"></i></div>
-        <div class="nav-link" onclick="openMod('favMod')"><i class="fas fa-heart"></i></div>
-        <div class="nav-link" onclick="openProfile()"><i class="fas fa-store"></i></div>
-    </nav>
-
-    <div id="addMod" class="modal">
-        <span class="close-modal" onclick="closeMod('addMod')">&times;</span>
-        <h2 style="text-align: center;">Yeni Elan</h2>
-        <input type="text" id="t" placeholder="Məhsulun adı">
-        <input type="number" id="p" placeholder="Qiymət (AZN)">
-        <input type="text" id="s" placeholder="Mağaza adı">
-        <textarea id="d" rows="4" placeholder="Ətraflı məlumat..."></textarea>
-        <input type="tel" id="ph" placeholder="WhatsApp (994XXXXXXXXX)">
-        
-        <label style="display: block; padding: 30px; border: 2px dashed #333; border-radius: 15px; text-align: center; margin-top: 10px;">
-            <input type="file" id="m" multiple accept="video/*,image/*" style="display:none" onchange="countF()">
-            <i class="fas fa-video" style="font-size: 30px;"></i>
-            <p id="fc">Video və ya 10 Şəkil seç</p>
-        </label>
-        
-        <button class="submit-btn" onclick="goUpload()">PAYLAŞMAĞA BAŞLA</button>
+    <div id="loader">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-yellow-500 mb-4 mx-auto"></div>
+        <p class="font-black text-xs tracking-widest uppercase">Paylaşılır...</p>
     </div>
 
-    <div id="profMod" class="modal">
-        <span class="close-modal" onclick="closeMod('profMod')">&times;</span>
-        <div style="text-align:center; padding-top: 30px;">
-            <div style="width: 80px; height: 80px; background: var(--accent); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #000; font-size: 30px; font-weight: bold;" id="pInit">S</div>
-            <h2 id="pName">Mağaza Adı</h2>
-            <div id="pStats" style="opacity: 0.6; font-size: 14px;">0 Elan</div>
+    <div class="fixed top-0 w-full p-6 flex justify-between items-center z-[150] bg-gradient-to-b from-black to-transparent">
+        <h1 class="text-2xl font-black italic tracking-tighter text-yellow-500" onclick="location.reload()">VIDOSMARK</h1>
+        <div class="flex gap-6 items-center">
+            <i class="fas fa-search text-xl" onclick="toggleSearch()"></i>
+            <i class="fas fa-bell text-xl"></i>
         </div>
-        <div class="profile-grid" id="pGrid"></div>
+    </div>
+
+    <div id="searchUI" class="fixed top-[80px] left-0 w-full p-4 z-[140] hidden">
+        <input type="text" id="searchInput" oninput="doSearch()" placeholder="Model və ya qiymət yaz..." class="input-box border-yellow-500">
+    </div>
+
+    <div id="gridView"></div>
+    <div id="favView" class="hidden"></div>
+    <div id="feedView"></div>
+
+    <div id="uploadModal" class="modal">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-3xl font-black">YENİ ELAN</h2>
+            <i class="fas fa-times text-2xl text-gray-500" onclick="closeModal('uploadModal')"></i>
+        </div>
+        <input type="text" id="adMarka" placeholder="Məhsulun modeli" class="input-box">
+        <input type="number" id="adPrice" placeholder="Qiymət (AZN)" class="input-box">
+        <textarea id="adDesc" placeholder="Ətraflı məlumat..." class="input-box h-32"></textarea>
+        <input type="text" id="adPhone" placeholder="Əlaqə nömrəsi" class="input-box">
+        <div class="border-2 border-dashed border-zinc-800 p-10 rounded-2xl text-center mb-6" onclick="document.getElementById('mediaInput').click()">
+            <i class="fas fa-video text-3xl mb-3 text-yellow-500"></i>
+            <p id="fileStatus" class="text-xs font-bold text-gray-500">VİDEO VƏ YA ŞƏKİL SEÇİN</p>
+            <input type="file" id="mediaInput" accept="video/*,image/*" class="hidden" onchange="updateFileLabel()">
+        </div>
+        <button onclick="publishAd()" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-lg">PAYLAŞ</button>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" id="btn-home" onclick="changeTab('gridView')">
+            <i class="fas fa-th-large text-2xl"></i><span>VİTRİN</span>
+        </div>
+        <div class="nav-item" onclick="openModal('uploadModal')">
+            <div class="add-btn"><i class="fas fa-plus"></i></div>
+        </div>
+        <div class="nav-item" id="btn-fav" onclick="changeTab('favView')">
+            <i class="fas fa-heart text-2xl"></i><span>SEVİMLİLƏR</span>
+        </div>
     </div>
 
     <script>
-        const API = {
-            url: "https://agzlaqejhbktrpixpvry.supabase.co",
-            key: "sb_publishable_eWD86TA_7zPKqZi6pmrzgA_4YZt4XQO",
-            bot: "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE",
-            chat: "@vidosmarkarxiv",
-            worker: "https://red-butterfly-8a1f.samohasan777.workers.dev"
-        };
+        const SUPA_URL = "https://agzlaqejhbktrpixpvry.supabase.co";
+        const SUPA_KEY = "sb_publishable_eWD86TA_7zPKqZi6pmrzgA_4YZt4XQO";
+        const TG_CHAT = "@vidosmarkarxiv";
+        const WORKER = "https://red-butterfly-8a1f.samohasan777.workers.dev";
+        const BOT_TOKEN = "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE";
 
-        const sb = supabase.createClient(API.url, API.key);
+        const supabaseClient = supabase.createClient(SUPA_URL, SUPA_KEY);
+        let allAds = [];
+        let favs = JSON.parse(localStorage.getItem('vmark_favs')) || [];
 
-        // TikTok Video Səs/Pauza Məntiqi
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => {
-                const v = e.target.querySelector('video');
-                if (v) {
-                    if (e.isIntersecting) {
-                        v.play().catch(() => {});
-                        v.muted = false;
-                    } else {
-                        v.pause();
-                        v.currentTime = 0;
-                    }
-                }
-            });
-        }, { threshold: 0.8 });
-
-        async function load() {
-            const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
-            if (error) return;
-
-            const feed = document.getElementById('feed');
-            feed.innerHTML = '';
-            
-            data.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'post';
-                div.innerHTML = `
-                    <video src="${item.media_url}" loop playsinline onclick="this.paused ? this.play() : this.pause()"></video>
-                    <div class="actions">
-                        <div class="action-btn" onclick="openProfile('${item.shop_name}')"><i class="fas fa-user-circle"></i><span>Profil</span></div>
-                        <div class="action-btn"><i class="fas fa-heart"></i><span>${item.likes || 0}</span></div>
-                        <div class="action-btn" onclick="window.open('https://wa.me/${item.phone}')"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></div>
-                        <div class="action-btn" onclick="window.open('tel:${item.phone}')"><i class="fas fa-phone"></i><span>Zəng</span></div>
-                    </div>
-                    <div class="bottom-info">
-                        <div class="shop-name" onclick="openProfile('${item.shop_name}')">@${item.shop_name} <i class="fas fa-check-circle" style="color:#00f2ea; font-size:14px;"></i></div>
-                        <div class="post-desc">${item.title} - ${item.description}</div>
-                        <div class="price-tag">${item.price} AZN</div>
-                    </div>
-                `;
-                feed.appendChild(div);
-                observer.observe(div);
-            });
+        async function loadData() {
+            const { data } = await supabaseClient.from('elanlar').select('*').order('created_at', { ascending: false });
+            allAds = data || [];
+            renderGrid('gridView', allAds);
         }
 
-        async function goUpload() {
-            const file = document.getElementById('m').files[0];
-            if (!file) return alert("Fayl seçin!");
+        function renderGrid(divId, list) {
+            const div = document.getElementById(divId);
+            div.innerHTML = list.map(ad => `
+                <div class="grid-item" onclick="viewFeed('${ad.id}')">
+                    ${ad.media_url.includes('mp4') || ad.media_url.includes('video') ? `<video src="${ad.media_url}" muted></video>` : `<img src="${ad.media_url}">`}
+                    <div class="grid-stats">
+                        <span><i class="fas fa-eye"></i> ${ad.views_count || 0}</span>
+                        <span><i class="fas fa-heart"></i> ${ad.likes_count || 0}</span>
+                    </div>
+                    <div class="grid-price">${ad.price} AZN</div>
+                </div>`).join('');
+        }
 
-            const info = {
-                t: document.getElementById('t').value,
-                p: document.getElementById('p').value,
-                s: document.getElementById('s').value,
-                ph: document.getElementById('ph').value,
-                d: document.getElementById('d').value
-            };
+        async function publishAd() {
+            const file = document.getElementById('mediaInput').files[0];
+            if(!file) return alert("Media seçin!");
+            document.getElementById('loader').style.display = 'block';
+
+            const isVid = file.type.startsWith('video');
+            const fd = new FormData();
+            fd.append('chat_id', TG_CHAT);
+            fd.append(isVid ? 'video' : 'photo', file);
 
             try {
-                // Telegrama göndər
-                const msg = `🆕 *YENİ ELAN*\n\n💎 Məhsul: ${info.t}\n💰 Qiymət: ${info.p} AZN\n🏠 Mağaza: ${info.s}\n📞 Əlaqə: ${info.ph}`;
-                fetch(`https://api.telegram.org/bot${API.bot}/sendMessage?chat_id=${API.chat}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
-
-                const fd = new FormData();
-                fd.append('file', file);
-                fd.append('title', info.t);
-                fd.append('price', info.p);
-                fd.append('shop_name', info.s);
-                fd.append('phone', info.ph);
-                fd.append('description', info.d);
-
-                const res = await fetch(`${API.worker}/upload`, { method: 'POST', body: fd });
-                
-                if (res.ok) {
-                    alert("Uğurla paylaşıldı!");
-                    location.reload();
-                } else {
-                    alert("Server xətası! (Worker)");
+                const tg = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${isVid?'sendVideo':'sendPhoto'}`, {method:'POST', body:fd}).then(r => r.json());
+                if(tg.ok) {
+                    const fId = isVid ? tg.result.video.file_id : tg.result.photo[tg.result.photo.length-1].file_id;
+                    const { error } = await supabaseClient.from('elanlar').insert([{
+                        marka: document.getElementById('adMarka').value,
+                        price: document.getElementById('adPrice').value,
+                        description: document.getElementById('adDesc').value,
+                        phone: document.getElementById('adPhone').value,
+                        media_url: `${WORKER}/?file_id=${fId}`,
+                        likes_count: 0,
+                        views_count: 0
+                    }]);
+                    if(!error) location.reload(); else alert(error.message);
                 }
-            } catch (err) {
-                alert("Xəta: Failed to fetch. Bağlantınızı yoxlayın.");
+            } catch(e) { alert(e.message); }
+            finally { document.getElementById('loader').style.display = 'none'; }
+        }
+
+        async function viewFeed(id) {
+            hideAll();
+            const feed = document.getElementById('feedView');
+            feed.style.display = 'block';
+            feed.innerHTML = allAds.map(ad => `
+                <div class="snap-section" id="p-${ad.id}">
+                    <div class="media-holder" onclick="togglePlay(this)">
+                        ${ad.media_url.includes('mp4') || ad.media_url.includes('video') ? `<video class="feed-media" src="${ad.media_url}" loop autoplay muted playsinline></video>` : `<img class="feed-media" src="${ad.media_url}">`}
+                    </div>
+                    <div class="side-bar">
+                        <div class="action-btn" onclick="handleLike('${ad.id}')">
+                            <i class="fas fa-heart ${favs.includes(ad.id.toString()) ? 'text-red-500' : 'text-white'}"></i>
+                            <span id="lcnt-${ad.id}">${ad.likes_count || 0}</span>
+                        </div>
+                        <div class="action-btn">
+                            <i class="fas fa-eye text-blue-400"></i>
+                            <span>${ad.views_count || 0}</span>
+                        </div>
+                        <a href="tel:${ad.phone}" class="action-btn text-green-500"><i class="fas fa-phone"></i><span>ZƏNG</span></a>
+                        <div class="action-btn" onclick="shareAd('${ad.id}')"><i class="fas fa-share text-yellow-500"></i><span>PAYLAŞ</span></div>
+                    </div>
+                    <div class="info-overlay">
+                        <div class="price-tag">${ad.price} AZN</div>
+                        <div class="model-name">${ad.marka}</div>
+                        <p class="text-xs text-gray-400 mt-2 line-clamp-2">${ad.description}</p>
+                    </div>
+                </div>`).join('');
+            document.getElementById(`p-${id}`).scrollIntoView();
+            updateCount(id, 'views_count'); // Baxış sayını artır
+        }
+
+        async function handleLike(id) {
+            id = id.toString();
+            const ad = allAds.find(a => a.id == id);
+            if(!favs.includes(id)) {
+                favs.push(id);
+                ad.likes_count = (ad.likes_count || 0) + 1;
+                updateCount(id, 'likes_count');
+                document.getElementById(`lcnt-${id}`).innerText = ad.likes_count;
+                document.querySelector(`#p-${id} .fa-heart`).classList.add('text-red-500');
+            } else {
+                favs = favs.filter(f => f !== id);
+                ad.likes_count = Math.max(0, (ad.likes_count || 0) - 1);
+                updateCount(id, 'likes_count', -1);
+                document.getElementById(`lcnt-${id}`).innerText = ad.likes_count;
+                document.querySelector(`#p-${id} .fa-heart`).classList.remove('text-red-500');
             }
+            localStorage.setItem('vmark_favs', JSON.stringify(favs));
         }
 
-        function openMod(id) { document.getElementById(id).style.display = 'block'; }
-        function closeMod(id) { document.getElementById(id).style.display = 'none'; }
-        function countF() { document.getElementById('fc').innerText = document.getElementById('m').files.length + " fayl seçildi"; }
-
-        async function openProfile(name) {
-            const n = name || "Mənim Mağazam";
-            document.getElementById('pName').innerText = n;
-            document.getElementById('pInit').innerText = n[0].toUpperCase();
-            openMod('profMod');
-            
-            // Profil şəbəkəsini yüklə
-            const { data } = await sb.from('posts').select('*').eq('shop_name', n);
-            const grid = document.getElementById('pGrid');
-            grid.innerHTML = '';
-            data?.forEach(p => {
-                grid.innerHTML += `<div class="grid-item"><video src="${p.media_url}"></video></div>`;
-            });
-            document.getElementById('pStats').innerText = (data?.length || 0) + " Elan";
+        async function updateCount(id, field, increment = 1) {
+            const ad = allAds.find(a => a.id == id);
+            const newVal = (ad[field] || 0) + (increment > 0 ? 1 : -1);
+            await supabaseClient.from('elanlar').update({ [field]: newVal }).eq('id', id);
         }
 
-        window.onload = load;
+        function toggleSearch() { const s = document.getElementById('searchUI'); s.style.display = s.style.display === 'block' ? 'none' : 'block'; }
+        function doSearch() {
+            const v = document.getElementById('searchInput').value.toLowerCase();
+            renderGrid('gridView', allAds.filter(a => a.marka.toLowerCase().includes(v) || a.price.toString().includes(v)));
+        }
+
+        function changeTab(tabId) {
+            hideAll();
+            document.getElementById(tabId).style.display = 'grid';
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(tabId === 'gridView' ? 'btn-home' : 'btn-fav').classList.add('active');
+            if(tabId === 'favView') renderGrid('favView', allAds.filter(a => favs.includes(a.id.toString())));
+        }
+
+        function hideAll() { ['gridView', 'favView', 'feedView', 'searchUI'].forEach(i => document.getElementById(i).style.display = 'none'); }
+        function openModal(m) { document.getElementById(m).style.display = 'block'; }
+        function closeModal(m) { document.getElementById(m).style.display = 'none'; }
+        function togglePlay(e) { const v = e.querySelector('video'); if(v) v.paused ? v.play() : v.pause(); }
+        function updateFileLabel() { document.getElementById('fileStatus').innerText = "Fayl seçildi!"; }
+        function shareAd(id) { navigator.clipboard.writeText(window.location.href + "?ad=" + id); alert("Link kopyalandı!"); }
+
+        window.onload = loadData;
     </script>
 </body>
 </html>
