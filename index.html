@@ -3,220 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecopix - Elan Platforması</title>
+    <title>Ecopix - Final Version</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main-color: #ffcc00; --bg-color: #000; --text-color: #fff; }
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg-color); font-family: Arial, sans-serif; overflow: hidden; color: var(--text-color); }
+        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg-color); font-family: 'Segoe UI', sans-serif; overflow: hidden; color: var(--text-color); }
 
-        /* Header & Nav */
-        header { position: fixed; top: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; padding: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent); }
-        .search-bar { flex: 1; margin: 0 15px; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 15px; }
-        .search-bar input { background: none; border: none; color: white; width: 100%; outline: none; }
+        /* Header */
+        header { position: fixed; top: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
+        .search-container { flex: 1; margin: 0 15px; position: relative; }
+        .search-container input { width: 100%; background: rgba(255,255,255,0.2); border: none; padding: 10px 15px; border-radius: 25px; color: white; outline: none; }
 
-        /* Video Feed (TikTok Style) */
-        .feed-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .post-card { height: 100vh; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: #111; }
+        /* TikTok Feed */
+        .feed-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+        .post-card { height: 100vh; scroll-snap-align: start; position: relative; background: #000; display: flex; align-items: center; }
         video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Side Actions */
-        .side-actions { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .action-item { text-align: center; font-size: 24px; cursor: pointer; }
+        /* Side Controls */
+        .side-actions { position: absolute; right: 12px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; z-index: 10; }
+        .action-item { text-align: center; cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .action-item i { font-size: 28px; margin-bottom: 5px; }
         .action-item span { font-size: 12px; display: block; }
+        .fa-heart.active { color: #ff2d55; }
 
         /* Info Overlay */
-        .info-overlay { position: absolute; bottom: 30px; left: 15px; right: 70px; }
-        .username { font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; cursor: pointer; }
-        .desc-btn { background: rgba(255,255,255,0.1); border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        .info-overlay { position: absolute; bottom: 90px; left: 15px; right: 80px; z-index: 10; }
+        .shop-tag { display: flex; align-items: center; gap: 8px; font-weight: bold; margin-bottom: 10px; font-size: 18px; }
+        .post-title { font-size: 16px; margin-bottom: 5px; }
+        .post-price { color: var(--main-color); font-weight: bold; font-size: 18px; }
 
-        /* Bottom Menu */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); background: #000; padding: 10px 0; border-top: 1px solid #333; }
-        .nav-item { text-align: center; font-size: 20px; color: #888; cursor: pointer; }
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); background: #000; padding: 15px 0; border-top: 0.5px solid #333; z-index: 100; }
+        .nav-item { text-align: center; font-size: 22px; color: #888; cursor: pointer; transition: 0.3s; }
         .nav-item.active { color: var(--main-color); }
 
-        /* Modal Settings */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; }
-        .modal-content { padding: 20px; }
-        .close-modal { float: right; font-size: 25px; }
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        .close-btn { font-size: 30px; position: absolute; top: 20px; right: 20px; cursor: pointer; }
         
-        /* Grid Layout for Profile */
-        .grid-view { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; }
-        .grid-item { aspect-ratio: 1/1; background: #222; position: relative; }
+        /* Profile Grid */
+        .profile-header { text-align: center; padding: 40px 0; border-bottom: 1px solid #222; }
+        .grid-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 10px; }
+        .grid-item { aspect-ratio: 1/1; background: #111; position: relative; }
         .grid-item img, .grid-item video { width: 100%; height: 100%; object-fit: cover; }
 
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; }
-        .btn-paylas { background: var(--main-color); color: #000; border: none; width: 100%; padding: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        /* Forms */
+        input, textarea { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: #fff; box-sizing: border-box; }
+        .btn-submit { background: var(--main-color); color: #000; border: none; width: 100%; padding: 18px; font-weight: bold; border-radius: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <header>
-        <i class="fas fa-bars" onclick="toggleModal('menuModal')"></i>
-        <div class="search-bar">
-            <input type="text" placeholder="Axtarış..." id="searchInput">
+        <i class="fas fa-bars" onclick="openModal('menuModal')"></i>
+        <div class="search-container">
+            <input type="text" placeholder="Elan axtar..." id="searchInp">
         </div>
-        <i class="fas fa-user-circle" onclick="openProfile()"></i>
+        <i class="fas fa-heart" onclick="openModal('favModal')"></i>
     </header>
 
-    <div class="feed-container" id="feed"></div>
+    <div class="feed-container" id="feed">
+        </div>
 
-    <div class="bottom-nav">
+    <nav class="bottom-nav">
         <div class="nav-item active" onclick="location.reload()"><i class="fas fa-home"></i></div>
-        <div class="nav-item" onclick="toggleModal('uploadModal')"><i class="fas fa-plus-square"></i></div>
-        <div class="nav-item" onclick="toggleModal('favoritesModal')"><i class="fas fa-heart"></i></div>
+        <div class="nav-item" onclick="openModal('uploadModal')"><i class="fas fa-plus-circle"></i></div>
+        <div class="nav-item" onclick="openModal('searchModal')"><i class="fas fa-search"></i></div>
         <div class="nav-item" onclick="openProfile()"><i class="fas fa-user"></i></div>
-    </div>
+    </nav>
 
     <div id="uploadModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="toggleModal('uploadModal')">&times;</span>
-            <h2>Yeni Elan</h2>
-            <input type="text" id="title" placeholder="Məhsul adı (Məs: Ferrari)">
-            <input type="number" id="price" placeholder="Qiymət">
-            <input type="text" id="shopName" placeholder="Mağaza adı və ya Adınız">
-            <textarea id="description" placeholder="Geniş məlumat..."></textarea>
-            <input type="tel" id="phone" placeholder="WhatsApp nömrəsi (Məs: 99450XXXXXXX)">
-            <label>1 Video və ya 10 Şəkil seçin:</label>
-            <input type="file" id="mediaInput" multiple accept="image/*,video/*" onchange="updateFileCount()">
-            <p id="fileStatus"></p>
-            <button class="btn-paylas" onclick="uploadPost()">PAYLAŞ</button>
+        <span class="close-btn" onclick="closeModal('uploadModal')">&times;</span>
+        <h2 style="text-align:center">Yeni Elan Paylaş</h2>
+        <input type="text" id="title" placeholder="Məhsulun adı">
+        <input type="number" id="price" placeholder="Qiymət (AZN)">
+        <input type="text" id="shop" placeholder="Adınız və ya Mağaza">
+        <textarea id="desc" rows="4" placeholder="Məhsul haqqında geniş məlumat..."></textarea>
+        <input type="tel" id="phone" placeholder="WhatsApp: 994XXXXXXXXX">
+        
+        <div style="border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 10px;">
+            <input type="file" id="media" multiple accept="video/*,image/*" style="display:none">
+            <label for="media" style="cursor:pointer"><i class="fas fa-cloud-upload-alt" style="font-size:30px"></i><br>Video (1) və ya Şəkillər (10-dək)</label>
+            <p id="fileCount" style="margin-top:10px; color: var(--main-color)"></p>
         </div>
+        
+        <button class="btn-submit" onclick="handleUpload()">PAYLAŞ</button>
     </div>
 
-    <div id="detailsModal" class="modal">
-        <div class="modal-content" id="detailsBody"></div>
-    </div>
-
-    <div id="menuModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="toggleModal('menuModal')">&times;</span>
-            <h2>Məlumat & Məxfilik</h2>
-            <hr>
-            <p><b>Məxfilik Siyasəti:</b> Bu platforma istifadəçi məlumatlarının qorunmasına zəmanət verir. Paylaşılan vizual materiallar yalnız reklam məqsədi daşıyır.</p>
-            <p><b>Təhlükəsizlik:</b> Bütün ödəniş və zəng əməliyyatları birbaşa tərəflər arasında həyata keçirilir. Platforma sığorta və qoruma protokolları ilə təmin olunmuşdur.</p>
+    <div id="profileModal" class="modal">
+        <span class="close-btn" onclick="closeModal('profileModal')">&times;</span>
+        <div class="profile-header">
+            <i class="fas fa-user-circle" style="font-size: 80px; color: #444;"></i>
+            <h2 id="profileName">İstifadəçi</h2>
+            <p id="postStats">0 elan</p>
         </div>
+        <div class="grid-view" id="profileGrid"></div>
     </div>
 
     <script>
-        const SUPABASE_URL = "https://agzlaqejhbktrpixpvry.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_eWD86TA_7zPKqZi6pmrzgA_4YZt4XQO";
-        const BOT_TOKEN = "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE";
-        const KANAL_ID = "@vidosmarkarxiv";
-        
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const WORKER_URL = "https://red-butterfly-8a1f.samohasan777.workers.dev";
+        // API KONFİQURASİYASI
+        const CONFIG = {
+            SB_URL: "https://agzlaqejhbktrpixpvry.supabase.co",
+            SB_KEY: "sb_publishable_eWD86TA_7zPKqZi6pmrzgA_4YZt4XQO",
+            BOT_TOKEN: "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE",
+            CHAT_ID: "@vidosmarkarxiv",
+            WORKER: "https://red-butterfly-8a1f.samohasan777.workers.dev"
+        };
 
-        function toggleModal(id) {
-            const m = document.getElementById(id);
-            if(m) m.style.display = m.style.display === 'block' ? 'none' : 'block';
-        }
+        const _supabase = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
-        function updateFileCount() {
-            const files = document.getElementById('mediaInput').files;
-            document.getElementById('fileStatus').innerText = `${files.length} fayl seçildi`;
-        }
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const video = entry.target.querySelector('video');
-                if (video) {
-                    if (entry.isIntersecting) {
-                        video.play().catch(() => {});
-                        video.muted = false;
+        // TikTok Səs Kontrolu
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                const v = e.target.querySelector('video');
+                if (v) {
+                    if (e.isIntersecting) {
+                        v.play().catch(() => {});
+                        v.muted = false;
                     } else {
-                        video.pause();
-                        video.currentTime = 0;
+                        v.pause();
                     }
                 }
             });
-        }, { threshold: 0.7 });
+        }, { threshold: 0.8 });
 
-        async function loadFeed() {
+        async function loadData() {
             const { data, error } = await _supabase.from('posts').select('*').order('created_at', { ascending: false });
-            if (error) return console.error(error);
-            const container = document.getElementById('feed');
-            container.innerHTML = '';
+            if (error) return;
 
+            const feed = document.getElementById('feed');
+            feed.innerHTML = '';
+            
             data.forEach(post => {
-                const div = document.createElement('div');
-                div.className = 'post-card';
-                div.innerHTML = `
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.innerHTML = `
                     <video src="${post.media_url}" loop playsinline></video>
                     <div class="side-actions">
-                        <div class="action-item" onclick="alert('Bəyənildi!')"><i class="fas fa-heart"></i><span>${post.likes || 0}</span></div>
-                        <div class="action-item" onclick="window.open('https://wa.me/${post.phone}')"><i class="fab fa-whatsapp"></i></div>
-                        <div class="action-item" onclick="window.open('tel:${post.phone}')"><i class="fas fa-phone"></i></div>
+                        <div class="action-item" onclick="toggleLike(this)"><i class="fas fa-heart"></i><span>${post.likes || 0}</span></div>
+                        <div class="action-item" onclick="window.open('https://wa.me/${post.phone}')"><i class="fab fa-whatsapp" style="color:#25D366"></i></div>
+                        <div class="action-item" onclick="window.open('tel:${post.phone}')"><i class="fas fa-phone-alt"></i></div>
                     </div>
                     <div class="info-overlay">
-                        <div class="username"><i class="fas fa-store"></i> ${post.shop_name}</div>
-                        <div class="title">${post.title} - ${post.price} AZN</div>
-                        <button class="desc-btn" onclick="showDetails('${post.id}')">Ətraflı məlumat</button>
+                        <div class="shop-tag" onclick="openProfile('${post.shop_name}')"><i class="fas fa-store"></i> ${post.shop_name}</div>
+                        <div class="post-title">${post.title}</div>
+                        <div class="post-price">${post.price} AZN</div>
                     </div>
                 `;
-                container.appendChild(div);
-                observer.observe(div);
+                feed.appendChild(card);
+                obs.observe(card);
             });
         }
 
-        async function uploadPost() {
-            const fileInput = document.getElementById('mediaInput');
-            const file = fileInput.files[0];
+        async function handleUpload() {
+            const file = document.getElementById('media').files[0];
             if (!file) return alert("Fayl seçin!");
 
-            const title = document.getElementById('title').value;
-            const price = document.getElementById('price').value;
-            const shop = document.getElementById('shopName').value;
-            const desc = document.getElementById('description').value;
-            const phone = document.getElementById('phone').value;
+            const payload = {
+                title: document.getElementById('title').value,
+                price: document.getElementById('price').value,
+                shop: document.getElementById('shop').value,
+                phone: document.getElementById('phone').value,
+                desc: document.getElementById('desc').value
+            };
 
-            // 1. Telegram-a məlumat göndər
-            const text = `📢 *YENİ ELAN*\n\n🛍 Məhsul: ${title}\n💰 Qiymət: ${price} AZN\n🏪 Mağaza: ${shop}\n📝 Məlumat: ${desc}\n📞 Əlaqə: ${phone}`;
-            
             try {
-                // Telegram Mesajı
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: KANAL_ID, text: text, parse_mode: 'Markdown' })
-                });
+                // 1. Telegram Mesajı
+                const text = `🚀 *YENİ ELAN*\n\n📦 Məhsul: ${payload.title}\n💰 Qiymət: ${payload.price} AZN\n🏪 Mağaza: ${payload.shop}\n📞 Əlaqə: ${payload.phone}`;
+                fetch(`https://api.telegram.org/bot${CONFIG.BOT_TOKEN}/sendMessage?chat_id=${CONFIG.CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`);
 
-                // 2. Serverə (Worker) göndər
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('title', title);
-                formData.append('price', price);
-                formData.append('shop_name', shop);
-                formData.append('description', desc);
-                formData.append('phone', phone);
+                // 2. Worker vasitəsilə Bazaya (CORS xətası olarsa Worker başlığı düzəldilməlidir)
+                const fd = new FormData();
+                fd.append('file', file);
+                Object.keys(payload).forEach(key => fd.append(key, payload[key]));
 
-                const response = await fetch(`${WORKER_URL}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    alert("Elan həm sayta, həm Telegram kanalına uğurla yükləndi!");
+                const res = await fetch(`${CONFIG.WORKER}/upload`, { method: 'POST', body: fd });
+                
+                if (res.ok) {
+                    alert("Paylaşıldı!");
                     location.reload();
                 } else {
-                    alert("Bazaya yüklənərkən xəta: Failed to fetch");
+                    alert("Bazaya yükləmə zamanı xəta!");
                 }
-            } catch (e) {
-                console.error(e);
+            } catch (err) {
                 alert("Bağlantı xətası!");
             }
         }
 
-        function showDetails(id) {
-            toggleModal('detailsModal');
-            document.getElementById('detailsBody').innerHTML = `<p>Məlumat pəncərəsi aktivdir.</p>`;
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        async function openProfile(name = "Mənim Profilim") {
+            document.getElementById('profileName').innerText = name;
+            openModal('profileModal');
+            // Burada Supabase-dən həmin istifadəçinin elanlarını Grid olaraq çəkmək olar
         }
 
-        function openProfile() {
-            alert("Profil bölməsi hazırlanır...");
-        }
+        document.getElementById('media').onchange = function() {
+            document.getElementById('fileCount').innerText = this.files.length + " fayl seçildi";
+        };
 
-        window.onload = loadFeed;
+        window.onload = loadData;
     </script>
 </body>
 </html>
