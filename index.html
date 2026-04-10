@@ -28,19 +28,19 @@
         .action-btn i { font-size: 22px; }
         .action-btn span { font-size: 8px; margin-top: 3px; font-weight: bold; }
 
-        /* Açıqlama Paneli (Bottom Sheet) */
-        .desc-panel { position: absolute; bottom: 90px; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.9) 30%); z-index: 60; }
-        .desc-content { display: none; background: rgba(20,20,20,0.98); padding: 25px; border-radius: 25px 25px 0 0; border-top: 2px solid #fbbf24; margin-top: 15px; max-height: 50vh; overflow-y: auto; }
+        /* Açıqlama Paneli */
+        .desc-panel { position: absolute; bottom: 95px; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.9) 30%); z-index: 60; }
+        .desc-content { display: none; background: rgba(20,20,20,0.98); padding: 25px; border-radius: 25px 25px 0 0; border-top: 2px solid #fbbf24; margin-top: 15px; max-height: 50vh; overflow-y: auto; position: relative; }
 
-        /* Nav Bar */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 200; padding-bottom: 20px; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; font-size: 10px; font-weight: bold; }
+        /* Nav Bar - Yenilənmiş Dizayn */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 200; padding-bottom: 20px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; font-size: 10px; font-weight: bold; width: 20%; }
         .nav-item.active { color: white; }
 
         .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 500; padding: 25px; overflow-y: auto; }
         #loader { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; background:black; padding:35px; border-radius:25px; text-align:center; border: 1px solid #fbbf24; width: 85%; }
         
-        .user-badge { background: #fbbf24; color: black; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 900; margin-bottom: 8px; display: inline-block; }
+        .user-tag { background: #fbbf24; color: black; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 900; margin-bottom: 5px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -51,9 +51,9 @@
     </div>
 
     <div class="fixed top-0 w-full p-5 flex justify-between items-center z-[150] bg-gradient-to-b from-black to-transparent">
-        <h1 class="text-2xl font-black italic tracking-tighter text-white" onclick="location.reload()">VIDOSMARK</h1>
+        <h1 class="text-2xl font-black italic tracking-tighter" onclick="location.reload()">VIDOSMARK</h1>
         <div class="flex gap-5 items-center">
-            <span id="userNameDisplay" class="text-[10px] font-black text-yellow-500 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20">QONAQ</span>
+            <i class="fas fa-search text-xl" onclick="toggleSearchUI()"></i>
             <i class="fas fa-bars text-xl" onclick="openModal('infoModal')"></i>
         </div>
     </div>
@@ -70,18 +70,18 @@
         </div>
         <div class="space-y-4">
             <input type="text" id="userName" placeholder="Adınız (Profil üçün)" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800 focus:border-yellow-500">
-            <input type="text" id="adMarka" placeholder="Məhsulun Adı (məs: iPhone 14 Pro)" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800">
+            <input type="text" id="adMarka" placeholder="Məhsulun Adı" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800">
             <input type="number" id="adPrice" placeholder="Qiymət (AZN)" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800">
-            <textarea id="adDesc" placeholder="Məhsul haqqında geniş məlumat..." class="w-full bg-zinc-900 p-4 rounded-xl outline-none h-28 border border-zinc-800"></textarea>
+            <textarea id="adDesc" placeholder="Məhsul haqqında məlumat..." class="w-full bg-zinc-900 p-4 rounded-xl outline-none h-28 border border-zinc-800"></textarea>
             <input type="text" id="adPhone" placeholder="Əlaqə nömrəsi" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800">
             
             <div class="border-2 border-dashed border-zinc-800 p-10 rounded-2xl text-center bg-zinc-900/30" onclick="document.getElementById('mediaInput').click()">
                 <i class="fas fa-video text-4xl mb-3 text-yellow-500"></i>
-                <p class="text-xs text-gray-400 font-bold">VİDEO SEÇİN</p>
+                <p class="text-xs text-gray-400 font-bold">MEDİA SEÇİN</p>
                 <input type="file" id="mediaInput" accept="video/*,image/*" class="hidden">
             </div>
             
-            <button onclick="handleUpload()" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-lg">ELANI PAYLAŞ</button>
+            <button onclick="handleUpload()" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-lg">PAYLAŞ</button>
         </div>
     </div>
 
@@ -91,23 +91,31 @@
             <span onclick="closeModal('infoModal')" class="text-4xl text-gray-500">&times;</span>
         </div>
         <div class="space-y-6 text-gray-400">
-            <p>VidosMark video elan platformasıdır. Burada elanlar 24 saat ərzində təsdiqlənir.</p>
+            <p>VidosMark video elan platformasıdır.</p>
             <button onclick="closeModal('infoModal')" class="w-full border border-zinc-800 py-4 rounded-xl">BAĞLA</button>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" id="btn-home" onclick="showView('gridView')"><i class="fas fa-home text-2xl"></i><span>VİTRİN</span></div>
-        <div class="nav-item" id="btn-fav" onclick="showView('favView')"><i class="fas fa-heart text-2xl text-red-500"></i><span>BƏYƏNİLƏN</span></div>
-        <div onclick="openModal('uploadModal')" class="bg-white text-black w-14 h-11 rounded-xl flex items-center justify-center text-2xl shadow-lg active:scale-95 transition-all"><i class="fas fa-plus"></i></div>
-        <div class="nav-item" id="btn-profile" onclick="showMyAds()"><i class="fas fa-user-circle text-2xl"></i><span>PROFİL</span></div>
+        <div class="nav-item active" id="btn-home" onclick="showView('gridView')">
+            <i class="fas fa-home text-2xl"></i><span>VİTRİN</span>
+        </div>
+        <div class="nav-item" onclick="openModal('uploadModal')">
+            <div class="bg-white text-black w-12 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg"><i class="fas fa-plus"></i></div>
+        </div>
+        <div class="nav-item" id="btn-profile" onclick="showMyAds()">
+            <i class="fas fa-user-circle text-2xl"></i><span>PROFİL</span>
+        </div>
+        <div class="nav-item" id="btn-fav" onclick="showView('favView')">
+            <i class="fas fa-heart text-2xl text-red-500"></i><span>SEVİMLİLƏR</span>
+        </div>
     </div>
 
     <script>
         const SUPA_URL = "https://dpdrejpbnbbfwusqudxq.supabase.co";
         const SUPA_KEY = "sb_publishable_qOtB3HU91l0eQY8qaq0PDw_jzyO9Pze";
         const TG_TOKEN = "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE";
-        const TG_CHAT_ID = "@vidosmarkarxiv";
+        const TG_CHAT_ID = "@vidosmarkarxiv"; // @ ilə başladıldı
         const WORKER_URL = "https://red-butterfly-8a1f.samohasan777.workers.dev"; 
         
         const supabaseClient = supabase.createClient(SUPA_URL, SUPA_KEY);
@@ -120,9 +128,6 @@
             const { data, error } = await supabaseClient.from('elanlar').select('*').order('created_at', { ascending: false });
             allAds = data || [];
             renderGrid('gridView', allAds);
-            
-            const savedName = localStorage.getItem('vmark_user_name');
-            if(savedName) document.getElementById('userNameDisplay').innerText = savedName.toUpperCase();
         }
 
         function renderGrid(containerId, list) {
@@ -168,7 +173,7 @@
                     if(error) throw error;
                     location.reload();
                 }
-            } catch (e) { alert("Xəta baş verdi!"); }
+            } catch (e) { alert("Xəta: " + e.message); }
             finally { document.getElementById('loader').style.display = 'none'; }
         }
 
@@ -194,16 +199,15 @@
                     </div>
 
                     <div class="desc-panel">
-                        <div class="user-badge"><i class="fas fa-user-circle mr-1"></i> ${ad.user_name || 'İstifadəçi'}</div>
+                        <div class="user-tag"><i class="fas fa-user mr-1"></i> ${ad.user_name || 'Satıcı'}</div>
                         <p class="text-yellow-500 font-black text-4xl mb-1">${ad.price} AZN</p>
                         <p class="font-black text-xl uppercase tracking-tighter">${ad.marka}</p>
-                        <button onclick="toggleDesc('${ad.id}')" class="mt-4 bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-2 rounded-full font-bold text-xs">ƏTRAFLI MƏLUMAT</button>
+                        <button onclick="toggleDesc('${ad.id}')" class="mt-4 bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-2 rounded-full font-bold text-[10px]">ƏTRAFLI OXU</button>
                         
                         <div id="desc-content-${ad.id}" class="desc-content">
-                            <div class="w-12 h-1 bg-zinc-800 mx-auto rounded-full mb-6"></div>
-                            <h4 class="text-yellow-500 font-black mb-3 uppercase text-sm">Elan Təsviri</h4>
-                            <p class="text-sm text-gray-300 leading-relaxed">${ad.description}</p>
-                            <button onclick="toggleDesc('${ad.id}')" class="w-full mt-8 bg-zinc-900 py-4 rounded-xl font-bold text-xs text-yellow-500">BAĞLA</button>
+                            <h4 class="text-yellow-500 font-black mb-2 uppercase text-xs">Məhsul Haqqında</h4>
+                            <p class="text-sm text-gray-300">${ad.description}</p>
+                            <button onclick="toggleDesc('${ad.id}')" class="w-full mt-6 bg-zinc-900 py-3 rounded-lg text-xs font-bold">BAĞLA</button>
                         </div>
                     </div>
                 </div>
@@ -223,23 +227,15 @@
             view.style.display = 'grid';
             document.getElementById('btn-profile').classList.add('active');
             const myAds = allAds.filter(a => a.user_id === myId);
-            if(myAds.length === 0) {
-                view.innerHTML = `<div class="col-span-3 text-center py-20 text-gray-600 font-bold">SİZİN ELANINIZ YOXDUR</div>`;
-            } else {
-                renderGrid('myAdsView', myAds);
-            }
+            myAds.length === 0 ? view.innerHTML = `<div class="col-span-3 text-center py-20 text-gray-700">ELANINIZ YOXDUR</div>` : renderGrid('myAdsView', myAds);
         }
 
         function showView(viewId) {
             hideAllViews();
             document.getElementById(viewId).style.display = 'grid';
-            if(viewId === 'gridView') {
-                document.getElementById('btn-home').classList.add('active');
-                loadAds();
-            } else if(viewId === 'favView') {
-                document.getElementById('btn-fav').classList.add('active');
-                renderGrid('favView', allAds.filter(a => favs.includes(a.id.toString())));
-            }
+            const btnId = viewId === 'gridView' ? 'btn-home' : 'btn-fav';
+            document.getElementById(btnId).classList.add('active');
+            if(viewId === 'favView') renderGrid('favView', allAds.filter(a => favs.includes(a.id.toString())));
         }
 
         function hideAllViews() {
@@ -252,8 +248,7 @@
             favs.includes(id) ? favs = favs.filter(i => i !== id) : favs.push(id);
             localStorage.setItem('vmark_favs', JSON.stringify(favs));
             const btn = document.querySelector(`#post-${id} .fa-heart`).parentElement;
-            btn.classList.toggle('text-red-500');
-            btn.classList.toggle('text-white');
+            btn.classList.toggle('text-red-500'); btn.classList.toggle('text-white');
         }
 
         function togglePlay(el) { const v = el.querySelector('video'); v.paused ? v.play() : v.pause(); }
@@ -262,10 +257,7 @@
             const observer = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
                     const video = entry.target.querySelector('video');
-                    if(video) {
-                        if(entry.isIntersecting) { video.play(); video.muted = false; }
-                        else { video.pause(); }
-                    }
+                    if(video) entry.isIntersecting ? (video.play(), video.muted = false) : video.pause();
                 });
             }, { threshold: 0.7 });
             document.querySelectorAll('.snap-section').forEach(s => observer.observe(s));
@@ -274,7 +266,7 @@
         function shareAd(id) {
             const url = window.location.href.split('?')[0] + '?ad=' + id;
             if (navigator.share) navigator.share({ title: 'VidosMark', url: url });
-            else alert("Link kopyalandı: " + url);
+            else { alert("Link kopyalandı!"); navigator.clipboard.writeText(url); }
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'block'; }
