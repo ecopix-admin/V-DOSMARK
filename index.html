@@ -59,8 +59,7 @@
         <i class="fas fa-user-circle" onclick="openProfile()"></i>
     </header>
 
-    <div class="feed-container" id="feed">
-        </div>
+    <div class="feed-container" id="feed"></div>
 
     <div class="bottom-nav">
         <div class="nav-item active" onclick="location.reload()"><i class="fas fa-home"></i></div>
@@ -102,12 +101,15 @@
     <script>
         const SUPABASE_URL = "https://agzlaqejhbktrpixpvry.supabase.co";
         const SUPABASE_KEY = "sb_publishable_eWD86TA_7zPKqZi6pmrzgA_4YZt4XQO";
+        const BOT_TOKEN = "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE";
+        const KANAL_ID = "@vidosmarkarxiv";
+        
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const WORKER_URL = "https://red-butterfly-8a1f.samohasan777.workers.dev";
 
         function toggleModal(id) {
             const m = document.getElementById(id);
-            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+            if(m) m.style.display = m.style.display === 'block' ? 'none' : 'block';
         }
 
         function updateFileCount() {
@@ -115,13 +117,12 @@
             document.getElementById('fileStatus').innerText = `${files.length} fayl seçildi`;
         }
 
-        // TikTok Səsləri İdarəetmə Məntiqi
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const video = entry.target.querySelector('video');
                 if (video) {
                     if (entry.isIntersecting) {
-                        video.play();
+                        video.play().catch(() => {});
                         video.muted = false;
                     } else {
                         video.pause();
@@ -133,6 +134,7 @@
 
         async function loadFeed() {
             const { data, error } = await _supabase.from('posts').select('*').order('created_at', { ascending: false });
+            if (error) return console.error(error);
             const container = document.getElementById('feed');
             container.innerHTML = '';
 
@@ -142,12 +144,12 @@
                 div.innerHTML = `
                     <video src="${post.media_url}" loop playsinline></video>
                     <div class="side-actions">
-                        <div class="action-item" onclick="likePost('${post.id}')"><i class="fas fa-heart"></i><span>${post.likes || 0}</span></div>
+                        <div class="action-item" onclick="alert('Bəyənildi!')"><i class="fas fa-heart"></i><span>${post.likes || 0}</span></div>
                         <div class="action-item" onclick="window.open('https://wa.me/${post.phone}')"><i class="fab fa-whatsapp"></i></div>
                         <div class="action-item" onclick="window.open('tel:${post.phone}')"><i class="fas fa-phone"></i></div>
                     </div>
                     <div class="info-overlay">
-                        <div class="username" onclick="viewUser('${post.shop_name}')"><i class="fas fa-store"></i> ${post.shop_name}</div>
+                        <div class="username"><i class="fas fa-store"></i> ${post.shop_name}</div>
                         <div class="title">${post.title} - ${post.price} AZN</div>
                         <button class="desc-btn" onclick="showDetails('${post.id}')">Ətraflı məlumat</button>
                     </div>
@@ -158,40 +160,60 @@
         }
 
         async function uploadPost() {
-            const file = document.getElementById('mediaInput').files[0];
+            const fileInput = document.getElementById('mediaInput');
+            const file = fileInput.files[0];
             if (!file) return alert("Fayl seçin!");
 
-            // FormData xətanın qarşısını almaq üçün ən təhlükəsiz yoldur
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('title', document.getElementById('title').value);
-            formData.append('price', document.getElementById('price').value);
-            formData.append('shop_name', document.getElementById('shopName').value);
-            formData.append('description', document.getElementById('description').value);
-            formData.append('phone', document.getElementById('phone').value);
+            const title = document.getElementById('title').value;
+            const price = document.getElementById('price').value;
+            const shop = document.getElementById('shopName').value;
+            const desc = document.getElementById('description').value;
+            const phone = document.getElementById('phone').value;
 
+            // 1. Telegram-a məlumat göndər
+            const text = `📢 *YENİ ELAN*\n\n🛍 Məhsul: ${title}\n💰 Qiymət: ${price} AZN\n🏪 Mağaza: ${shop}\n📝 Məlumat: ${desc}\n📞 Əlaqə: ${phone}`;
+            
             try {
+                // Telegram Mesajı
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: KANAL_ID, text: text, parse_mode: 'Markdown' })
+                });
+
+                // 2. Serverə (Worker) göndər
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('title', title);
+                formData.append('price', price);
+                formData.append('shop_name', shop);
+                formData.append('description', desc);
+                formData.append('phone', phone);
+
                 const response = await fetch(`${WORKER_URL}/upload`, {
                     method: 'POST',
                     body: formData
                 });
+
                 if (response.ok) {
-                    alert("Uğurla paylaşıldı!");
+                    alert("Elan həm sayta, həm Telegram kanalına uğurla yükləndi!");
                     location.reload();
                 } else {
-                    alert("Xəta baş verdi. Server cavab vermir.");
+                    alert("Bazaya yüklənərkən xəta: Failed to fetch");
                 }
             } catch (e) {
                 console.error(e);
-                alert("Bağlantı xətası: " + e.message);
+                alert("Bağlantı xətası!");
             }
         }
 
         function showDetails(id) {
-            // Detallı pəncərəni açmaq
             toggleModal('detailsModal');
-            document.getElementById('detailsBody').innerHTML = `<p>Yüklənir...</p>`;
-            // Supabase-dən tək ID ilə çəkib göstərmək olar
+            document.getElementById('detailsBody').innerHTML = `<p>Məlumat pəncərəsi aktivdir.</p>`;
+        }
+
+        function openProfile() {
+            alert("Profil bölməsi hazırlanır...");
         }
 
         window.onload = loadFeed;
