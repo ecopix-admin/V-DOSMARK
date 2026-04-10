@@ -127,13 +127,15 @@
         const SUPA_URL = "https://dpdrejpbnbbfwusqudxq.supabase.co";
         const SUPA_KEY = "sb_publishable_qOtB3HU91l0eQY8qaq0PDw_jzyO9Pze";
         const TG_TOKEN = "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE";
-        const TG_CHAT_ID = "-1002263884706";
+        
+        // Düzəliş: Kanal ID yerinə birbaşa Public Username yazıldı
+        const TG_CHAT_ID = "@vidosmarkarxiv";
+        
         const supabaseClient = supabase.createClient(SUPA_URL, SUPA_KEY);
 
         let allAds = [];
         let favs = JSON.parse(localStorage.getItem('vmark_favs')) || [];
 
-        // Fayl sayını yeniləyən funksiya
         function updateFileCount() {
             const input = document.getElementById('mediaInput');
             const badge = document.getElementById('fileCountBadge');
@@ -201,6 +203,7 @@
                     if(error) throw error;
                     location.reload();
                 } else {
+                    // Xəta mesajını daha aydın görmək üçün
                     alert("Telegram xətası: " + data.description);
                 }
             } catch (e) { 
