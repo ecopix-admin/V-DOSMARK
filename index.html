@@ -26,7 +26,7 @@
         .media-holder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         .feed-media { width: 100%; height: 100%; object-fit: contain; }
         
-        /* Yan menyu düymələri - Bu düymələr yalnız tam ekranda görünür */
+        /* Yan menyu düymələri */
         .side-bar { position: absolute; right: 12px; bottom: 160px; display: flex; flex-direction: column; gap: 20px; z-index: 100; }
         .action-btn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 0.5px solid rgba(255,255,255,0.2); }
         .action-btn i { font-size: 22px; }
@@ -42,7 +42,7 @@
         #loader { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; background:rgba(0,0,0,0.95); padding:30px; border-radius:20px; text-align:center; border: 1px solid #333; width: 85%; }
         
         .search-container { position: fixed; top: 80px; left: 0; width: 100%; padding: 10px 20px; z-index: 140; background: black; display: none; }
-        .search-input { width: 100%; background: #111; border: 1px solid #333; padding: 12px 20px; rounded-xl; outline: none; color: white; border-radius: 12px; }
+        .search-input { width: 100%; background: #111; border: 1px solid #333; padding: 12px 20px; outline: none; color: white; border-radius: 12px; }
     </style>
 </head>
 <body>
@@ -81,8 +81,8 @@
             <input type="text" id="adPhone" placeholder="Əlaqə: 0XX XXX XX XX" class="w-full bg-zinc-900 p-4 rounded-xl outline-none">
             <div class="border-2 border-dashed border-zinc-800 p-10 rounded-2xl text-center bg-zinc-900/50" onclick="document.getElementById('mediaInput').click()">
                 <i class="fas fa-video text-3xl mb-3 text-yellow-500"></i>
-                <p class="text-xs text-gray-400 font-bold uppercase">1 Video və 10 Şəkil seçin</p>
-                <input type="file" id="mediaInput" multiple accept="video/*,image/*" class="hidden">
+                <p class="text-xs text-gray-400 font-bold uppercase">Video seçin</p>
+                <input type="file" id="mediaInput" accept="video/*" class="hidden">
             </div>
             <button onclick="handleUpload()" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-lg shadow-xl">ELANI PAYLAŞ</button>
         </div>
@@ -96,15 +96,15 @@
         <div class="space-y-8 text-sm text-gray-300 leading-relaxed">
             <section>
                 <h3 class="text-white font-black border-b border-zinc-800 pb-2 mb-3">🛡️ Platformadan İstifadə Qaydaları</h3>
-                <p>VidosMark video-elan formatlı müasir alqı-satqı platformasıdır. Bizim məqsədimiz satıcı və alıcı arasında birbaşa vizual əlaqə yaratmaqdır. Platformaya yüklənən hər bir media faylı Telegram serverlərində təhlükəsiz şəkildə saxlanılır.</p>
+                <p>VidosMark video-elan formatlı müasir alqı-satqı platformasıdır. Bizim məqsədimiz satıcı və alıcı arasında birbaşa vizual əlaqə yaratmaqdır.</p>
             </section>
             <section>
                 <h3 class="text-white font-black border-b border-zinc-800 pb-2 mb-3">⚖️ Hüquqi Məsuliyyət</h3>
-                <p>VidosMark rəhbərliyi istifadəçilər tərəfindən paylaşılan elanların məzmununa görə məsuliyyət daşımır. Satılan malın keyfiyyəti, işlək olması və digər xüsusiyyətləri yalnız satıcının məsuliyyətindədir. Hər hansı bir ödəniş etməzdən əvvəl məhsulu canlı görməyiniz tövsiyə olunur.</p>
+                <p>VidosMark rəhbərliyi istifadəçilər tərəfindən paylaşılan elanların məzmununa görə məsuliyyət daşımır.</p>
             </section>
             <section>
                 <h3 class="text-white font-black border-b border-zinc-800 pb-2 mb-3">🔒 Məxfilik və Təhlükəsizlik</h3>
-                <p>Sizin qeyd etdiyiniz əlaqə nömrəsi yalnız potensial alıcıların sizə müraciət etməsi üçün istifadə olunur. Şəxsi məlumatlarınız, o cümlədən daxili mesajlaşmalarınız (tezliklə aktivləşəcək) heç bir halda üçüncü tərəflərə ötürülmür. Biz sizin təhlükəsizliyinizə önəm veririk və məlumatlarınızı müasir şifrələmə üsulları ilə qoruyuruq.</p>
+                <p>Sizin qeyd etdiyiniz əlaqə nömrəsi yalnız potensial alıcıların sizə müraciət etməsi üçün istifadə olunur.</p>
             </section>
         </div>
     </div>
@@ -118,17 +118,18 @@
     </div>
 
     <script>
-        const SUPA_URL = "https://jarmfdvzzfldchalvobu.supabase.co";
-        const SUPA_KEY = "sb_publishable_mRynzzfKlHantVZqrpaVjw_7QNpbvQj";
+        const SUPA_URL = "https://dpdrejpbnbbfwusqudxq.supabase.co";
+        const SUPA_KEY = "sb_publishable_qOtB3HU91l0eQY8qaq0PDw_jzyO9Pze";
         const TG_TOKEN = "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE";
-        const TG_CHAT_ID = "-1002361117531";
+        const TG_CHAT_ID = "-1002263884706";
         const supabaseClient = supabase.createClient(SUPA_URL, SUPA_KEY);
 
         let allAds = [];
         let favs = JSON.parse(localStorage.getItem('vmark_favs')) || [];
 
         async function loadAds() {
-            const { data } = await supabaseClient.from('elanlar').select('*').order('created_at', { ascending: false });
+            const { data, error } = await supabaseClient.from('elanlar').select('*').order('created_at', { ascending: false });
+            if(error) console.log("Baza xətası:", error);
             allAds = data || [];
             renderGrid('gridView', allAds);
         }
@@ -137,7 +138,7 @@
             const container = document.getElementById(containerId);
             container.innerHTML = list.map(ad => `
                 <div class="grid-item" onclick="openFeed('${ad.id}')">
-                    <video src="${ad.media_url}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>
+                    <video src="${ad.media_url}" muted loop playsinline></video>
                     <div class="grid-price">${ad.price} AZN</div>
                 </div>
             `).join('');
@@ -155,28 +156,35 @@
 
         async function handleUpload() {
             const files = document.getElementById('mediaInput').files;
-            if(files.length === 0) return alert("Zəhmət olmasa video və ya şəkil seçin!");
+            if(files.length === 0) return alert("Zəhmət olmasa video seçin!");
             document.getElementById('loader').style.display = 'block';
 
             const file = files[0];
             const formData = new FormData();
             formData.append('chat_id', TG_CHAT_ID);
-            formData.append(file.type.startsWith('video') ? 'video' : 'photo', file);
+            formData.append('video', file);
 
             try {
-                const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/send${file.type.startsWith('video') ? 'Video' : 'Photo'}`, { method: 'POST', body: formData });
+                const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendVideo`, { method: 'POST', body: formData });
                 const data = await res.json();
                 if(data.ok) {
-                    await supabaseClient.from('elanlar').insert([{
+                    const videoId = data.result.video.file_id;
+                    const { error } = await supabaseClient.from('elanlar').insert([{
                         marka: document.getElementById('adMarka').value,
                         price: document.getElementById('adPrice').value,
                         description: document.getElementById('adDesc').value,
                         phone: document.getElementById('adPhone').value,
                         media_url: `https://vidosmark-worker.pages.dev/proxy?id=${data.result.message_id}`
                     }]);
+                    if(error) throw error;
                     location.reload();
+                } else {
+                    alert("Telegram xətası: " + data.description);
                 }
-            } catch (e) { alert("Xəta baş verdi! İnterneti yoxlayın."); }
+            } catch (e) { 
+                console.error(e);
+                alert("Xəta baş verdi! Bazaya yazıla bilmədi."); 
+            }
             finally { document.getElementById('loader').style.display = 'none'; }
         }
 
@@ -192,7 +200,7 @@
                     <div class="overlay"></div>
                     
                     <div class="side-bar">
-                        <div class="action-btn ${favs.includes(ad.id) ? 'text-red-500' : 'text-white'}" onclick="toggleFavorite('${ad.id}')">
+                        <div class="action-btn ${favs.includes(ad.id.toString()) ? 'text-red-500' : 'text-white'}" onclick="toggleFavorite('${ad.id}')">
                             <i class="fas fa-heart"></i><span>BƏYƏN</span>
                         </div>
                         <a href="https://wa.me/${ad.phone.replace(/\s+/g, '')}" class="action-btn text-green-500">
@@ -231,20 +239,22 @@
         function togglePlay(el) { const v = el.querySelector('video'); v.paused ? v.play() : v.pause(); }
         
         function toggleFavorite(id) {
+            id = id.toString();
             if(favs.includes(id)) {
                 favs = favs.filter(i => i !== id);
-                alert("Sevimlilərdən silindi.");
             } else {
                 favs.push(id);
-                alert("Sevimlilərə əlavə edildi!");
             }
             localStorage.setItem('vmark_favs', JSON.stringify(favs));
+            const btn = document.querySelector(`#post-${id} .fa-heart`).parentElement;
+            btn.classList.toggle('text-red-500');
+            btn.classList.toggle('text-white');
         }
 
         function showFavorites() {
             hideAllScreens();
             document.getElementById('favView').style.display = 'grid';
-            renderGrid('favView', allAds.filter(a => favs.includes(a.id)));
+            renderGrid('favView', allAds.filter(a => favs.includes(a.id.toString())));
         }
 
         function showMainGrid() { location.reload(); }
