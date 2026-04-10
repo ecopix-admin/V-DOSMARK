@@ -3,300 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VidosMark - Full Pro</title>
+    <title>VidosMark Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
         
-        /* Ana Səhifə Üçlü Cərgə */
-        #gridView, #favView { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; height: 100vh; overflow-y: auto; padding: 130px 0 90px 0; }
-        .grid-item { aspect-ratio: 1/1; background: #111; position: relative; overflow: hidden; }
-        .grid-item video { width: 100%; height: 100%; object-fit: cover; }
-        .grid-price { position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.6); font-size: 10px; padding: 1px 4px; border-radius: 3px; color: #fbbf24; z-index: 10; }
+        #gridView, #favView, #myAdsView { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; height: 100vh; overflow-y: auto; padding: 130px 0 90px 0; }
+        .grid-item { aspect-ratio: 1/1; background: #111; position: relative; overflow: hidden; border: 0.1px solid #222; }
+        .grid-item video, .grid-item img { width: 100%; height: 100%; object-fit: cover; }
+        .grid-price { position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.7); font-size: 10px; padding: 2px 5px; border-radius: 4px; color: #fbbf24; font-weight: bold; }
 
-        /* Full Screen Video Feed */
         #feedView { display: none; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        #feedView::-webkit-scrollbar { display: none; }
         .snap-section { height: 100vh; scroll-snap-align: start; position: relative; background: #000; }
-        .media-holder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .media-holder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
         .feed-media { width: 100%; height: 100%; object-fit: contain; }
         
-        /* Yan menyu düymələri */
-        .side-bar { position: absolute; right: 12px; bottom: 160px; display: flex; flex-direction: column; gap: 20px; z-index: 100; }
-        .action-btn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 0.5px solid rgba(255,255,255,0.2); }
-        .action-btn i { font-size: 22px; }
-        .action-btn span { font-size: 8px; margin-top: 2px; font-weight: bold; text-transform: uppercase; }
+        /* Açıqlama Paneli (Bottom Sheet) */
+        .desc-panel { position: absolute; bottom: 90px; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.95) 20%); z-index: 60; }
+        .desc-content { display: none; background: rgba(20,20,20,0.98); padding: 25px; border-radius: 25px 25px 0 0; border-top: 2px solid #fbbf24; margin-top: 15px; max-height: 50vh; overflow-y: auto; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
 
-        .overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 40%); pointer-events: none; z-index: 5; }
-        
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 80px; background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 200; padding-bottom: 15px; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #666; font-size: 10px; }
-        .nav-item.active { color: white; }
+        .side-bar { position: absolute; right: 12px; bottom: 200px; display: flex; flex-direction: column; gap: 18px; z-index: 100; }
+        .action-btn { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .action-btn i { font-size: 22px; }
+        .action-btn span { font-size: 8px; margin-top: 3px; font-weight: 800; }
+
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 200; padding-bottom: 20px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; font-size: 10px; font-weight: bold; transition: 0.3s; }
+        .nav-item.active { color: white; transform: scale(1.1); }
 
         .modal { display: none; position: fixed; inset: 0; background: #000; z-index: 500; padding: 25px; overflow-y: auto; }
-        #loader { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; background:rgba(0,0,0,0.95); padding:30px; border-radius:20px; text-align:center; border: 1px solid #333; width: 85%; }
+        #loader { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; background:black; padding:35px; border-radius:25px; text-align:center; border: 1px solid #fbbf24; width: 85%; box-shadow: 0 0 50px rgba(251, 191, 36, 0.2); }
         
-        .search-container { position: fixed; top: 80px; left: 0; width: 100%; padding: 10px 20px; z-index: 140; background: black; display: none; }
-        .search-input { width: 100%; background: #111; border: 1px solid #333; padding: 12px 20px; outline: none; color: white; border-radius: 12px; }
+        .user-badge { background: #fbbf24; color: black; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 900; margin-bottom: 8px; display: inline-block; text-transform: uppercase; }
         
-        /* Fayl sayı üçün stil */
-        #fileCountBadge { display: none; margin-top: 8px; font-size: 12px; color: #fbbf24; font-weight: bold; }
+        /* Məxfilik Bölməsi Stili */
+        .info-card { background: #111; padding: 20px; border-radius: 15px; border-left: 4px solid #fbbf24; margin-bottom: 20px; }
+        .info-card h3 { color: #fbbf24; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; font-size: 14px; }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <i class="fas fa-circle-notch fa-spin text-5xl text-yellow-500 mb-4"></i>
-        <p class="font-black text-white text-lg">ELANINIZ HAZIRLANIR</p>
-        <p class="text-[10px] text-gray-500 mt-2">Media faylları təhlükəsiz şəkildə arxivə yüklənir. Xahiş edirik pəncərəni bağlamayın.</p>
-    </div>
-
-    <div class="fixed top-0 w-full p-5 flex justify-between items-center z-[150] bg-gradient-to-b from-black to-transparent">
-        <h1 class="text-2xl font-black italic tracking-tighter" onclick="location.reload()">VIDOSMARK</h1>
-        <div class="flex gap-6">
-            <i class="fas fa-search text-xl" onclick="toggleSearchUI()"></i>
-            <i class="fas fa-bars text-xl" onclick="openModal('infoModal')"></i>
+        <div class="relative inline-block mb-4">
+            <i class="fas fa-circle-notch fa-spin text-5xl text-yellow-500"></i>
+            <i class="fas fa-rocket absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl text-white"></i>
         </div>
+        <p class="font-black text-white text-lg tracking-widest">SİSTEMƏ YÜKLƏNİR</p>
+        <p class="text-[10px] text-gray-500 mt-2">Media faylları proxy server vasitəsilə arxivlənir. Xahiş olunur gözləyin...</p>
     </div>
 
-    <div id="searchUI" class="search-container">
-        <input type="text" id="searchInput" oninput="filterAds()" placeholder="Marka, qiymət və ya söz yazın..." class="search-input">
+    <div class="fixed top-0 w-full p-5 flex justify-between items-center z-[150] bg-gradient-to-b from-black via-black/90 to-transparent">
+        <h1 class="text-2xl font-black italic tracking-tighter text-white" onclick="location.reload()">VIDOSMARK</h1>
+        <div class="flex gap-5 items-center">
+            <span id="userNameDisplay" class="text-[10px] font-black text-yellow-500 bg-yellow-500/10 px-3 py-1.5 rounded-full border border-yellow-500/20 shadow-lg">QONAQ</span>
+            <i class="fas fa-shield-alt text-xl text-white/80" onclick="openModal('infoModal')"></i>
+        </div>
     </div>
 
     <div id="gridView"></div>
     <div id="favView" class="hidden"></div>
+    <div id="myAdsView" class="hidden"></div>
     <div id="feedView"></div>
 
     <div id="uploadModal" class="modal">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-black">YENİ ELAN</h2>
-            <span onclick="closeModal('uploadModal')" class="text-4xl">&times;</span>
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-black tracking-tighter">YENİ ELAN</h2>
+            <span onclick="closeModal('uploadModal')" class="text-4xl text-gray-500">&times;</span>
         </div>
         <div class="space-y-4">
-            <input type="text" id="adMarka" placeholder="Marka / Model (məs: iPhone 15)" class="w-full bg-zinc-900 p-4 rounded-xl outline-none">
-            <input type="number" id="adPrice" placeholder="Qiymət (AZN)" class="w-full bg-zinc-900 p-4 rounded-xl outline-none">
-            <textarea id="adDesc" placeholder="Məhsulun vəziyyəti, rəngi və s. haqqında ətraflı..." class="w-full bg-zinc-900 p-4 rounded-xl outline-none h-28"></textarea>
-            <input type="text" id="adPhone" placeholder="Əlaqə: 0XX XXX XX XX" class="w-full bg-zinc-900 p-4 rounded-xl outline-none">
+            <div class="relative">
+                <i class="fas fa-user absolute left-4 top-4 text-gray-500"></i>
+                <input type="text" id="userName" placeholder="Adınız və ya Mağaza adı" class="w-full bg-zinc-900 p-4 pl-12 rounded-xl outline-none border border-zinc-800 focus:border-yellow-500 transition-all">
+            </div>
+            <input type="text" id="adMarka" placeholder="Məhsulun Başlığı" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800 focus:border-yellow-500">
+            <div class="relative">
+                <span class="absolute right-4 top-4 text-yellow-500 font-bold">AZN</span>
+                <input type="number" id="adPrice" placeholder="Qiymət" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800 focus:border-yellow-500">
+            </div>
+            <textarea id="adDesc" placeholder="Məhsul haqqında ətraflı məlumat..." class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800 h-28 focus:border-yellow-500"></textarea>
+            <input type="text" id="adPhone" placeholder="Əlaqə nömrəsi (məs: 0501234567)" class="w-full bg-zinc-900 p-4 rounded-xl outline-none border border-zinc-800 focus:border-yellow-500">
             
-            <div class="border-2 border-dashed border-zinc-800 p-10 rounded-2xl text-center bg-zinc-900/50" onclick="document.getElementById('mediaInput').click()">
-                <i class="fas fa-video text-3xl mb-3 text-yellow-500"></i>
-                <p class="text-xs text-gray-400 font-bold uppercase">Media seçin (Video/Şəkil)</p>
-                <div id="fileCountBadge"></div>
-                <input type="file" id="mediaInput" accept="video/*,image/*" multiple class="hidden" onchange="updateFileCount()">
+            <div class="border-2 border-dashed border-zinc-800 p-10 rounded-2xl text-center bg-zinc-900/30 hover:bg-zinc-900/50 transition-all" onclick="document.getElementById('mediaInput').click()">
+                <i class="fas fa-video text-4xl mb-3 text-yellow-500"></i>
+                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">VİDEO VƏ YA ŞƏKİL ƏLAVƏ ET</p>
+                <div id="fileStatus" class="mt-2 text-[10px] text-green-500 font-black hidden uppercase">Fayl seçildi!</div>
+                <input type="file" id="mediaInput" accept="video/*,image/*" class="hidden" onchange="document.getElementById('fileStatus').style.display='block'">
             </div>
             
-            <button onclick="handleUpload()" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-lg shadow-xl">ELANI PAYLAŞ</button>
+            <button onclick="handleUpload()" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-lg shadow-[0_10px_30px_rgba(251,191,36,0.3)] active:scale-95 transition-all">ELANI PAYLAŞ</button>
         </div>
     </div>
 
     <div id="infoModal" class="modal">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-black italic text-yellow-500">MƏLUMAT VƏ MƏXFİLİK</h2>
-            <span onclick="closeModal('infoModal')" class="text-4xl">&times;</span>
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-2xl font-black italic text-yellow-500">MƏLUMAT VƏ TƏHLÜKƏSİZLİK</h2>
+            <span onclick="closeModal('infoModal')" class="text-4xl text-gray-500">&times;</span>
         </div>
-        <div class="space-y-8 text-sm text-gray-300 leading-relaxed">
-            <section>
-                <h3 class="text-white font-black border-b border-zinc-800 pb-2 mb-3">🛡️ Platformadan İstifadə Qaydaları</h3>
-                <p>VidosMark video-elan formatlı müasir alqı-satqı platformasıdır. Bizim məqsədimiz satıcı və alıcı arasında birbaşa vizual əlaqə yaratmaqdır.</p>
-            </section>
-            <section>
-                <h3 class="text-white font-black border-b border-zinc-800 pb-2 mb-3">⚖️ Hüquqi Məsuliyyət</h3>
-                <p>VidosMark rəhbərliyi istifadəçilər tərəfindən paylaşılan elanların məzmununa görə məsuliyyət daşımır.</p>
-            </section>
-            <section>
-                <h3 class="text-white font-black border-b border-zinc-800 pb-2 mb-3">🔒 Məxfilik və Təhlükəsizlik</h3>
-                <p>Sizin qeyd etdiyiniz əlaqə nömrəsi yalnız potensial alıcıların sizə müraciət etməsi üçün istifadə olunur.</p>
-            </section>
+        <div class="space-y-6">
+            <div class="info-card">
+                <h3>🛡️ Hüquqi Məsuliyyət</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">VidosMark platformasında paylaşılan hər bir elan üçün məsuliyyət birbaşa elanı yerləşdirən şəxsin üzərinə düşür. Biz sadəcə vasitəçi platformayıq. Qanunsuz məhsulların satışı qəti qadağandır və aşkar edildikdə dərhal silinəcəkdir.</p>
+            </div>
+            <div class="info-card">
+                <h3>🔒 Məxfilik Siyasəti</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">Sizin qeyd etdiyiniz əlaqə nömrəsi və adınız yalnız alıcıların sizinlə əlaqə saxlaması üçündür. Biz sizin məlumatlarınızı heç bir üçüncü tərəfə satmırıq və ya reklam məqsədilə istifadə etmirik. Bütün media faylları təhlükəsiz Telegram arxivində saxlanılır.</p>
+            </div>
+            <div class="info-card">
+                <h3>⚠️ Təhlükəsiz Alış-Veriş</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">Dəyərli istifadəçi, heç bir satıcıya məhsulu görmədən beh (ön ödəniş) göndərməyin. Görüşərək alış-veriş etmək ən təhlükəsiz üsuldur. Şübhəli elanlar barədə bizə məlumat verməyiniz xahiş olunur.</p>
+            </div>
+            <div class="info-card">
+                <h3>🤖 Texniki Dəstək</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">Platformamız süni intellekt əsaslı "VidosMark Worker" texnologiyası ilə təchiz olunub. Bu texnologiya sizin videolarınızın istənilən sürətdə donmadan açılmasını təmin edir.</p>
+            </div>
+            <button onclick="closeModal('infoModal')" class="w-full border border-zinc-800 py-4 rounded-xl text-gray-500 font-bold uppercase tracking-widest">Anladım</button>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" onclick="showMainGrid()"><i class="fas fa-home text-2xl"></i><span>ANA SƏHİFƏ</span></div>
-        <div class="nav-item" onclick="toggleSearchUI()"><i class="fas fa-search text-2xl"></i><span>AXTAR</span></div>
-        <div onclick="openModal('uploadModal')" class="bg-white text-black w-14 h-10 rounded-xl flex items-center justify-center text-2xl shadow-lg border-2 border-zinc-300"><i class="fas fa-plus"></i></div>
-        <div class="nav-item" onclick="showFavorites()"><i class="fas fa-heart text-2xl text-red-500"></i><span>SEVİMLİLƏR</span></div>
-        <div class="nav-item" onclick="alert('Profil idarəetməsi tezliklə!')"><i class="fas fa-user-circle text-2xl"></i><span>PROFİL</span></div>
+        <div class="nav-item active" id="btn-grid" onclick="showView('gridView')"><i class="fas fa-th-large text-2xl"></i><span>VİTRİN</span></div>
+        <div class="nav-item" id="btn-fav" onclick="showView('favView')"><i class="fas fa-heart text-2xl text-red-500"></i><span>BƏYƏNİLƏN</span></div>
+        <div onclick="openModal('uploadModal')" class="bg-white text-black w-14 h-11 rounded-xl flex items-center justify-center text-2xl shadow-lg border-b-4 border-yellow-500 active:translate-y-1 transition-all"><i class="fas fa-plus"></i></div>
+        <div class="nav-item" id="btn-profile" onclick="showMyAds()"><i class="fas fa-user-circle text-2xl"></i><span>PROFİL</span></div>
     </div>
 
     <script>
         const SUPA_URL = "https://dpdrejpbnbbfwusqudxq.supabase.co";
         const SUPA_KEY = "sb_publishable_qOtB3HU91l0eQY8qaq0PDw_jzyO9Pze";
         const TG_TOKEN = "8799012820:AAEfmCWtpvSmCgAZrxH8b03mwfdV9uS6zeE";
-        
-        // Düzəliş: Kanal ID yerinə birbaşa Public Username yazıldı
         const TG_CHAT_ID = "@vidosmarkarxiv";
+        const WORKER_URL = "https://red-butterfly-8a1f.samohasan777.workers.dev"; // Yenilənmiş Worker ünvanın
         
         const supabaseClient = supabase.createClient(SUPA_URL, SUPA_KEY);
-
         let allAds = [];
         let favs = JSON.parse(localStorage.getItem('vmark_favs')) || [];
-
-        function updateFileCount() {
-            const input = document.getElementById('mediaInput');
-            const badge = document.getElementById('fileCountBadge');
-            const count = input.files.length;
-            
-            if (count > 0) {
-                badge.innerHTML = `<i class="fas fa-check-circle"></i> ${count} fayl seçildi`;
-                badge.style.display = 'block';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
+        let myId = localStorage.getItem('vmark_user_id') || 'user_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('vmark_user_id', myId);
 
         async function loadAds() {
             const { data, error } = await supabaseClient.from('elanlar').select('*').order('created_at', { ascending: false });
-            if(error) console.log("Baza xətası:", error);
             allAds = data || [];
             renderGrid('gridView', allAds);
+            const lastUser = localStorage.getItem('vmark_user_name');
+            if(lastUser) document.getElementById('userNameDisplay').innerText = lastUser.toUpperCase();
         }
 
         function renderGrid(containerId, list) {
             const container = document.getElementById(containerId);
-            container.innerHTML = list.map(ad => `
+            container.innerHTML = list.map(ad => {
+                const isImg = ad.media_url.includes('photo') || ad.media_url.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/);
+                return `
                 <div class="grid-item" onclick="openFeed('${ad.id}')">
-                    <video src="${ad.media_url}" muted loop playsinline></video>
+                    ${isImg ? `<img src="${ad.media_url}" loading="lazy">` : `<video src="${ad.media_url}" muted loop playsinline></video>`}
                     <div class="grid-price">${ad.price} AZN</div>
                 </div>
-            `).join('');
-        }
-
-        function filterAds() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allAds.filter(ad => 
-                ad.marka.toLowerCase().includes(term) || 
-                ad.description.toLowerCase().includes(term) ||
-                ad.price.toString().includes(term)
-            );
-            renderGrid('gridView', filtered);
+                `;
+            }).join('');
         }
 
         async function handleUpload() {
-            const files = document.getElementById('mediaInput').files;
-            if(files.length === 0) return alert("Zəhmət olmasa media seçin!");
-            document.getElementById('loader').style.display = 'block';
-
-            const file = files[0];
-            const isVideo = file.type.startsWith('video');
-            const endpoint = isVideo ? 'sendVideo' : 'sendPhoto';
+            const file = document.getElementById('mediaInput').files[0];
+            const name = document.getElementById('userName').value;
+            if(!file || !name || !document.getElementById('adMarka').value) return alert("Bütün boşluqları doldurun!");
             
+            document.getElementById('loader').style.display = 'block';
+            localStorage.setItem('vmark_user_name', name);
+
+            const isVideo = file.type.startsWith('video');
             const formData = new FormData();
             formData.append('chat_id', TG_CHAT_ID);
             formData.append(isVideo ? 'video' : 'photo', file);
 
             try {
-                const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/${endpoint}`, { method: 'POST', body: formData });
-                const data = await res.json();
-                if(data.ok) {
+                const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/${isVideo ? 'sendVideo' : 'sendPhoto'}`, { method: 'POST', body: formData });
+                const tgData = await res.json();
+                
+                if(tgData.ok) {
+                    const fileId = isVideo ? tgData.result.video.file_id : tgData.result.photo[tgData.result.photo.length-1].file_id;
+                    
+                    // Proxy məntiqi: Media linkini sənin Worker-in üzərindən keçiririk
+                    const proxiedMediaUrl = `${WORKER_URL}/?file_id=${fileId}`;
+
                     const { error } = await supabaseClient.from('elanlar').insert([{
                         marka: document.getElementById('adMarka').value,
                         price: document.getElementById('adPrice').value,
                         description: document.getElementById('adDesc').value,
                         phone: document.getElementById('adPhone').value,
-                        media_url: `https://vidosmark-worker.pages.dev/proxy?id=${data.result.message_id}`
+                        user_id: myId,
+                        user_name: name,
+                        media_url: proxiedMediaUrl
                     }]);
                     if(error) throw error;
                     location.reload();
                 } else {
-                    // Xəta mesajını daha aydın görmək üçün
-                    alert("Telegram xətası: " + data.description);
+                    alert("Telegram xətası: Bot kanalda ADMIN olmalıdır!");
                 }
-            } catch (e) { 
-                console.error(e);
-                alert("Xəta baş verdi! Bazaya yazıla bilmədi."); 
-            }
+            } catch (e) { alert("Sistem xətası baş verdi!"); }
             finally { document.getElementById('loader').style.display = 'none'; }
         }
 
         function openFeed(id) {
-            hideAllScreens();
+            hideAllViews();
             const feed = document.getElementById('feedView');
             feed.style.display = 'block';
-            feed.innerHTML = allAds.map(ad => `
+            feed.innerHTML = allAds.map(ad => {
+                const isImg = ad.media_url.includes('photo') || ad.media_url.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/);
+                return `
                 <div class="snap-section" id="post-${ad.id}">
                     <div class="media-holder" onclick="togglePlay(this)">
-                        <video class="feed-media" src="${ad.media_url}" loop playsinline></video>
+                        ${isImg ? `<img class="feed-media" src="${ad.media_url}">` : `<video class="feed-media" src="${ad.media_url}" loop playsinline></video>`}
                     </div>
-                    <div class="overlay"></div>
                     
                     <div class="side-bar">
                         <div class="action-btn ${favs.includes(ad.id.toString()) ? 'text-red-500' : 'text-white'}" onclick="toggleFavorite('${ad.id}')">
                             <i class="fas fa-heart"></i><span>BƏYƏN</span>
                         </div>
-                        <a href="https://wa.me/${ad.phone.replace(/\s+/g, '')}" class="action-btn text-green-500">
-                            <i class="fab fa-whatsapp"></i><span>WP</span>
-                        </a>
-                        <a href="tel:${ad.phone}" class="action-btn text-blue-400">
-                            <i class="fas fa-phone"></i><span>ZƏNG</span>
-                        </a>
-                        <div class="action-btn text-white" onclick="shareAd('${ad.id}')">
-                            <i class="fas fa-paper-plane"></i><span>PAYLAŞ</span>
+                        <a href="tel:${ad.phone}" class="action-btn text-blue-400"><i class="fas fa-phone"></i><span>ZƏNG</span></a>
+                        <a href="https://wa.me/${ad.phone.replace(/\D/g,'')}" class="action-btn text-green-500"><i class="fab fa-whatsapp"></i><span>WP</span></a>
+                        <div class="action-btn text-yellow-500" onclick="shareAd('${ad.id}')">
+                            <i class="fas fa-share"></i><span>PAYLAŞ</span>
                         </div>
                     </div>
 
-                    <div class="absolute bottom-28 left-5 z-50">
-                        <p class="text-yellow-500 font-black text-3xl mb-1">${ad.price} AZN</p>
-                        <p class="font-black text-xl mb-1 uppercase tracking-tight">${ad.marka}</p>
-                        <p class="text-sm text-gray-300 w-72 line-clamp-3">${ad.description}</p>
+                    <div class="desc-panel">
+                        <div class="user-badge"><i class="fas fa-user-circle mr-1"></i> ${ad.user_name || 'İstifadəçi'}</div>
+                        <p class="text-yellow-500 font-black text-4xl drop-shadow-lg">${ad.price} AZN</p>
+                        <p class="font-black text-xl uppercase tracking-tighter drop-shadow-md">${ad.marka}</p>
+                        <button onclick="toggleDesc('${ad.id}')" class="mt-3 bg-white/10 backdrop-blur-md text-[10px] text-white border border-white/20 px-5 py-2 rounded-full font-bold uppercase tracking-widest">Ətraflı açıqlama</button>
+                        
+                        <div id="desc-content-${ad.id}" class="desc-content">
+                            <div class="w-10 h-1 bg-zinc-800 mx-auto rounded-full mb-4"></div>
+                            <h4 class="text-yellow-500 font-black mb-2 uppercase text-xs tracking-widest">Məhsul Haqqında</h4>
+                            <p class="text-sm text-gray-300 leading-relaxed font-medium">${ad.description}</p>
+                            <div class="mt-6 pt-4 border-t border-zinc-800 flex justify-between items-center">
+                                <span class="text-[10px] text-gray-500">ID: #${ad.id.toString().substr(0,8)}</span>
+                                <button onclick="toggleDesc('${ad.id}')" class="text-yellow-500 font-bold text-xs">BAĞLA</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
             document.getElementById(`post-${id}`).scrollIntoView();
             handleAutoPlay();
         }
 
-        function handleAutoPlay() {
-            const observer = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    const video = entry.target.querySelector('video');
-                    if(entry.isIntersecting) { video.play(); video.muted = false; }
-                    else { video.pause(); video.currentTime = 0; }
-                });
-            }, { threshold: 0.8 });
-            document.querySelectorAll('.snap-section').forEach(s => observer.observe(s));
+        function toggleDesc(id) {
+            const content = document.getElementById(`desc-content-${id}`);
+            const isVisible = content.style.display === 'block';
+            document.querySelectorAll('.desc-content').forEach(d => d.style.display = 'none'); // Digərlərini bağla
+            content.style.display = isVisible ? 'none' : 'block';
         }
 
-        function togglePlay(el) { const v = el.querySelector('video'); v.paused ? v.play() : v.pause(); }
-        
         function toggleFavorite(id) {
             id = id.toString();
-            if(favs.includes(id)) {
-                favs = favs.filter(i => i !== id);
-            } else {
-                favs.push(id);
-            }
+            favs.includes(id) ? favs = favs.filter(i => i !== id) : favs.push(id);
             localStorage.setItem('vmark_favs', JSON.stringify(favs));
             const btn = document.querySelector(`#post-${id} .fa-heart`).parentElement;
             btn.classList.toggle('text-red-500');
             btn.classList.toggle('text-white');
         }
 
-        function showFavorites() {
-            hideAllScreens();
-            document.getElementById('favView').style.display = 'grid';
-            renderGrid('favView', allAds.filter(a => favs.includes(a.id.toString())));
-        }
-
-        function showMainGrid() { location.reload(); }
-        function hideAllScreens() { ['gridView', 'favView', 'feedView', 'searchUI'].forEach(id => document.getElementById(id).style.display = 'none'); }
-        function openModal(id) { document.getElementById(id).style.display = 'block'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function toggleSearchUI() { 
-            const s = document.getElementById('searchUI');
-            s.style.display = (s.style.display === 'block') ? 'none' : 'block';
-        }
-        function shareAd(id) { 
-            if (navigator.share) {
-                navigator.share({ title: 'VidosMark Elan', url: window.location.href });
+        function showMyAds() {
+            hideAllViews();
+            const view = document.getElementById('myAdsView');
+            view.style.display = 'grid';
+            document.getElementById('btn-profile').classList.add('active');
+            const myAds = allAds.filter(a => a.user_id === myId);
+            if(myAds.length === 0) {
+                view.innerHTML = `<div class="col-span-3 flex flex-col items-center justify-center h-full text-gray-600 font-bold"><i class="fas fa-folder-open text-5xl mb-3"></i>ELANINIZ YOXDUR</div>`;
             } else {
-                alert("Link kopyalandı!");
+                renderGrid('myAdsView', myAds);
             }
         }
+
+        function showView(viewId) {
+            hideAllViews();
+            document.getElementById(viewId).style.display = viewId === 'feedView' ? 'block' : 'grid';
+            if(viewId === 'gridView') {
+                document.getElementById('btn-grid').classList.add('active');
+                loadAds();
+            } else if(viewId === 'favView') {
+                document.getElementById('btn-fav').classList.add('active');
+                renderGrid('favView', allAds.filter(a => favs.includes(a.id.toString())));
+            }
+        }
+
+        function hideAllViews() {
+            ['gridView', 'favView', 'myAdsView', 'feedView'].forEach(id => document.getElementById(id).style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        }
+
+        function togglePlay(el) { 
+            const v = el.querySelector('video');
+            if(v) v.paused ? v.play() : v.pause();
+        }
+
+        function handleAutoPlay() {
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const video = entry.target.querySelector('video');
+                    if(video) {
+                        if(entry.isIntersecting) { video.play(); video.muted = false; }
+                        else { video.pause(); }
+                    }
+                });
+            }, { threshold: 0.6 });
+            document.querySelectorAll('.snap-section').forEach(s => observer.observe(s));
+        }
+
+        function shareAd(id) {
+            const url = window.location.href.split('?')[0] + '?ad=' + id;
+            if (navigator.share) {
+                navigator.share({ title: 'VidosMark Elan', url: url });
+            } else {
+                alert("Link kopyalandı: " + url);
+            }
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
         window.onload = loadAds;
     </script>
