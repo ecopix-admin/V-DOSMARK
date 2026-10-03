@@ -1,18 +1,16 @@
 <!DOCTYPE html>
-<html lang="az" class="h-full bg-slate-50">
+<html lang="az" class="h-full bg-slate-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline Neural Knowledge Engine</title>
+    <title>Offline Vector & Knowledge Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Mətnin rahat seçilməsi üçün (text selection) */
         .selectable-text {
             user-select: text !important;
             -webkit-user-select: text !important;
         }
-        /* İncə sürüşdürmə paneli */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -22,123 +20,137 @@
         }
     </style>
 </head>
-<body class="h-full flex flex-col font-sans bg-slate-50 text-slate-800 antialiased selection:bg-blue-100 selection:text-blue-900">
+<body class="h-full flex flex-col font-sans bg-slate-100 text-slate-800 antialiased selection:bg-blue-100 selection:text-blue-900">
 
-    <!-- Ust Panel / Header -->
+    <!-- Header -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50 px-4 py-3 flex items-center justify-between shadow-sm">
         <div class="flex items-center space-x-3">
             <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
-                <i class="fa-solid fa-brain text-lg"></i>
+                <i class="fa-solid fa-database text-sm"></i>
             </div>
             <div>
-                <h1 class="font-bold text-base leading-none text-slate-900">Semantik Bilik Mühərriki</h1>
-                <p class="text-xs text-slate-500 font-medium mt-0.5">100% Offline Məna & Axtarış Sistemi</p>
+                <h1 class="font-bold text-base leading-none text-slate-900">IndexedDB Bilik Mühərriki</h1>
+                <p class="text-xs text-slate-500 font-medium mt-0.5">Sonsuz Baza & Semantik Axtarış</p>
             </div>
         </div>
         <div class="flex items-center space-x-2">
-            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> Oflayn Hazır
+            <span id="db-status" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                <span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span> Baza Yüklənir...
             </span>
         </div>
     </header>
 
-    <!-- Chat / Cavab Sahesi -->
+    <!-- Chat Area -->
     <main id="chat-container" class="flex-1 max-w-3xl w-full mx-auto p-4 overflow-y-auto space-y-4">
         
-        <!-- Xos Gelmisiniz Mesaji -->
+        <!-- Welcome Message -->
         <div class="flex items-start gap-3">
             <div class="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
                 AI
             </div>
             <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[85%] selectable-text">
                 <p class="text-sm text-slate-700 leading-relaxed">
-                    Salam! Ben 100% cihaz daxilində işləyən **Semantik Bilik Mühərrikiyəm**. İntellektual bazam daxilində olan bütün mövzulardan məna axtarışı edərək geniş və dəqiq cavablar təqdim edirəm. 
+                    Salam! Mən **Lokal IndexedDB Mühərrikiyəm**.
                     <br><br>
-                    İstədiyiniz sualı yazın (məsələn: *alçipan montajı*, *şpatlyovka çəkmək*, *offline AI necə işləyir?* və s.)
+                    Milyonlarla maddə və məlumatı brauzerin daxili bazasında saxlayıb, internetsiz rejimdə millisanisiyələr içində axtarıb təqdim edə bilərəm.
                 </p>
             </div>
         </div>
 
     </main>
 
-    <!-- Asagi Sual Yigma Paneli (Input Zone) -->
+    <!-- Input Bar -->
     <footer class="bg-white border-t border-slate-200 p-3 sm:p-4 sticky bottom-0 z-40">
         <div class="max-w-3xl mx-auto flex items-end gap-2 bg-slate-100 rounded-2xl p-2 border border-slate-200 focus-within:border-blue-500 focus-within:bg-white transition-all shadow-inner">
-            <textarea id="user-input" rows="1" placeholder="Sualınızı daxil edin..." class="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none text-sm text-slate-800 placeholder-slate-400 resize-none max-h-32 px-2 py-1.5 selectable-text" onkeydown="handleKeyDown(event)"></textarea>
+            <textarea id="user-input" rows="1" placeholder="Sual və ya açar söz daxil edin..." class="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none text-sm text-slate-800 placeholder-slate-400 resize-none max-h-32 px-2 py-1.5 selectable-text" onkeydown="handleKeyDown(event)"></textarea>
             <button onclick="sendQuery()" class="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/20 active:scale-95 transition-all">
                 <i class="fa-solid fa-arrow-up text-sm"></i>
             </button>
         </div>
-        <p class="text-center text-[11px] text-slate-400 mt-2">Məlumatlar tamamilə lokal yaddaşdan istifadə olunaraq məna analizi ilə çıxarılır.</p>
+        <p class="text-center text-[11px] text-slate-400 mt-2">100% Cihaz İçi Baza (IndexedDB) • GitHub Pages Onlayn/Oflayn Uyumlu</p>
     </footer>
 
-    <!-- Semantic Engine Logic -->
     <script>
-        // 1. GENİŞ SEMANTİK BİLİK BAZASI (Knowledge Base)
-        // Bura istənilən sahə üzrə minlərlə geniş məlumat və onların açar mənaları daxil edilə bilər.
-        const knowledgeBase = [
-            {
-                category: "tikinti_alcipan",
-                keywords: ["alçipan", "alcipan", "profil", "tavan", "ara kəsmə", "gipsokarton", "karkas", "suvaq"],
-                response: `<b>Alçipan və Metal Karkas Montajı Haqqında Ətraflı Məlumat:</b><br><br>
-                1. <b>Səthin Ölçülməsi və Xətlənməsi:</b> Karkas quraşdırılmadan öncə lazer səviyyəölçən (uroven) vasitəsilə tavan və ya divarda əsas istiqamət xətləri (UD/CD profillər üçün) çəkilir.<br>
-                2. <b>Profillərin Yığılması:</b> Perimetr boyunca UD profillər bərkidilir, ardınca 40 sm və ya 60 sm məsafə ilə əsas CD taşıyıcı profillər yerləşdirilir. Asqı elementləri (praklar) ilə tavan bərkidilməsi vibrasiyanın qarşısını alır.<br>
-                3. <b>Ləvhələrin Vurulması:</b> Alçipan ləvhələri tikişləri üst-üstə düşməmək şərtləri ilə (şahmat sırası ilə) profillərə 25 mm-lik özüboşaldan şuruplarla (şurup arası 15-20 sm) bərkidilir.<br>
-                4. <b>Dərzlərin Doldurulması:</b> Şovlar (birləşmə yerləri) fukusfugen və ya derz dolğusu ilə doldurulur, üzərinə tor (serpyanka) yapışdırılaraq çatlamanın qarşısı alınır.`
-            },
-            {
-                category: "tikinti_spatlyovka",
-                keywords: ["şpatlyovka", "spatlovka", "malyar", "boya", "astra", "aStar", "shpatlyovka", "divar"],
-                response: `<b>Şpatlyovka və Malyar İşlərinin Düzgün Ardıcıllığı:</b><br><br>
-                1. <b>Səthin Hazırlanması və Astar (Grunt):</b> Şpatlyovka çəkilməzdən əvvəl divar tozdan təmizlənməli və mütləq dərin nüfuz edən astar (gruntovka) vurulmalıdır.<br>
-                2. <b>Astar Şpatlyovka (Start):</b> Düzgün hamarlama üçün ilk növbədə qalın qatlı başlanğıc şpatlyovkası vurulur. Çatların və nahamar yerlərin bağlanmasını təmin edir.<br>
-                3. <b>Üz çəkim (Finish):</b> Start qatı quruduqdan sonra nazik faniş şpatlyovkası (2 qat) çəkilir. Qatlar arasında zımpara (şkurka) işlənməlidir.<br>
-                4. <b>Pardazlama (Şkurka):</b> İşıq altında (lampa ilə) divar cilalanır və boyaya və ya oboy vurulmağa hazır vəziyyətə gətirilir.`
-            },
-            {
-                category: "offline_ai",
-                keywords: ["offline", "oflayn", "suni intellekt", "ai", "lokal", "brauzer", "vektor", "rag", "kod"],
-                response: `<b>İnternetsiz (Offline) Süni İntellekt və Semantik Mühərriklər:</b><br><br>
-                1. <b>Prinsip:</b> Lokal sistemlər serverlərlə əlaqə saxlamadan bütün hesablama əməliyyatlarını istifadəçinin öz cihazının operativ yaddaşında (RAM) və prosessorunda (CPU/GPU) icra edir.<br>
-                2. <b>Semantik Axtarış (Semantic Search):</b> Mətnlər sadəcə hərfbəhərf axtarılmır, onların məna yaxınlığı (Similarity Index) hesablanır. İstifadəçi hətta sözü səhv yazsa belə, sistem ən uyğun mənaya sahib cavabı çıxarır.<br>
-                3. <b>Üstünlükləri:</b> Məxfilik %100 qorunur, məlumat heç bir internet şəbəkəsinə çıxmır, server xərci sıfırdır və internet kəsildikdə 24/7 işləyir.`
-            }
-        ];
+        let db;
+        const DB_NAME = 'OfflineKnowledgeBaseDB';
+        const DB_VERSION = 1;
 
-        // 2. MƏNA ANALİZİ ALQORİTMİ (Cosine / Word Match Similarity)
-        function findBestSemanticMatch(userText) {
-            const cleanInput = userText.toLowerCase().trim();
-            if (!cleanInput) return null;
+        // 1. IndexedDB İnitisializasiyası
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-            let bestMatch = null;
-            let highestScore = 0;
-
-            knowledgeBase.forEach(item => {
-                let currentScore = 0;
-                item.keywords.forEach(keyword => {
-                    if (cleanInput.includes(keyword)) {
-                        currentScore += 3; // Birbaşa açar söz uyğunluğu
-                    } else {
-                        // Qismən söz yaxınlığı
-                        const words = cleanInput.split(" ");
-                        words.forEach(w => {
-                            if (w.length > 3 && (keyword.includes(w) || w.includes(keyword))) {
-                                currentScore += 1;
-                            }
-                        });
+                request.onupgradeneeded = (e) => {
+                    db = e.target.result;
+                    if (!db.objectStoreNames.contains('articles')) {
+                        const store = db.createObjectStore('articles', { keyPath: 'id', autoIncrement: true });
+                        store.createIndex('keywords', 'keywords', { multiEntry: true });
                     }
-                });
+                };
 
-                if (currentScore > highestScore) {
-                    highestScore = currentScore;
-                    bestMatch = item;
-                }
+                request.onsuccess = (e) => {
+                    db = e.target.result;
+                    document.getElementById('db-status').className = "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200";
+                    document.getElementById('db-status').innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span> Baza Hazırdır';
+                    seedInitialData();
+                    resolve(db);
+                };
+
+                request.onerror = (e) => {
+                    console.error("IndexedDB Xətası:", e);
+                    reject(e);
+                };
             });
-
-            return { match: bestMatch, score: highestScore };
         }
 
-        // 3. UI MƏSƏLƏLƏRİ VƏ ÇAT FONKSİONALLIĞI
+        // 2. İlkin Nümunə Məlumatların Bazaya Yazılması
+        function seedInitialData() {
+            const tx = db.transaction('articles', 'readwrite');
+            const store = tx.objectStore('articles');
+
+            const sampleData = [
+                {
+                    keywords: ["alçipan", "profil", "karkas", "suvaq", "derz"],
+                    title: "Alçipan Montajı və Metal Karkas Standardları",
+                    content: "1. Karkas UD və CD profillərindən yığılır.<br>2. Profil arası məsafə 40-60 sm saxlanılır.<br>3. Şuruplar arası 15-20 sm olmalıdır."
+                },
+                {
+                    keywords: ["şpatlyovka", "malyar", "boya", "şkurka", "astar"],
+                    title: "Şpatlyovka Vurulma Ardıcıllığı",
+                    content: "1. Səth mütləq astar tərkibi (grunt) ilə işlənməlidir.<br>2. Start və Finiş qatları ardıcıl vurulur.<br>3. Zımpara işindən sonra boya çəkilir."
+                }
+            ];
+
+            sampleData.forEach(item => store.put(item));
+        }
+
+        // 3. Bazadan Axtarış Mühərriki
+        function searchDatabase(query) {
+            return new Promise((resolve) => {
+                const tx = db.transaction('articles', 'readonly');
+                const store = tx.objectStore('articles');
+                const cleanQuery = query.toLowerCase().trim();
+
+                const results = [];
+                store.openCursor().onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        const item = cursor.value;
+                        const match = item.keywords.some(k => cleanQuery.includes(k)) || 
+                                      item.title.toLowerCase().includes(cleanQuery) ||
+                                      item.content.toLowerCase().includes(cleanQuery);
+                        if (match) {
+                            results.push(item);
+                        }
+                        cursor.continue();
+                    } else {
+                        resolve(results);
+                    }
+                };
+            });
+        }
+
+        // 4. İdarəetmə və Mesajlaşma Logic
         function handleKeyDown(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -146,24 +158,25 @@
             }
         }
 
-        function sendQuery() {
+        async function sendQuery() {
             const inputEl = document.getElementById('user-input');
             const query = inputEl.value.trim();
             if (!query) return;
 
-            // İstifadəçi Mesajını Əlavə Et
             appendUserMessage(query);
             inputEl.value = '';
 
-            // Cavabı Hesabla Və Ekran Göstər
-            setTimeout(() => {
-                const result = findBestSemanticMatch(query);
-                if (result.match && result.score > 0) {
-                    appendBotMessage(result.match.response);
-                } else {
-                    appendBotMessage(`<b>Üzr istəyirəm, bu mövzu üzrə dəqiq semantik uyğunluq tapılmadı.</b><br><br>Sualınızı fərqli sözlərlə verməyi və ya verilən mövzulardan birini yazmağı sınayın (Məsələn: <i>Alçipan montajı, Şpatlyovka çəkmək, Oflayn AI</i>).`);
-                }
-            }, 300);
+            const results = await searchDatabase(query);
+
+            if (results.length > 0) {
+                let responseHtml = `<b>Tapılan Məlumatlar (${results.length}):</b><br><br>`;
+                results.forEach(res => {
+                    responseHtml += `<b>${res.title}</b><br>${res.content}<br><br>`;
+                });
+                appendBotMessage(responseHtml);
+            } else {
+                appendBotMessage(`Lokal IndexedDB bazasında "<b>${query}</b>" üzrə nəticə tapılmadı.`);
+            }
         }
 
         function appendUserMessage(text) {
@@ -196,7 +209,7 @@
                             <button onclick="copyToClipboard('${msgId}')" class="hover:text-blue-600 flex items-center gap-1.5 transition-colors font-medium">
                                 <i class="fa-regular fa-copy"></i> Kopyala
                             </button>
-                            <span>Lokal Mühərrik</span>
+                            <span>Lokal IndexedDB</span>
                         </div>
                     </div>
                 </div>
@@ -208,13 +221,8 @@
         function copyToClipboard(elementId) {
             const el = document.getElementById(elementId);
             if (!el) return;
-            
-            // Mətni formatlı şəkildə kopyalamaq
-            const textToCopy = el.innerText || el.textContent;
-            navigator.clipboard.writeText(textToCopy).then(() => {
+            navigator.clipboard.writeText(el.innerText || el.textContent).then(() => {
                 alert("Mətn kopyalandı!");
-            }).catch(err => {
-                console.error('Kopyalama xətası:', err);
             });
         }
 
@@ -234,6 +242,9 @@
                 }[s];
             });
         }
+
+        // Tətbiqi İşə Sal
+        window.addEventListener('DOMContentLoaded', initDB);
     </script>
 </body>
 </html>
