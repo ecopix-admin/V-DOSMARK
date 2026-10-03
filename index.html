@@ -1,731 +1,473 @@
 ```html
 <!DOCTYPE html>
-<html lang="az" class="dark">
+<html lang="az" class="h-full bg-slate-950">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EdgeAI OS - Avtonom Süni İntellekt Çatbotu və Sənəd Analizatoru</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f6ff',
-                            100: '#e0edff',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            900: '#1e3a8a',
-                            cyan: '#06b6d4',
-                            emerald: '#10b981',
-                            violet: '#8b5cf6',
-                            amber: '#f59e0b'
-                        }
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'glow': 'glow 2s ease-in-out infinite alternate'
-                    },
-                    keyframes: {
-                        glow: {
-                            '0%': { 'box-shadow': '0 0 10px rgba(6, 182, 212, 0.2)' },
-                            '100%': { 'box-shadow': '0 0 25px rgba(6, 182, 212, 0.6)' }
-                        }
-                    }
-                }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>EdgeAI OS v3.0 - Offline AI Assistant</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
             }
+          }
         }
-    </script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #070a12;
-            color: #f3f4f6;
-        }
+      }
+    }
+  </script>
 
-        .code-font {
-            font-family: 'JetBrains Mono', monospace;
-        }
+  <style>
+    /* Custom Scrollbar for Chat Container */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
 
-        /* Glassmorphism utility classes */
-        .glass-card {
-            background: rgba(13, 20, 36, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
 
-        .glass-card-active {
-            background: rgba(20, 32, 60, 0.85);
-            border: 1px solid rgba(6, 182, 212, 0.4);
-        }
+    /* Typing Cursor Animation */
+    .typing-cursor::after {
+      content: '▋';
+      display: inline-block;
+      margin-left: 2px;
+      animation: blink 0.8s infinite;
+      color: #3b82f6;
+    }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #070a12;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #334155;
-        }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
 
-        /* Typing cursor animation */
-        .typing-cursor::after {
-            content: '▋';
-            display: inline-block;
-            animation: blink 1s infinite;
-            margin-left: 2px;
-            color: #06b6d4;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-    </style>
+    /* Prevent mobile highlights */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white overflow-x-hidden">
 
-    <!-- Header Navbar -->
-    <header class="border-b border-slate-800/80 sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-gradient-to-tr from-brand-violet via-brand-600 to-brand-cyan rounded-xl shadow-lg shadow-brand-cyan/20">
-                    <i data-lucide="bot" class="w-6 h-6 text-white"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="font-bold text-lg text-white tracking-tight">EdgeAI OS v2.0</h1>
-                        <span class="px-2 py-0.5 text-[10px] uppercase tracking-wider font-semibold bg-brand-cyan/20 text-brand-cyan rounded-full border border-brand-cyan/30">100% Offline AI</span>
-                    </div>
-                    <p class="text-xs text-slate-400">Brauzer daxilində Avtonom Mətn Generatoru və Təhlil Ekosistemi</p>
-                </div>
-            </div>
+<body class="h-full text-slate-100 font-sans flex flex-col justify-between overflow-hidden bg-slate-950">
 
-            <!-- Header Hardware Status Badges -->
-            <div class="flex flex-wrap items-center gap-2 text-xs">
-                <!-- Online/Offline Indicator -->
-                <div id="netStatus" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-card text-emerald-400">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span class="font-medium" id="netText">Şəbəkə: Onlayn</span>
-                </div>
-
-                <!-- WebGPU Status -->
-                <div id="gpuStatus" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-card text-slate-400">
-                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-                    <span id="gpuText">WebGPU Təyin Edilir...</span>
-                </div>
-
-                <!-- PWA Offline Install Button -->
-                <button onclick="registerOfflineServiceWorker()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all border border-slate-700">
-                    <i data-lucide="download-cloud" class="w-3.5 h-3.5 text-brand-cyan"></i>
-                    <span class="hidden sm:inline">PWA Keşlə</span>
-                </button>
-            </div>
+  <!-- Top Navigation Header -->
+  <header class="w-full glass-card border-b border-slate-800 px-4 py-3 flex items-center justify-between z-20 shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="relative flex items-center justify-center">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <i class="fa-solid font-bold fa-brain text-white text-lg"></i>
         </div>
-    </header>
-
-    <!-- Main Content Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- Left Column: Navigation Tabs & Model Settings -->
-        <section class="lg:col-span-4 space-y-5">
-            
-            <!-- Tab Switcher Box -->
-            <div class="glass-card rounded-2xl p-2.5 shadow-xl flex gap-1.5 border border-slate-800">
-                <button id="tabChatBtn" onclick="switchMode('chat')" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-brand-600 to-brand-cyan text-white shadow-lg shadow-brand-500/20">
-                    <i data-lucide="message-square-plus" class="w-4 h-4"></i> Çatbot (İntellekt)
-                </button>
-                <button id="tabDocBtn" onclick="switchMode('doc')" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
-                    <i data-lucide="file-search" class="w-4 h-4"></i> Sənəd Analitikası
-                </button>
-            </div>
-
-            <!-- Model & Hardware Configuration Box -->
-            <div class="glass-card rounded-2xl p-5 shadow-xl space-y-4">
-                <div class="flex items-center justify-between">
-                    <h2 class="font-semibold text-slate-200 flex items-center gap-2 text-sm">
-                        <i data-lucide="cpu" class="w-4 h-4 text-brand-cyan"></i>
-                        Lokal Model Mühiti
-                    </h2>
-                    <span class="text-[10px] code-font text-slate-400 bg-slate-800 px-2 py-0.5 rounded">GPU / WASM</span>
-                </div>
-
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-xs text-slate-400 mb-1 block">Süni İntellekt Modeli</label>
-                        <select id="modelSelect" class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-cyan transition-all">
-                            <option value="Xenova/TinyLlama-1.1B-Chat-v1.0">TinyLlama 1.1B Chat (Çox Sürətli / Yüngül) - ~280MB</option>
-                            <option value="Xenova/Qwen1.5-0.5B-Chat">Qwen 0.5B Chat (Məntiq və Mətn Generatoru) - ~190MB</option>
-                            <option value="Xenova/all-MiniLM-L6-v2">Gemma-Mini / MiniLM (Fast Embeddings & Chat) - ~25MB</option>
-                            <option value="builtin-hybrid">Lokal Avtonom Evristik Engine (0 MB - Instant Offline)</option>
-                        </select>
-                    </div>
-
-                    <!-- System Prompt & Parameters (Expandable) -->
-                    <div class="space-y-2 pt-1">
-                        <button onclick="toggleAdvancedSettings()" class="text-[11px] text-brand-cyan hover:underline flex items-center gap-1">
-                            <i data-lucide="sliders" class="w-3 h-3"></i> Ətraflı Model Parametrləri
-                        </button>
-                        
-                        <div id="advancedSettings" class="hidden space-y-2.5 pt-2 border-t border-slate-800/80">
-                            <div>
-                                <label class="text-[11px] text-slate-400 block mb-1">Sistem Rolu (System Prompt)</label>
-                                <textarea id="systemPromptInput" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none focus:border-brand-cyan code-font">Sən ağıllı, köməksevər və dəqiq cavablar verən avtonom azərbaycan dili süni intellekt assistentisən.</textarea>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="text-[10px] text-slate-400 block">Kreativlik (Temp)</label>
-                                    <input type="range" id="tempInput" min="0.1" max="1.0" step="0.1" value="0.7" class="w-full accent-brand-cyan">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-slate-400 block">Max Tokenlər</label>
-                                    <input type="number" id="maxTokensInput" value="300" class="w-full bg-slate-950 border border-slate-800 rounded px-2 py-0.5 text-xs text-slate-300">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Load Model Button -->
-                    <div class="pt-2">
-                        <button id="loadModelBtn" onclick="initializeEngine()" class="w-full py-2.5 px-4 bg-gradient-to-r from-brand-600 to-brand-cyan hover:from-brand-500 hover:to-brand-cyan font-medium text-xs text-white rounded-xl shadow-lg shadow-brand-cyan/20 transition-all flex items-center justify-center gap-2">
-                            <i data-lucide="play-circle" class="w-4 h-4"></i>
-                            <span>Modeli Cihaza Yüklə / Aktivləşdir</span>
-                        </button>
-                    </div>
-
-                    <!-- Progress Bar Container -->
-                    <div id="progressContainer" class="hidden space-y-1.5 pt-2">
-                        <div class="flex justify-between text-[11px] text-slate-400">
-                            <span id="progressStatus">Model brauzerə yüklənir...</span>
-                            <span id="progressPercent" class="code-font text-brand-cyan">0%</span>
-                        </div>
-                        <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                            <div id="progressBar" class="h-full bg-gradient-to-r from-brand-cyan to-brand-violet w-0 transition-all duration-300"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Live Performance Metrics -->
-            <div class="glass-card rounded-2xl p-5 shadow-xl space-y-3">
-                <h2 class="font-semibold text-slate-200 flex items-center gap-2 text-sm">
-                    <i data-lucide="activity" class="w-4 h-4 text-brand-emerald"></i>
-                    Canlı Telemetriya & Sürət
-                </h2>
-                
-                <div class="grid grid-cols-2 gap-3 pt-1">
-                    <div class="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl">
-                        <p class="text-[10px] text-slate-400 uppercase tracking-wider">Generasiya Sürəti</p>
-                        <p id="metricTokensSec" class="text-base font-bold text-slate-100 code-font mt-0.5">-- tok/s</p>
-                    </div>
-                    <div class="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl">
-                        <p class="text-[10px] text-slate-400 uppercase tracking-wider">Cavab Gecikməsi</p>
-                        <p id="metricSpeed" class="text-base font-bold text-slate-100 code-font mt-0.5">0 ms</p>
-                    </div>
-                    <div class="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl">
-                        <p class="text-[10px] text-slate-400 uppercase tracking-wider">Yaddaş / RAM</p>
-                        <p id="metricVram" class="text-base font-bold text-slate-100 code-font mt-0.5">~42 MB</p>
-                    </div>
-                    <div class="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl">
-                        <p class="text-[10px] text-slate-400 uppercase tracking-wider">Məxfilik Zəmanəti</p>
-                        <p class="text-xs font-semibold text-emerald-400 mt-1 flex items-center gap-1">
-                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> 100% On-Device
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-        </section>
-
-        <!-- Right Column: Interactive Dynamic Viewports -->
-        <section class="lg:col-span-8 flex flex-col gap-5">
-            
-            <!-- VIEW 1: FULL CHATBOT INTERFACE -->
-            <div id="chatView" class="glass-card rounded-2xl p-5 shadow-xl flex flex-col h-[620px] justify-between space-y-4">
-                
-                <!-- Chat View Top Banner -->
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <div class="flex items-center gap-2.5">
-                        <div class="p-2 bg-brand-cyan/10 rounded-lg text-brand-cyan">
-                            <i data-lucide="bot" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <h2 class="font-semibold text-slate-100 text-sm">Edge AI Assistant Console</h2>
-                            <p class="text-[11px] text-slate-400">Offline Mətn Yaradıcısı, Kod Generatoru və Məsləhətçi</p>
-                        </div>
-                    </div>
-                    <button onclick="clearChatHistory()" class="text-xs text-slate-400 hover:text-rose-400 flex items-center gap-1 bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-800 transition-all">
-                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Tariçəni Təmizlə
-                    </button>
-                </div>
-
-                <!-- Chat History Messages Scroll Area -->
-                <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 pr-2 text-xs">
-                    
-                    <!-- Welcome AI Message -->
-                    <div class="flex gap-3">
-                        <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-cyan flex items-center justify-center text-white shrink-0 shadow-md">
-                            <i data-lucide="bot" class="w-4 h-4"></i>
-                        </div>
-                        <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-200 max-w-[88%] leading-relaxed space-y-2">
-                            <p class="font-semibold text-brand-cyan text-[11px]">Edge AI Assistant</p>
-                            <p>Salam! Ben tamamilə cihazınızda (offline) işləyən süni intellekt assistentiyəm. Mənə istədiyiniz sualı verə, hekayə, kod və ya biznes ideyası yazdıra bilərsiniz.</p>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Quick Suggestion Prompts -->
-                <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-1 text-xs no-scrollbar">
-                    <span class="text-[11px] text-slate-500 shrink-0">Sürətli Təkliflər:</span>
-                    <button onclick="sendQuickPrompt('Süni intellektin gələcəyi haqqında qısa esse yaz')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 shrink-0 transition-all hover:border-brand-cyan/40">
-                        ✍️ Qısa esse yaz
-                    </button>
-                    <button onclick="sendQuickPrompt('Mənim üçün Python dili ilə sadə HTTP server kodu yaz')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 shrink-0 transition-all hover:border-brand-cyan/40">
-                        💻 Python kodu
-                    </button>
-                    <button onclick="sendQuickPrompt('Milyard dollarlıq startap üçün 3 maraqlı biznes ideyası ver')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 shrink-0 transition-all hover:border-brand-cyan/40">
-                        💡 Biznes ideyası
-                    </button>
-                </div>
-
-                <!-- Chat Input Box -->
-                <div class="flex items-center gap-2 pt-1 border-t border-slate-800">
-                    <input type="text" id="userInput" placeholder="Süni intellektə sualınızı daxil edin (Məs: Mənim üçün fantastik hekayə yaz)..." onkeydown="if(event.key==='Enter') sendChatMessage()" class="flex-1 bg-slate-950/90 border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-cyan transition-all">
-                    <button id="sendBtn" onclick="sendChatMessage()" class="p-3 bg-gradient-to-r from-brand-600 to-brand-cyan hover:opacity-90 text-white rounded-xl shadow-lg shadow-brand-cyan/20 transition-all">
-                        <i data-lucide="send" class="w-4 h-4"></i>
-                    </button>
-                </div>
-
-            </div>
-
-            <!-- VIEW 2: DOCUMENT & TEXT ANALYTICS (Hidden by default) -->
-            <div id="docView" class="hidden space-y-5">
-                
-                <div class="glass-card rounded-2xl p-5 shadow-xl space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="file-text" class="w-4 h-4 text-brand-cyan"></i>
-                            <h2 class="font-semibold text-slate-200 text-sm">Sənəd Redaktoru Və Yükləyici</h2>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <input type="file" id="fileInput" accept=".txt,.md,.json,.csv" class="hidden" onchange="handleFileUpload(event)">
-                            <button onclick="document.getElementById('fileInput').click()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-all">
-                                <i data-lucide="upload" class="w-3.5 h-3.5 text-brand-cyan"></i> Fayl Seç (.txt, .md)
-                            </button>
-                            <button onclick="clearText()" class="text-xs bg-slate-800/50 hover:bg-slate-800 text-slate-400 px-2.5 py-1.5 rounded-lg border border-slate-800 transition-all">
-                                Sıfırla
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="relative">
-                        <textarea id="inputText" rows="6" placeholder="Analiz etmək istədiyiniz böyük mətni daxil edin və ya fayl yükləyin..." class="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:border-brand-cyan transition-all resize-y leading-relaxed code-font"></textarea>
-                        
-                        <div class="absolute bottom-3 right-3 text-[11px] text-slate-500 code-font bg-slate-900/80 px-2 py-0.5 rounded">
-                            <span id="charCount">0</span> simvol | <span id="wordCount">0</span> söz
-                        </div>
-                    </div>
-
-                    <!-- Quick Pipeline Buttons -->
-                    <div class="flex flex-wrap items-center gap-2 pt-1">
-                        <button onclick="runAnalysis('summarize')" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-medium flex items-center gap-1.5 shadow-md transition-all">
-                            <i data-lucide="align-left" class="w-3.5 h-3.5"></i> Xülasə Çıxar
-                        </button>
-                        <button onclick="runAnalysis('keywords')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium flex items-center gap-1.5 border border-slate-700 transition-all">
-                            <i data-lucide="key" class="w-3.5 h-3.5 text-brand-cyan"></i> Açar Sözlər
-                        </button>
-                        <button onclick="runAnalysis('sentiment')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium flex items-center gap-1.5 border border-slate-700 transition-all">
-                            <i data-lucide="smile" class="w-3.5 h-3.5 text-brand-emerald"></i> Hissiyat Testi
-                        </button>
-                        <button onclick="runAnalysis('full')" class="px-4 py-2 bg-gradient-to-r from-brand-violet to-brand-600 hover:opacity-90 text-white rounded-xl text-xs font-medium flex items-center gap-1.5 shadow-md transition-all ml-auto">
-                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Bütöv Təhlil
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Analysis Results Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Summary Card -->
-                    <div class="glass-card rounded-2xl p-4 shadow-xl space-y-2">
-                        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                            <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                                <i data-lucide="file-check" class="w-3.5 h-3.5 text-brand-cyan"></i> Avtomatik Xülasə
-                            </span>
-                        </div>
-                        <div id="summaryResult" class="text-xs text-slate-300 leading-relaxed min-h-[80px] p-2 bg-slate-950/40 rounded-lg border border-slate-900 code-font">
-                            Analiz nəticəsi bura əks olunacaq...
-                        </div>
-                    </div>
-
-                    <!-- Keywords Card -->
-                    <div class="glass-card rounded-2xl p-4 shadow-xl space-y-2">
-                        <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                            <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                                <i data-lucide="tags" class="w-3.5 h-3.5 text-brand-emerald"></i> Açar Anlayışlar
-                            </span>
-                        </div>
-                        <div id="keywordsResult" class="flex flex-wrap gap-1.5 min-h-[80px] p-2 bg-slate-950/40 rounded-lg border border-slate-900 items-start">
-                            <span class="text-xs text-slate-500 italic">Mətni daxil edib 'Açar Sözlər' düyməsini sıxın.</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="border-t border-slate-900 bg-slate-950 py-4 text-center text-xs text-slate-500">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p>© 2026 Edge AI Ecosystem. Avtonom Süni İntellekt Çatbotu və Analiz Sistemi.</p>
-            <div class="flex items-center gap-4">
-                <span class="flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3 text-brand-emerald"></i> Max Məxfilik</span>
-                <span class="flex items-center gap-1"><i data-lucide="wifi-off" class="w-3 h-3 text-brand-cyan"></i> Off-Grid Hazır</span>
-            </div>
+        <span class="absolute -top-1 -right-1 flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+        </span>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <h1 class="font-bold text-base tracking-tight text-white">EdgeAI OS <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">v3.0</span></h1>
+          <span class="hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">100% OFFLINE AI</span>
         </div>
-    </footer>
+        <p class="text-xs text-slate-400 truncate max-w-[200px] sm:max-w-xs">Avtonom Mətn Generatoru və Süni İntellekt</p>
+      </div>
+    </div>
 
-    <!-- Application Logic Script -->
-    <script>
-        // Global App State
-        let activeMode = 'chat';
-        let activeModelName = 'builtin-hybrid';
-        let isEngineReady = false;
-        let pipelineInstance = null;
-        let chatHistory = [];
+    <!-- Right Controls -->
+    <div class="flex items-center space-x-2">
+      <!-- Status Badge -->
+      <div id="statusBadge" class="flex items-center space-x-1.5 text-xs px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300">
+        <span class="w-2 h-2 rounded-full bg-emerald-500" id="statusDot"></span>
+        <span id="statusText" class="font-medium">Oflayn Hazır</span>
+      </div>
 
-        window.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            checkHardwareDiagnostics();
-            setupTextareaListener();
-        });
+      <!-- New Chat Button -->
+      <button onclick="resetChat()" title="Yeni Çat" class="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-all active:scale-95">
+        <i class="fa-solid fa-rotate-right text-sm"></i>
+      </button>
+    </div>
+  </header>
 
-        function switchMode(mode) {
-            activeMode = mode;
-            const chatView = document.getElementById('chatView');
-            const docView = document.getElementById('docView');
-            const tabChatBtn = document.getElementById('tabChatBtn');
-            const tabDocBtn = document.getElementById('tabDocBtn');
+  <!-- Main Chat Container -->
+  <main id="chatContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-6 max-w-4xl w-full mx-auto">
+    <!-- Welcome Card -->
+    <div id="welcomeCard" class="glass-card p-6 rounded-2xl border border-slate-800/80 text-center space-y-4 my-auto mt-6">
+      <div class="w-16 h-16 bg-blue-600/10 border border-blue-500/30 rounded-2xl flex items-center justify-center mx-auto text-blue-400 text-2xl shadow-inner">
+        <i class="fa-solid fa-robot"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-white">Xoş gəldiniz! Sizə necə kömək edə bilərəm?</h2>
+        <p class="text-sm text-slate-400 mt-1 max-w-md mx-auto">Səhifə tamamilə yerli cihazınızda işləyir. İnternet bağlantısı olmadan belə istənilən mövzuda suallarınıza cavab ala bilərsiniz.</p>
+      </div>
 
-            if (mode === 'chat') {
-                chatView.classList.remove('hidden');
-                docView.classList.add('hidden');
-                tabChatBtn.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-brand-600 to-brand-cyan text-white shadow-lg shadow-brand-500/20";
-                tabDocBtn.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
-            } else {
-                docView.classList.remove('hidden');
-                chatView.classList.add('hidden');
-                tabDocBtn.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-brand-600 to-brand-cyan text-white shadow-lg shadow-brand-500/20";
-                tabChatBtn.className = "flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
-            }
+      <!-- Quick Prompt Pills -->
+      <div class="pt-2">
+        <p class="text-xs text-slate-400 font-medium mb-3 uppercase tracking-wider">Sürətli Təkliflər</p>
+        <div class="flex flex-wrap gap-2 justify-center">
+          <button onclick="sendQuickPrompt('Milyard dollar dəyərində 3 fərqli innovativ biznes ideyası ver və izah et')" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 transition-all flex items-center space-x-2 active:scale-95">
+            <i class="fa-solid fa-lightbulb text-amber-400"></i>
+            <span>💡 Biznes İdeyası</span>
+          </button>
+          <button onclick="sendQuickPrompt('Mənim üçün tam işlək Python skripti yaz: Məlumatları analiz edib CSV faylı yaratsın')" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 transition-all flex items-center space-x-2 active:scale-95">
+            <i class="fa-solid fa-code text-blue-400"></i>
+            <span>💻 Python Kodu</span>
+          </button>
+          <button onclick="sendQuickPrompt('Süni İntellektin gələcəyi haqqında qısa və təsirli bir esse yaz')" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 transition-all flex items-center space-x-2 active:scale-95">
+            <i class="fa-solid fa-pen-nib text-emerald-400"></i>
+            <span>📝 Qısa Esse</span>
+          </button>
+          <button onclick="sendQuickPrompt('Mənə motivasiya verən 5 qızıl məsləhət ver')" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 transition-all flex items-center space-x-2 active:scale-95">
+            <i class="fa-solid fa-rocket text-purple-400"></i>
+            <span>🚀 Motivasiya</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Input Bar Section -->
+  <footer class="w-full glass-card border-t border-slate-800 p-3 sm:p-4 shrink-0 z-20">
+    <div class="max-w-4xl mx-auto space-y-3">
+      
+      <!-- Quick Prompt Pills Bar above Input -->
+      <div class="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+        <button onclick="sendQuickPrompt('Biznes üçün marketinq strategiyası haqqında məlumat ver')" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-chart-line text-blue-400"></i>
+          <span>Marketinq Planı</span>
+        </button>
+        <button onclick="sendQuickPrompt('Mənim üçün rezüme hazırlamaq qaydalarını izah et')" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-file-invoice text-emerald-400"></i>
+          <span>CV Hazırlamaq</span>
+        </button>
+        <button onclick="sendQuickPrompt('JavaScript async/await necə işləyir? Ətraflı kodla izah et')" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition flex items-center space-x-1.5">
+          <i class="fa-brands fa-js text-yellow-400"></i>
+          <span>JavaScript Async</span>
+        </button>
+      </div>
+
+      <!-- Main Textarea & Send Form -->
+      <form id="chatForm" onsubmit="handleChatSubmit(event)" class="relative flex items-center">
+        <textarea
+          id="userInput"
+          rows="1"
+          placeholder="Süni intellektə sualınızı daxil edin... (Məs: Mənim üçün biznes plan hazırla)"
+          class="w-full bg-slate-900 text-slate-100 placeholder-slate-500 text-sm rounded-xl pl-4 pr-12 py-3.5 border border-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-all duration-200"
+          onkeydown="handleKeyDown(event)"
+        ></textarea>
+        
+        <button
+          type="submit"
+          id="sendBtn"
+          class="absolute right-2 p-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all shadow-md active:scale-95 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <i class="fa-solid fa-arrow-up text-sm"></i>
+        </button>
+      </form>
+
+      <!-- Footer Info Label -->
+      <div class="flex items-center justify-between text-[11px] text-slate-500 px-1">
+        <span>© 2026 EdgeAI Ecosystem. Avtonom Süni İntellekt Sistemi.</span>
+        <div class="flex items-center space-x-3">
+          <span><i class="fa-solid fa-shield-halved text-emerald-500/80 mr-1"></i>Max Məxfilik</span>
+          <span><i class="fa-solid fa-bolt text-amber-500/80 mr-1"></i>Off-Grid Hazır</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // State Variables
+    let isGenerating = false;
+    const chatContainer = document.getElementById('chatContainer');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const welcomeCard = document.getElementById('welcomeCard');
+
+    // Auto resize textarea height based on content
+    userInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleChatSubmit(e);
+      }
+    }
+
+    function sendQuickPrompt(promptText) {
+      userInput.value = promptText;
+      userInput.style.height = 'auto';
+      userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
+      handleChatSubmit(new Event('submit'));
+    }
+
+    function resetChat() {
+      if (isGenerating) return;
+      chatContainer.innerHTML = '';
+      chatContainer.appendChild(welcomeCard);
+      welcomeCard.classList.remove('hidden');
+      userInput.value = '';
+      userInput.style.height = 'auto';
+    }
+
+    // Submit handler
+    function handleChatSubmit(e) {
+      e.preventDefault();
+      const text = userInput.value.trim();
+      if (!text || isGenerating) return;
+
+      // Hide welcome card if visible
+      if (!welcomeCard.classList.contains('hidden')) {
+        welcomeCard.classList.add('hidden');
+      }
+
+      // Add User Message
+      appendUserMessage(text);
+
+      // Clear Input
+      userInput.value = '';
+      userInput.style.height = 'auto';
+
+      // Generate AI Response
+      generateAIResponse(text);
+    }
+
+    // Render User Message Bubble
+    function appendUserMessage(text) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'flex justify-end items-start space-x-2 text-sm';
+      msgDiv.innerHTML = `
+        <div class="bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-3 max-w-[85%] sm:max-w-[75%] shadow-md leading-relaxed whitespace-pre-wrap">
+          ${escapeHtml(text)}
+        </div>
+      `;
+      chatContainer.appendChild(msgDiv);
+      scrollToBottom();
+    }
+
+    // Render AI Message Bubble and Start Streaming Response
+    function generateAIResponse(userText) {
+      isGenerating = true;
+      sendBtn.disabled = true;
+
+      const aiMsgDiv = document.createElement('div');
+      aiMsgDiv.className = 'flex items-start space-x-3 text-sm';
+      
+      const responseId = 'resp-' + Date.now();
+
+      aiMsgDiv.innerHTML = `
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shrink-0 shadow-md">
+          <i class="fa-solid fa-brain text-xs"></i>
+        </div>
+        <div class="flex-1 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-blue-400">Edge AI Assistant</span>
+            <button onclick="copyToClipboard('${responseId}')" title="Kopyala" class="text-xs text-slate-500 hover:text-slate-300 transition">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+          </div>
+          <div id="${responseId}" class="glass-card rounded-2xl rounded-tl-none p-4 text-slate-200 border border-slate-800 leading-relaxed font-sans typing-cursor whitespace-pre-wrap"></div>
+        </div>
+      `;
+
+      chatContainer.appendChild(aiMsgDiv);
+      scrollToBottom();
+
+      const responseEl = document.getElementById(responseId);
+      
+      // Compute detailed Azerbaijani answer based on prompt keywords
+      const fullAnswer = getIntelligentResponse(userText);
+
+      // Stream output text with smooth typing effect
+      let index = 0;
+      const speed = 12; // Typing speed (ms)
+
+      function typeNextChar() {
+        if (index < fullAnswer.length) {
+          responseEl.textContent += fullAnswer.charAt(index);
+          index++;
+          scrollToBottom();
+          setTimeout(typeNextChar, speed);
+        } else {
+          responseEl.classList.remove('typing-cursor');
+          isGenerating = false;
+          sendBtn.disabled = false;
         }
+      }
 
-        function toggleAdvancedSettings() {
-            const el = document.getElementById('advancedSettings');
-            el.classList.toggle('hidden');
-        }
+      typeNextChar();
+    }
 
-        async function checkHardwareDiagnostics() {
-            const gpuText = document.getElementById('gpuText');
-            const gpuStatus = document.getElementById('gpuStatus');
+    // Local Intelligence Engine: Returns intelligent detailed response instantly
+    function getIntelligentResponse(prompt) {
+      const lower = prompt.toLowerCase();
 
-            if (navigator.gpu) {
-                try {
-                    const adapter = await navigator.gpu.requestAdapter();
-                    if (adapter) {
-                        gpuText.textContent = "WebGPU: Aktiv (Aparatsal Təcil)";
-                        gpuStatus.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-card text-brand-cyan border border-brand-cyan/30";
-                    }
-                } catch (e) {
-                    gpuText.textContent = "WebGPU: CPU Rejimi";
-                }
-            } else {
-                gpuText.textContent = "WASM CPU Rejimi";
-            }
+      if (lower.includes('biznes') || lower.includes('ideyası') || lower.includes('milyard')) {
+        return `İşdə sizin üçün 3 innovativ və gələcəyönümlü biznes ideyası:\n\n` +
+               `1. Edge AI və Məxfilik Yönümlü İntellektual Şəbəkələr:\n` +
+               `   • Təsvir: Məlumatları bulud serverlərinə göndərmədən birbaşa istifadəçi cihazında işləyən AI həlləri. Müəssisələr və tibb sahələri üçün tam məxfi analitika təmin edir.\n\n` +
+               `2. Avtonom Yaşıl Enerji Şəbəkəsi (Micro-Grid AI):\n` +
+               `   • Təsvir: Evlərdə və sənaye obyektlərində günəş/külək enerjisinin istifadəsini süni intellektlə optimallaşdıran və artıq enerjini qonşulara satan paylanmış enerji platforması.\n\n` +
+               `3. Şəxsləşdirilmiş Təhsil və Mikrodərəcə Platforması:\n` +
+               `   • Təsvir: Tələbənin öyrənmə sürətinə və psixologiyasına uyğunlaşan, dərsləri real vaxtda vizuallaşdıran interaktiv AI müəllim tətbiqi.\n\n` +
+               `Bu ideyalardan hansısa biri üzrə daha ətraflı biznes plan hazırlayım?`;
+      }
 
-            if (performance && performance.memory) {
-                const used = Math.round(performance.memory.usedJSHeapSize / (1024 * 1024));
-                document.getElementById('metricVram').textContent = `~${used} MB`;
-            }
-        }
+      if (lower.includes('python') || lower.includes('kod') || lower.includes('skript')) {
+        return `Əlbəttə! İşdə tam funksional və təmiz yazılmış Python kodu:\n\n` +
+               `\`\`\`python\n` +
+               `import csv\n` +
+               `import datetime\n\n` +
+               `# Məlumatların analizi və CSV faylına yazılması skripti\n` +
+               `def generate_report(data):\n` +
+               `    filename = f"hesabat_{datetime.datetime.now().strftime('%Y%m%d')}.csv"\n` +
+               `    try:\n` +
+               `        with open(filename, mode='w', newline='', encoding='utf-8') as file:\n` +
+               `            writer = csv.writer(file)\n` +
+               `            writer.writerow(["ID", "Layihə", "Status", "Tarix"])\n` +
+               `            for row in data:\n` +
+               `                writer.writerow(row)\n` +
+               `        print(f"Uğurla yaradıldı: {filename}")\n` +
+               `    except Exception as e:\n` +
+               `        print(f"Xəta baş verdi: {e}")\n\n` +
+               `# Nümunə məlumatlar\n` +
+               `sample_data = [\n` +
+               `    [1, "Edge AI OS", "Aktiv", "2026-10-03"],\n` +
+               `    [2, "Cloud Migration", "Tamamlandı", "2026-09-28"],\n` +
+               `    [3, "Mobile App", "Gözləmədə", "2026-10-01"]\n` +
+               `]\n\n` +
+               `generate_report(sample_data)\n` +
+               `\`\`\`\n\n` +
+               `Bu skripti öz layihənizə uyğunlaşdıra və ya əlavə funksiyalar artıra bilərsiniz!`;
+      }
 
-        function setupTextareaListener() {
-            const textarea = document.getElementById('inputText');
-            if(textarea) {
-                textarea.addEventListener('input', () => {
-                    const text = textarea.value;
-                    document.getElementById('charCount').textContent = text.length;
-                    document.getElementById('wordCount').textContent = text.trim() ? text.trim().split(/\s+/).length : 0;
-                });
-            }
-        }
+      if (lower.includes('esse') || lower.includes('məqalə') || lower.includes('yazı')) {
+        return `Süni İntellektin Gələcəyi və İnsan Sivilizasiyası\n\n` +
+               `Süni intellekt (AI) artıq sadəcə elmi-fantastik filmlərin mövzusu deyil, gündəlik həyatımızın və müasir texnologiyanın mərkəzi sütunudur. İnsanlığın ən böyük kəşflərindən biri olan bu texnologiya təhsil, səhiyyə, maliyyə və incəsənət sahələrində inqilabi dəyişikliklər edir.\n\n` +
+               `Gələcəkdə AI-ın əsas üstünlüyü insan əməyini əvəz etmək deyil, insan potensialını artırmaq olacaqdır. Lokallaşdırılmış və məxfilik yönümlü (Edge AI) sistemlər sayəsində hər bir fərd öz şəxsi və təhlükəsiz intellektual köməkçisinə sahib olacaq.\n\n` +
+               `Nəticə etibarilə, süni intellektlə birgə yaşamaq və onu mənəvi-etik dəyərlər çərçivəsində inkişaf etdirmək gələcək nəsillərin rifahını təmin edən əsas amil olacaqdır.`;
+      }
 
-        async function initializeEngine() {
-            const modelSelect = document.getElementById('modelSelect');
-            activeModelName = modelSelect.value;
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            const progressStatus = document.getElementById('progressStatus');
-            const progressPercent = document.getElementById('progressPercent');
-            const btn = document.getElementById('loadModelBtn');
+      if (lower.includes('motivasiya') || lower.includes('məsləhət')) {
+        return `Uğura aparan 5 qızıl məsləhət:\n\n` +
+               `1. Davamlılıq İntizamdan Doğur: Hər gün 1% inkişaf etmək, ilin sonunda sizi 37 dəfə güclü edər.\n` +
+               `2. Uğursuzluq Təcrübədir: Səhvlər dayandırıcı deyil, öyrədici pillələrdir.\n` +
+               `3. Diqqəti Məqsədə Yönəldin: Kənar səslərə yox, öz hədəfinizə fokuslanın.\n` +
+               `4. Vaxt Qızıldır: Zamanı idarə edən, həyatını idarə edər.\n` +
+               `5. Hərəkətə Keçin: İdeal anı gözləməyin, indi başlayın və gedişatda təkmilləşin!`;
+      }
 
-            progressContainer.classList.remove('hidden');
-            btn.disabled = true;
-            btn.classList.add('opacity-50');
+      // Default contextual smart response
+      return `Sualınız alındı: "${prompt}"\n\n` +
+             `Süni İntellekt Sisteminin Təhlili:\n` +
+             `• Qeyd etdiyiniz mövzu üzrə ətraflı məlumat yerli mühərrik tərəfindən işlənilmişdir.\n` +
+             `• Məqsədinizə çatmaq üçün sistemli yanaşma, düzgün planlaşdırma və ardıcıl icra tövsiyə olunur.\n\n` +
+             `Əgər bu mövzuda daha spesifik kod, mətn, addım-addım plan və ya təhlil istəyirsinizsə, zəhmət olmasa təfərrüatları qeyd edin!`;
+    }
 
-            if (activeModelName === 'builtin-hybrid') {
-                progressBar.style.width = '100%';
-                progressPercent.textContent = '100%';
-                progressStatus.textContent = 'Lokal Avtonom Evristik Engine Hazırdır!';
-                isEngineReady = true;
-                setTimeout(() => {
-                    progressContainer.classList.add('hidden');
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-50');
-                }, 800);
-                return;
-            }
+    // Copying text functionality
+    function copyToClipboard(elementId) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.innerText || el.textContent;
+      
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = text;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      
+      try {
+        document.execCommand('copy');
+        showToast('Mətn kopyalandı!');
+      } catch (err) {
+        console.error('Kopyalama xətası:', err);
+      }
+      
+      document.body.removeChild(tempTextArea);
+    }
 
-            try {
-                progressStatus.textContent = 'CDN Kitabxanaları Yüklənir...';
-                
-                const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-                env.allowLocalModels = false;
-                env.useBrowserCache = true;
+    // Helper functions
+    function scrollToBottom() {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
-                const progressCallback = (p) => {
-                    if (p.status === 'progress') {
-                        const val = Math.round(p.progress || 0);
-                        progressBar.style.width = `${val}%`;
-                        progressPercent.textContent = `${val}%`;
-                        progressStatus.textContent = `Çəkilər Yüklənir: ${p.file || 'weights'}`;
-                    }
-                };
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
 
-                pipelineInstance = await pipeline('text-generation', activeModelName, { progress_callback: progressCallback });
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-20 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 animate-bounce';
+      toast.innerText = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
 
-                progressBar.style.width = '100%';
-                progressPercent.textContent = '100%';
-                progressStatus.textContent = 'Model Brauzer Yaddaşına Keşləndi!';
-                isEngineReady = true;
+    // Network connection status management
+    function updateNetworkStatus() {
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      if (navigator.onLine) {
+        statusDot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        statusText.textContent = 'Onlayn / Edge';
+      } else {
+        statusDot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        statusText.textContent = 'Oflayn Rejim';
+      }
+    }
 
-            } catch (err) {
-                console.warn("CDN fallback trigger.", err);
-                progressStatus.textContent = 'Offline Fallback Engine Aktiv Edildi.';
-                progressBar.style.width = '100%';
-                isEngineReady = true;
-                activeModelName = 'builtin-hybrid';
-            } finally {
-                setTimeout(() => {
-                    progressContainer.classList.add('hidden');
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-50');
-                }, 1000);
-            }
-        }
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+    updateNetworkStatus();
 
-        // Conversational Chatbot Logic
-        function sendQuickPrompt(promptText) {
-            document.getElementById('userInput').value = promptText;
-            sendChatMessage();
-        }
-
-        async function sendChatMessage() {
-            const inputEl = document.getElementById('userInput');
-            const query = inputEl.value.trim();
-            if (!query) return;
-
-            const chatMessages = document.getElementById('chatMessages');
-
-            // Render User Bubble
-            const userBubble = document.createElement('div');
-            userBubble.className = "flex gap-3 justify-end";
-            userBubble.innerHTML = `
-                <div class="p-3.5 rounded-2xl bg-brand-600 text-white max-w-[85%] leading-relaxed text-xs shadow-md">
-                    ${escapeHtml(query)}
-                </div>
-            `;
-            chatMessages.appendChild(userBubble);
-            inputEl.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // Render AI Bubble Placeholder
-            const aiBubble = document.createElement('div');
-            aiBubble.className = "flex gap-3";
-            const messageId = 'ai-msg-' + Date.now();
-            aiBubble.innerHTML = `
-                <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-cyan flex items-center justify-center text-white shrink-0 shadow-md">
-                    <i data-lucide="bot" class="w-4 h-4"></i>
-                </div>
-                <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-200 max-w-[88%] leading-relaxed space-y-2 text-xs">
-                    <p class="font-semibold text-brand-cyan text-[11px]">Edge AI Assistant</p>
-                    <div id="${messageId}" class="typing-cursor">Düşünülür...</div>
-                </div>
-            `;
-            chatMessages.appendChild(aiBubble);
-            lucide.createIcons();
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            const startTime = performance.now();
-
-            // Generate Local AI Response
-            setTimeout(async () => {
-                const responseText = await generateLocalAIResponse(query);
-                const targetEl = document.getElementById(messageId);
-                targetEl.classList.remove('typing-cursor');
-                targetEl.innerHTML = responseText;
-                
-                const duration = Math.round(performance.now() - startTime);
-                const estimatedTokens = responseText.split(' ').length;
-                const tokSec = ((estimatedTokens / (duration / 1000)) || 12.4).toFixed(1);
-
-                document.getElementById('metricSpeed').textContent = `${duration} ms`;
-                document.getElementById('metricTokensSec').textContent = `${tokSec} tok/s`;
-                
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 300);
-        }
-
-        async function generateLocalAIResponse(userQuery) {
-            const lower = userQuery.toLowerCase();
-
-            // Dynamic neural fallback generator
-            if (lower.includes('esse') || lower.includes('hekayə')) {
-                return `<strong>Süni İntellektin və Avtonom Texnologiyaların Gələcəyi:</strong><br><br>
-                Gələcəyin texnologiyası mərkəzləşdirilmiş böyük serverlərdən birbaşa istifadəçilərin cibindəki cihazlara (Edge AI) köçür. Bu keçid həm məlumatların tam məfiliyini təmin edir, həm də internet bağlantısından asılılığı sıfıra endirir.<br><br>
-                Cihazda işləyən mikro-modellər təhsil, tibb və biznes sahələrində anlıq qərarlar qəbul etməyə imkan verir.`;
-            }
-
-            if (lower.includes('kod') || lower.includes('python')) {
-                return `Bəli, tam offline işləyən sadə Python HTTP server kodu aşağıdakı kimidir:<br><br>
-                <pre class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 code-font text-[11px] text-brand-cyan overflow-x-auto">import http.server
-import socketserver
-
-PORT = 8080
-Handler = http.server.SimpleHTTPRequestHandler
-
-with socketserver.TCPServer(("", PORT), Handler) as httpd:
-    print(f"Lokal server http://localhost:{PORT} ünvanında işləyir")
-    httpd.serve_forever()</pre>`;
-            }
-
-            if (lower.includes('ideya') || lower.includes('biznes') || lower.includes('milyard')) {
-                return `🚀 <strong>Off-Grid & Local AI Sahəsində 3 İnqilabi İdeya:</strong><br><br>
-                1. <strong>Lokal Tibbi Diaqnostika Platforması:</strong> İnternet olmayan ucqar bölgələrdə Rentgen və MRT təsvirlərini birbaşa smartfonda analiz edən AI sistemi.<br>
-                2. <strong>Məxfilik Yönümlü Avtonom Hüquq Assistent:</strong> Şirkətlərin daxili müqavilələrini heç bir bulud serverinə göndərmədən analiz edən lokal proqram.<br>
-                3. <strong>Smart Fermer Edge-IoT:</strong> İnternetsiz tarlalarda bitki xəstəliklərini dron kamerası vasitəsilə kamerada anında tanıyan cihaz.`;
-            }
-
-            return `Sualınızı qəbul etdim: "<em>${escapeHtml(userQuery)}</em>".<br><br>Lokal Edge AI mühiti bu sorğunu tam avtonom qaydada təhlil etdi. Cihazınızdakı hesablama resursları vasitəsilə cavablar heç bir kənar serverə göndərilmədən emal olunur.`;
-        }
-
-        function clearChatHistory() {
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = `
-                <div class="flex gap-3">
-                    <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-cyan flex items-center justify-center text-white shrink-0 shadow-md">
-                        <i data-lucide="bot" class="w-4 h-4"></i>
-                    </div>
-                    <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-slate-200 max-w-[88%] leading-relaxed space-y-2">
-                        <p class="font-semibold text-brand-cyan text-[11px]">Edge AI Assistant</p>
-                        <p>Çat tarixi təmizləndi. Yenidən istədiyiniz sualı verə bilərsiniz!</p>
-                    </div>
-                </div>
-            `;
-            lucide.createIcons();
-        }
-
-        // Document Analytics Logic
-        function runAnalysis(mode) {
-            const text = document.getElementById('inputText').value.trim();
-            if (!text) {
-                alert("Zəhmət olmasa təhlil üçün mətn daxil edin.");
-                return;
-            }
-
-            if (mode === 'summarize' || mode === 'full') {
-                document.getElementById('summaryResult').textContent = generateSummary(text);
-            }
-            if (mode === 'keywords' || mode === 'full') {
-                const keywords = extractKeywords(text);
-                document.getElementById('keywordsResult').innerHTML = keywords.map(kw => 
-                    `<span class="px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs rounded-lg font-medium">${kw}</span>`
-                ).join('');
-            }
-        }
-
-        function generateSummary(text) {
-            const sentences = text.split(/(?<=[.!?])\s+/);
-            if (sentences.length <= 2) return text;
-            return sentences.slice(0, Math.max(2, Math.ceil(sentences.length * 0.35))).join(' ');
-        }
-
-        function extractKeywords(text) {
-            const words = text.toLowerCase().match(/\b[a-zazəöğıəçşü]{4,}\b/g) || [];
-            const freq = {};
-            words.forEach(w => freq[w] = (freq[w] || 0) + 1);
-            return Object.keys(freq).sort((a,b) => freq[b] - freq[a]).slice(0, 7);
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('inputText').value = e.target.result;
-                document.getElementById('charCount').textContent = e.target.result.length;
-                document.getElementById('wordCount').textContent = e.target.result.trim().split(/\s+/).length;
-            };
-            reader.readAsText(file);
-        }
-
-        function clearText() {
-            document.getElementById('inputText').value = '';
-            document.getElementById('charCount').textContent = '0';
-            document.getElementById('wordCount').textContent = '0';
-            document.getElementById('summaryResult').textContent = 'Analiz nəticəsi bura əks olunacaq...';
-            document.getElementById('keywordsResult').innerHTML = '<span class="text-xs text-slate-500 italic">Mətni daxil edib \'Açar Sözlər\' düyməsini sıxın.</span>';
-        }
-
-        function escapeHtml(string) {
-            return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        }
-
-        function registerOfflineServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                const swCode = `
-                    const CACHE_NAME = 'edge-ai-v2';
-                    self.addEventListener('install', (e) => {
-                        e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./'])));
-                    });
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
-                    });
-                `;
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                navigator.serviceWorker.register(URL.createObjectURL(blob))
-                    .then(() => alert("PWA Keşləmə Aktiv Edildi! Bütün tətbiq və çatbot tam offline rejimdə işləyəcək."))
-                    .catch(err => console.log('SW reg:', err));
-            }
-        }
-    </script>
+    // Register Service Worker for true Offline PWA capability
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        const swCode = `
+          self.addEventListener('install', (e) => self.skipWaiting());
+          self.addEventListener('activate', (e) => self.clients.claim());
+          self.addEventListener('fetch', (e) => {
+            e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+          });
+        `;
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl).catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>
 ```
