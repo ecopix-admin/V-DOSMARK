@@ -1,317 +1,830 @@
-<!DOCTYPE html>
-<html lang="az">
+<!DOCTYPE html><html lang="az">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Video Generator Studio</title>
-  <!-- MP4Muxer kitabxanası - Brauzerdə MP4 faylı kodlaşdırmaq üçün -->
-  <script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.0/build/mp4-muxer.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container {
-      background: #1e293b;
-      padding: 25px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      border: 1px solid #334155;
-    }
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      text-align: center;
-      color: #38bdf8;
-    }
-    .input-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 0.9rem;
-      color: #94a3b8;
-    }
-    textarea, select, input {
-      width: 100%;
-      padding: 12px;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 0.95rem;
-      outline: none;
-    }
-    textarea { height: 80px; resize: none; }
-    button {
-      width: 100%;
-      padding: 14px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 10px;
-    }
-    button:hover { background: #1d4ed8; }
-    button:disabled { background: #475569; cursor: not-allowed; }
-    
-    #previewCanvas {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin-top: 15px;
-      background: #000;
-      display: block;
-    }
-    
-    .status {
-      margin-top: 15px;
-      font-size: 0.85rem;
-      text-align: center;
-      color: #38bdf8;
-      min-height: 20px;
-    }
-    video {
-      width: 100%;
-      margin-top: 15px;
-      border-radius: 8px;
-      display: none;
-    }
-  </style>
-</head>
-<body>
-
-<div class="container">
-  <h1>AI Video Generator</h1>
-
-  <div class="input-group">
-    <label for="videoText">Video Mətni / Titr:</label>
-    <textarea id="videoText" placeholder="Videoda görünəcək mətni yazın...">Gələcəyin Texnologiyası İndi Başlayır!</textarea>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07080d">
+<title>VidoStudio — Text to Video</title><style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:#07080d;color:#f5f7fb;font-family:Inter,Arial,sans-serif}
+body{overflow-x:hidden}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;border:0}
+.app{max-width:1200px;margin:auto;min-height:100vh;padding:18px}
+.top{
+display:flex;align-items:center;justify-content:space-between;
+padding:10px 2px 18px
+}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}
+.logoMark{
+width:38px;height:38px;border-radius:12px;
+display:grid;place-items:center;
+background:linear-gradient(135deg,#7c3aed,#06b6d4);
+box-shadow:0 8px 30px #0008
+}
+.status{font-size:12px;color:#8e96a8}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+.panel{
+background:#0d1017;border:1px solid #1c2230;
+border-radius:20px;padding:16px;
+box-shadow:0 15px 50px #0004
+}
+h2{font-size:16px;margin:0 0 14px}
+label{display:block;color:#9da6b8;font-size:12px;margin:14px 0 7px}
+textarea{
+width:100%;min-height:220px;resize:vertical;
+background:#080a0f;color:#f7f8fb;border:1px solid #252c3a;
+border-radius:14px;padding:14px;outline:none;line-height:1.5
+}
+textarea:focus{border-color:#7048ff}
+input[type=file]{display:none}
+.upload{
+display:flex;align-items:center;justify-content:center;
+min-height:92px;border:1px dashed #394154;border-radius:14px;
+color:#aeb6c7;background:#090c12;text-align:center
+}
+.upload strong{display:block;color:#fff;margin-bottom:4px}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+select{
+width:100%;background:#090c12;color:#fff;border:1px solid #252c3a;
+padding:11px;border-radius:12px;outline:none
+}
+.btn{
+padding:12px 14px;border-radius:12px;
+background:#191e29;color:#fff;border:1px solid #293142;
+font-weight:700
+}
+.btn:hover{filter:brightness(1.15)}
+.primary{
+background:linear-gradient(135deg,#7547ff,#5d32db);
+border:0;box-shadow:0 10px 30px #633cff35
+}
+.success{
+background:linear-gradient(135deg,#079669,#057a59)
+}
+.danger{background:#30131a;color:#ff9aaa}
+.full{width:100%}
+.preview{
+position:relative;background:#000;border-radius:18px;
+overflow:hidden;display:flex;justify-content:center;
+align-items:center;min-height:510px
+}
+canvas{
+display:block;background:#000;
+max-width:100%;max-height:70vh;
+object-fit:contain
+}
+.previewInfo{
+position:absolute;left:12px;top:12px;
+background:#0009;border:1px solid #ffffff16;
+backdrop-filter:blur(10px);
+padding:7px 10px;border-radius:9px;font-size:11px;color:#dce1eb
+}
+.controls{
+display:flex;gap:8px;align-items:center;
+padding-top:12px
+}
+.timeline{
+margin-top:14px;padding:13px;border-radius:14px;
+background:#090c12;border:1px solid #1c2230
+}
+.track{
+display:flex;gap:5px;height:62px;overflow:hidden
+}
+.clip{
+min-width:95px;flex:1;border-radius:9px;
+background:linear-gradient(135deg,#171c29,#10141d);
+border:1px solid #252d3c;padding:8px;
+font-size:10px;color:#b9c1d0;overflow:hidden
+}
+.clip.active{border-color:#7b4cff;box-shadow:inset 0 0 0 1px #7b4cff}
+.clipNum{font-size:9px;color:#795cff;margin-bottom:4px}
+.progressWrap{margin-top:12px;display:none}
+.progress{
+height:8px;background:#171c27;border-radius:20px;overflow:hidden
+}
+.progress i{
+display:block;width:0;height:100%;
+background:linear-gradient(90deg,#7145ff,#06c9d8);
+transition:width .15s
+}
+.progressText{font-size:11px;color:#9da6b8;margin-top:6px}
+.sceneList{margin-top:14px;display:grid;gap:7px}
+.scene{
+padding:10px;border:1px solid #202735;background:#0a0d13;
+border-radius:11px;font-size:11px;color:#aeb6c7
+}
+.scene b{color:#fff}
+.empty{
+color:#6f7788;font-size:13px;text-align:center;padding:30px
+}
+.badge{
+display:inline-block;font-size:10px;padding:4px 7px;
+border-radius:99px;background:#171d29;color:#aab3c5
+}
+.notice{
+margin-top:10px;padding:10px;border-radius:12px;
+background:#111621;color:#8993a7;font-size:11px;line-height:1.45
+}
+@media(max-width:850px){
+.app{padding:10px}
+.grid{grid-template-columns:1fr}
+.preview{min-height:430px}
+textarea{min-height:180px}
+.top{padding-bottom:10px}
+}
+</style></head><body>
+<div class="app"><header class="top">
+  <div class="logo">
+    <div class="logoMark">▶</div>
+    VidoStudio
   </div>
+  <div class="status" id="status">Hazır</div>
+</header><div class="grid"><section class="panel"><h2>🎬 Ssenarini videoya çevir</h2><label>Mətn / məqalə / ssenari</label>
 
-  <div class="input-group">
-    <label for="bgStyle">Vizual Stili Seçin:</label>
-    <select id="bgStyle">
-      <option value="cyberpunk">Cyberpunk Neon</option>
-      <option value="space">Kainat Dumanlığı</option>
-      <option value="gradient">Dinamik Qradiyent</option>
-    </select>
+<textarea id="script" placeholder="Məsələn:
+
+Azərbaycanın gözəl təbiəti haqqında qısa video hazırlamaq istəyirəm.
+
+Azərbaycan Qafqazın ən maraqlı ölkələrindən biridir. Burada dağlar, meşələr, çaylar və Xəzər dənizi bir aradadır.
+
+Bu torpağın hər bölgəsinin öz gözəlliyi və öz hekayəsi var..."></textarea><label>Şəkil əlavə et — istəyə bağlı</label>
+
+<label class="upload" for="imageInput">
+  <div>
+    <strong>Şəkil seç</strong>
+    <span id="imageName">Telefon qalereyasından şəkil əlavə et</span>
   </div>
+</label>
+<input id="imageInput" type="file" accept="image/*"><label>Video formatı</label>
+<select id="format">
 
-  <div class="input-group">
-    <label for="duration">Video Müddəti (saniyə):</label>
-    <select id="duration">
-      <option value="3">3 Saniyə</option>
-      <option value="5" selected>5 Saniyə</option>
-      <option value="10">10 Saniyə</option>
-    </select>
-  </div>
+<option value="portrait">9:16 — TikTok / Reels / Shorts</option>
+<option value="landscape">16:9 — YouTube</option>
+<option value="square">1:1 — Instagram</option>
+</select><label>Səs</label>
+<select id="voiceSelect">
 
-  <button id="generateBtn" onclick="generateVideo()">Video Hazırla və Yüklə (MP4)</button>
-
-  <div id="status" class="status"></div>
-
-  <!-- Gizli çəkiliş canvası -->
-  <canvas id="previewCanvas" width="720" height="1280"></canvas>
-  
-  <!-- Nəticə videosu -->
-  <video id="resultVideo" controls></video>
+<option value="">Brauzerin standart səsi</option>
+</select><div class="row" style="margin-top:12px">
+<button class="btn" id="previewBtn">▶ Önizləmə</button>
+<button class="btn primary" id="createBtn">✦ Video hazırla</button>
+</div><button class="btn success full" id="downloadBtn" style="margin-top:8px;display:none">
+⬇ Videonu telefona yadda saxla
+</button><button class="btn full" id="shareBtn" style="margin-top:8px;display:none">
+↗ Paylaş
+</button><div class="notice">
+Bu versiya tam client-side işləyir. Mətn brauzerdən çıxmır.
+Video renderi cihazın gücündən asılıdır.
+</div></section><section class="panel"><h2>Preview Studio <span class="badge" id="sceneCounter">0 səhnə</span></h2><div class="preview">
+<canvas id="canvas"></canvas>
+<div class="previewInfo" id="previewInfo">Video hazır deyil</div>
+</div><div class="controls">
+<button class="btn" id="backBtn">‹</button>
+<button class="btn primary" id="playBtn">▶</button>
+<button class="btn" id="nextBtn">›</button>
+<div style="flex:1"></div>
+<span class="badge" id="timeLabel">00:00</span>
+</div><div class="timeline">
+<div style="font-size:11px;color:#7f889a;margin-bottom:8px">TIMELINE</div>
+<div class="track" id="timeline"></div><div class="progressWrap" id="progressWrap">
+<div class="progress"><i id="progressBar"></i></div>
+<div class="progressText" id="progressText">Render hazırlanır...</div>
 </div>
+</div><div class="sceneList" id="sceneList">
+<div class="empty">Ssenarini yaz və “Video hazırla” düyməsinə bas.</div>
+</div></section>
+</div>
+</div><script>
+const $ = id => document.getElementById(id);
 
-<script>
-async function generateVideo() {
-  const text = document.getElementById('videoText').value || "Sınaq Mətni";
-  const style = document.getElementById('bgStyle').value;
-  const durationSec = parseInt(document.getElementById('duration').value);
-  const btn = document.getElementById('generateBtn');
-  const status = document.getElementById('status');
-  const canvas = document.getElementById('previewCanvas');
-  const ctx = canvas.getContext('2d');
-  const resultVideo = document.getElementById('resultVideo');
+const canvas = $("canvas");
+const ctx = canvas.getContext("2d");
 
-  if (!window.VideoEncoder) {
-    alert("Brauzeriniz WebCodecs API dəstəkləmir. Zəhmət olmasa Chrome və ya Edge brauzerindən istifadə edin.");
+let scenes = [];
+let currentScene = 0;
+let playing = false;
+let timer = null;
+let uploadedImage = null;
+let imageObject = null;
+let recorder = null;
+let recordedChunks = [];
+let renderedBlob = null;
+
+const W = {
+ portrait:[720,1280],
+ landscape:[1280,720],
+ square:[1080,1080]
+};
+
+function setStatus(t){
+  $("status").textContent=t;
+}
+
+function splitText(text){
+  text = text.replace(/\r/g,"").trim();
+
+  if(!text) return [];
+
+  let paragraphs = text
+    .split(/\n+/)
+    .map(x=>x.trim())
+    .filter(Boolean);
+
+  let result=[];
+
+  paragraphs.forEach(p=>{
+    let parts=p.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [p];
+
+    parts.forEach(s=>{
+      s=s.trim();
+      if(!s)return;
+
+      // Uzun cümlələri də böl
+      if(s.length>150){
+        const words=s.split(/\s+/);
+        let buf="";
+        words.forEach(w=>{
+          if((buf+" "+w).trim().length>125){
+            result.push(buf.trim());
+            buf=w;
+          }else{
+            buf+=(buf?" ":"")+w;
+          }
+        });
+        if(buf)result.push(buf.trim());
+      }else{
+        result.push(s);
+      }
+    });
+  });
+
+  return result;
+}
+
+function makeScenes(){
+  const text=$("script").value.trim();
+  const parts=splitText(text);
+
+  scenes=parts.map((text,i)=>({
+    text,
+    title:i===0 ? "Hekayə başlayır" : "",
+    duration:Math.max(3.5,Math.min(8,text.split(/\s+/).length/2.2+1.5))
+  }));
+
+  // çox uzun mətndə renderi idarəolunan saxlamaq
+  if(scenes.length>80) scenes=scenes.slice(0,80);
+
+  currentScene=0;
+
+  $("sceneCounter").textContent=scenes.length+" səhnə";
+
+  renderTimeline();
+  renderSceneList();
+  drawScene();
+}
+
+function renderTimeline(){
+  const el=$("timeline");
+  el.innerHTML="";
+
+  scenes.forEach((s,i)=>{
+    const d=document.createElement("div");
+    d.className="clip"+(i===currentScene?" active":"");
+    d.innerHTML=
+      '<div class="clipNum">SCENE '+(i+1)+'</div>'+
+      '<div>'+escapeHTML(s.text.slice(0,42))+'</div>';
+    d.onclick=()=>{
+      currentScene=i;
+      drawScene();
+      renderTimeline();
+    };
+    el.appendChild(d);
+  });
+}
+
+function renderSceneList(){
+  const el=$("sceneList");
+
+  if(!scenes.length){
+    el.innerHTML='<div class="empty">Ssenari daxil edilməyib.</div>';
     return;
   }
 
-  btn.disabled = true;
-  resultVideo.style.display = 'none';
-  status.textContent = "Video kadroları hazırlanır...";
-
-  const fps = 30;
-  const totalFrames = durationSec * fps;
-  const width = 720;
-  const height = 1280;
-
-  // MP4 Muxer konfiqurasiyası
-  let muxer = new Mp4Muxer.Muxer({
-    target: new Mp4Muxer.ArrayBufferTarget(),
-    video: {
-      codec: 'avc',
-      width: width,
-      height: height
-    },
-    fastStart: 'in-memory'
-  });
-
-  let videoEncoder = new VideoEncoder({
-    output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
-    error: (e) => console.error(e)
-  });
-
-  videoEncoder.configure({
-    codec: 'avc1.42001f', // H.264 High Profile
-    width: width,
-    height: height,
-    bitrate: 3_000_000 // 3 Mbps
-  });
-
-  // Kadroların çəkilməsi dövrü
-  for (let frameIndex = 0; frameIndex < totalFrames; frameIndex++) {
-    const progress = frameIndex / totalFrames;
-    status.textContent = `Kadrlar yaradılır: ${frameIndex + 1} / ${totalFrames}`;
-
-    // 1. Fonu çək
-    drawBackground(ctx, width, height, progress, style);
-
-    // 2. Mətni çək (böyümə və şəffaflıq animasiyası ilə)
-    drawText(ctx, text, width, height, progress);
-
-    // 3. Cadrdan VideoFrame yarat
-    const frame = new VideoFrame(canvas, {
-      timestamp: (frameIndex / fps) * 1_000_000 // mikrosaniyə
-    });
-
-    // 4. Enkodere göndər (hər 30 kadrdan bir KeyFrame)
-    videoEncoder.encode(frame, { keyFrame: frameIndex % 30 === 0 });
-    frame.close();
-
-    // UI donmasın deyə kiçik fasilə
-    await new Promise(r => setTimeout(r, 5));
-  }
-
-  status.textContent = "MP4 faylı formalaşdırılır...";
-  await videoEncoder.flush();
-  muxer.finalize();
-
-  // Yükləmə linki yarat
-  const { buffer } = muxer.target;
-  const blob = new Blob([buffer], { type: 'video/mp4' });
-  const url = URL.createObjectURL(blob);
-
-  resultVideo.src = url;
-  resultVideo.style.display = 'block';
-  status.textContent = "Video hazır oldu! Aşağıda baxa və ya yükləyə bilərsiniz.";
-
-  // Avtomatik yüklə
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ai-video-${Date.now()}.mp4`;
-  a.click();
-
-  btn.disabled = false;
+  el.innerHTML=scenes.map((s,i)=>
+    '<div class="scene"><b>'+String(i+1).padStart(2,"0")+
+    '</b> · '+escapeHTML(s.text)+'</div>'
+  ).join("");
 }
 
-// Fon animasiya effekti
-function drawBackground(ctx, w, h, t, style) {
-  if (style === 'cyberpunk') {
-    ctx.fillStyle = '#09090e';
-    ctx.fillRect(0, 0, w, h);
-    
-    // Yanan dairələr
-    let gradient = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, 400 + Math.sin(t * Math.PI * 2) * 50);
-    gradient.addColorStop(0, 'rgba(255, 0, 128, 0.8)');
-    gradient.addColorStop(0.5, 'rgba(0, 255, 240, 0.4)');
-    gradient.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, w, h);
-
-  } else if (style === 'space') {
-    let gradient = ctx.createLinearGradient(0, 0, w, h);
-    gradient.addColorStop(0, '#020617');
-    gradient.addColorStop(0.5, '#1e1b4b');
-    gradient.addColorStop(1, '#0f172a');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, w, h);
-
-    // Ulduzlar
-    ctx.fillStyle = '#ffffff';
-    for (let i = 0; i < 50; i++) {
-      let x = (Math.sin(i * 99 + t) * 0.5 + 0.5) * w;
-      let y = (Math.cos(i * 33 + t) * 0.5 + 0.5) * h;
-      let size = (Math.sin(t * 10 + i) + 1.5) * 2;
-      ctx.fillRect(x, y, size, size);
-    }
-
-  } else {
-    // Qradiyent
-    let gradient = ctx.createLinearGradient(0, 0, w * Math.sin(t * Math.PI), h);
-    gradient.addColorStop(0, '#2563eb');
-    gradient.addColorStop(1, '#9333ea');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, w, h);
-  }
+function escapeHTML(s){
+  return s.replace(/[&<>"']/g,m=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  }[m]));
 }
 
-// Mətni kadra çəkmək
-function drawText(ctx, text, w, h, t) {
+function resizeCanvas(){
+  const f=$("format").value;
+  const [w,h]=W[f];
+  canvas.width=w;
+  canvas.height=h;
+}
+
+function drawCoverImage(alpha=1){
+  if(!imageObject)return;
+
+  const cw=canvas.width,ch=canvas.height;
+  const iw=imageObject.width,ih=imageObject.height;
+
+  const scale=Math.max(cw/iw,ch/ih);
+  const dw=iw*scale,dh=ih*scale;
+  const x=(cw-dw)/2;
+  const y=(ch-dh)/2;
+
   ctx.save();
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  
-  // Animasiya: daxil olma və miqyas alma
-  let scale = 0.8 + Math.sin(t * Math.PI) * 0.3;
-  let alpha = Math.sin(t * Math.PI); // evə girib-çıxma şəffaflığı
-
-  ctx.translate(w / 2, h / 2);
-  ctx.scale(scale, scale);
-
-  ctx.font = 'bold 48px sans-serif';
-  ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(alpha * 1.5, 1)})`;
-  ctx.shadowColor = 'rgba(0,0,0,0.8)';
-  ctx.shadowBlur = 20;
-
-  // Çoxsətirli mətni bölmək
-  const words = text.split(' ');
-  let line = '';
-  let lines = [];
-  
-  for(let n = 0; n < words.length; n++) {
-    let testLine = line + words[n] + ' ';
-    let metrics = ctx.measureText(testLine);
-    if (metrics.width > w - 100 && n > 0) {
-      lines.push(line);
-      line = words[n] + ' ';
-    } else {
-      line = testLine;
-    }
-  }
-  lines.push(line);
-
-  let lineHeight = 60;
-  let startY = -((lines.length - 1) * lineHeight) / 2;
-
-  lines.forEach((l, index) => {
-    ctx.fillText(l.trim(), 0, startY + (index * lineHeight));
-  });
-
+  ctx.globalAlpha=alpha;
+  ctx.drawImage(imageObject,x,y,dw,dh);
   ctx.restore();
 }
-</script>
 
-</body>
+function drawScene(progress=0){
+  resizeCanvas();
+
+  const s=scenes[currentScene];
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // fon
+  const g=ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+  g.addColorStop(0,"#10172c");
+  g.addColorStop(1,"#030408");
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  if(imageObject){
+    // yüngül zoom/pan
+    ctx.save();
+
+    const zoom=1+progress*.12;
+    const cw=canvas.width,ch=canvas.height;
+    const iw=imageObject.width,ih=imageObject.height;
+    const scale=Math.max(cw/iw,ch/ih)*zoom;
+
+    const dw=iw*scale;
+    const dh=ih*scale;
+
+    const x=(cw-dw)/2-progress*30;
+    const y=(ch-dh)/2-progress*20;
+
+    ctx.globalAlpha=.88;
+    ctx.drawImage(imageObject,x,y,dw,dh);
+    ctx.restore();
+
+    const overlay=ctx.createLinearGradient(0,0,0,canvas.height);
+    overlay.addColorStop(0,"#0003");
+    overlay.addColorStop(.55,"#0005");
+    overlay.addColorStop(1,"#000d");
+
+    ctx.fillStyle=overlay;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+
+  if(!s){
+    ctx.fillStyle="#fff";
+    ctx.font="700 34px Arial";
+    ctx.textAlign="center";
+    ctx.fillText("VidoStudio",canvas.width/2,canvas.height/2);
+    $("previewInfo").textContent="Video hazır deyil";
+    return;
+  }
+
+  // dekorativ işıq
+  const rg=ctx.createRadialGradient(
+    canvas.width*.8,canvas.height*.15,10,
+    canvas.width*.8,canvas.height*.15,canvas.width*.7
+  );
+  rg.addColorStop(0,"#774cff33");
+  rg.addColorStop(1,"transparent");
+  ctx.fillStyle=rg;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // başlıq
+  if(s.title){
+    ctx.fillStyle="#ffffff";
+    ctx.font="800 "+Math.round(canvas.width*.045)+"px Arial";
+    ctx.textAlign="left";
+    ctx.fillText(s.title,canvas.width*.08,canvas.height*.18);
+  }
+
+  // subtitle
+  drawSubtitle(s.text);
+
+  $("previewInfo").textContent=
+    "Səhnə "+(currentScene+1)+" / "+scenes.length;
+
+  $("timeLabel").textContent=
+    formatTime(getSceneStart(currentScene)+progress*s.duration);
+}
+
+function drawSubtitle(text){
+  const maxWidth=canvas.width*.82;
+  const fontSize=Math.max(23,Math.round(canvas.width*.032));
+
+  ctx.font="700 "+fontSize+"px Arial";
+  ctx.textAlign="center";
+
+  const words=text.split(/\s+/);
+  const lines=[];
+  let line="";
+
+  words.forEach(word=>{
+    const test=(line+" "+word).trim();
+    if(ctx.measureText(test).width>maxWidth){
+      lines.push(line);
+      line=word;
+    }else{
+      line=test;
+    }
+  });
+
+  if(line)lines.push(line);
+
+  const lineH=fontSize*1.35;
+  const boxH=lines.length*lineH+34;
+  const y=canvas.height*.72;
+
+  ctx.fillStyle="#000b";
+  roundRect(
+    canvas.width*.07,
+    y,
+    canvas.width*.86,
+    boxH,
+    18
+  );
+  ctx.fill();
+
+  ctx.fillStyle="#fff";
+
+  lines.forEach((line,i)=>{
+    ctx.fillText(
+      line,
+      canvas.width/2,
+      y+28+fontSize+i*lineH
+    );
+  });
+}
+
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function getSceneStart(index){
+  let t=0;
+  for(let i=0;i<index;i++)t+=scenes[i].duration;
+  return t;
+}
+
+function getTotalDuration(){
+  return scenes.reduce((a,b)=>a+b.duration,0);
+}
+
+function formatTime(sec){
+  sec=Math.max(0,Math.floor(sec));
+  const m=Math.floor(sec/60);
+  const s=sec%60;
+  return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+
+function nextScene(){
+  if(!scenes.length)return;
+
+  if(currentScene<scenes.length-1){
+    currentScene++;
+    drawScene();
+    renderTimeline();
+  }else{
+    currentScene=0;
+    drawScene();
+    renderTimeline();
+  }
+}
+
+function prevScene(){
+  if(!scenes.length)return;
+
+  currentScene=Math.max(0,currentScene-1);
+  drawScene();
+  renderTimeline();
+}
+
+function speakCurrent(){
+  if(!("speechSynthesis" in window) || !scenes[currentScene])return;
+
+  speechSynthesis.cancel();
+
+  const u=new SpeechSynthesisUtterance(scenes[currentScene].text);
+
+  const voice=$("voiceSelect").value;
+  const v=speechSynthesis.getVoices().find(x=>x.name===voice);
+
+  if(v)u.voice=v;
+
+  u.rate=.95;
+  u.pitch=1;
+
+  speechSynthesis.speak(u);
+}
+
+function startPreview(){
+  if(!scenes.length){
+    makeScenes();
+    if(!scenes.length)return;
+  }
+
+  playing=true;
+  $("playBtn").textContent="❚❚";
+
+  let started=performance.now();
+
+  cancelAnimationFrame(timer);
+
+  function loop(now){
+    if(!playing)return;
+
+    let elapsed=(now-started)/1000;
+    let sceneStart=getSceneStart(currentScene);
+    let p=elapsed/scenes[currentScene].duration;
+
+    if(p>=1){
+      if(currentScene<scenes.length-1){
+        currentScene++;
+        started=now;
+        renderTimeline();
+        speakCurrent();
+        p=0;
+      }else{
+        playing=false;
+        $("playBtn").textContent="▶";
+        return;
+      }
+    }
+
+    drawScene(p);
+    timer=requestAnimationFrame(loop);
+  }
+
+  speakCurrent();
+  timer=requestAnimationFrame(loop);
+}
+
+function stopPreview(){
+  playing=false;
+  cancelAnimationFrame(timer);
+  speechSynthesis.cancel();
+  $("playBtn").textContent="▶";
+}
+
+async function renderVideo(){
+  if(!scenes.length)makeScenes();
+
+  if(!scenes.length){
+    alert("Əvvəlcə mətn yaz.");
+    return;
+  }
+
+  stopPreview();
+
+  if(!canvas.captureStream){
+    alert("Bu brauzer Canvas Video Recording-i dəstəkləmir.");
+    return;
+  }
+
+  const total=getTotalDuration();
+
+  $("progressWrap").style.display="block";
+  $("progressBar").style.width="0%";
+  $("progressText").textContent="Video hazırlanır...";
+
+  renderedBlob=null;
+  recordedChunks=[];
+
+  const stream=canvas.captureStream(30);
+
+  let mime="video/webm;codecs=vp9";
+
+  if(!MediaRecorder.isTypeSupported(mime))
+    mime="video/webm;codecs=vp8";
+
+  if(!MediaRecorder.isTypeSupported(mime))
+    mime="video/webm";
+
+  recorder=new MediaRecorder(stream,{
+    mimeType:mime,
+    videoBitsPerSecond:6000000
+  });
+
+  recorder.ondataavailable=e=>{
+    if(e.data.size)recordedChunks.push(e.data);
+  };
+
+  const stopped=new Promise(resolve=>{
+    recorder.onstop=resolve;
+  });
+
+  recorder.start(500);
+
+  const start=performance.now();
+
+  // Əgər TTS səsi lazımdırsa, səhnə zamanı brauzer səs verir,
+  // lakin bütün brauzerlər speechSynthesis səsini MediaRecorder-a
+  // audio track kimi vermir. Buna görə bu export təhlükəsiz
+  // client-side video qatını yaradır.
+
+  for(let i=0;i<scenes.length;i++){
+
+    currentScene=i;
+    renderTimeline();
+
+    const duration=scenes[i].duration;
+    const begin=performance.now();
+
+    while(performance.now()-begin<duration*1000){
+
+      const p=Math.min(
+        1,
+        (performance.now()-begin)/(duration*1000)
+      );
+
+      drawScene(p);
+
+      const overall=
+        (getSceneStart(i)+p*duration)/total;
+
+      $("progressBar").style.width=
+        Math.round(overall*100)+"%";
+
+      $("progressText").textContent=
+        "Render: "+Math.round(overall*100)+"% · "+
+        formatTime(getSceneStart(i)+p*duration)+
+        " / "+formatTime(total);
+
+      await new Promise(requestAnimationFrame);
+    }
+  }
+
+  drawScene(1);
+
+  recorder.stop();
+
+  await stopped;
+
+  renderedBlob=new Blob(recordedChunks,{
+    type:mime
+  });
+
+  $("progressBar").style.width="100%";
+  $("progressText").textContent=
+    "Hazırdır · "+formatTime(total);
+
+  $("downloadBtn").style.display="block";
+  $("shareBtn").style.display="block";
+
+  setStatus("Video hazırdır");
+}
+
+function downloadVideo(){
+  if(!renderedBlob)return;
+
+  const url=URL.createObjectURL(renderedBlob);
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="vidostudio-"+Date.now()+".webm";
+
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+
+async function shareVideo(){
+  if(!renderedBlob)return;
+
+  const file=new File(
+    [renderedBlob],
+    "vidostudio-video.webm",
+    {type:renderedBlob.type}
+  );
+
+  if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+    try{
+      await navigator.share({
+        title:"VidoStudio video",
+        text:"VidoStudio ilə hazırlanmış video",
+        files:[file]
+      });
+    }catch(e){}
+  }else{
+    downloadVideo();
+  }
+}
+
+$("imageInput").addEventListener("change",e=>{
+  const file=e.target.files[0];
+
+  if(!file)return;
+
+  $("imageName").textContent=file.name;
+
+  const reader=new FileReader();
+
+  reader.onload=ev=>{
+    const img=new Image();
+
+    img.onload=()=>{
+      imageObject=img;
+      drawScene();
+    };
+
+    img.src=ev.target.result;
+  };
+
+  reader.readAsDataURL(file);
+});
+
+$("createBtn").onclick=()=>{
+  makeScenes();
+  renderVideo();
+};
+
+$("previewBtn").onclick=()=>{
+  if(playing)stopPreview();
+  else startPreview();
+};
+
+$("playBtn").onclick=()=>{
+  if(playing)stopPreview();
+  else startPreview();
+};
+
+$("nextBtn").onclick=nextScene;
+$("backBtn").onclick=prevScene;
+
+$("downloadBtn").onclick=downloadVideo;
+$("shareBtn").onclick=shareVideo;
+
+$("format").onchange=()=>{
+  drawScene();
+};
+
+$("script").addEventListener("input",()=>{
+  clearTimeout(window.__typingTimer);
+
+  window.__typingTimer=setTimeout(()=>{
+    makeScenes();
+  },500);
+});
+
+function loadVoices(){
+  if(!("speechSynthesis" in window))return;
+
+  const voices=speechSynthesis.getVoices();
+  const select=$("voiceSelect");
+
+  const current=select.value;
+
+  select.innerHTML='<option value="">Brauzerin standart səsi</option>';
+
+  voices
+    .filter(v=>/az|tr|ru|en|de/i.test(v.lang+" "+v.name))
+    .forEach(v=>{
+      const o=document.createElement("option");
+      o.value=v.name;
+      o.textContent=v.name+" · "+v.lang;
+      select.appendChild(o);
+    });
+
+  if(current)select.value=current;
+}
+
+if("speechSynthesis" in window){
+  loadVoices();
+  speechSynthesis.onvoiceschanged=loadVoices;
+}
+
+resizeCanvas();
+drawScene();
+
+</script></body>
 </html>
