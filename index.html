@@ -1,2526 +1,317 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#07111f">
-<meta name="description" content="Vault P2P Mesh Chat">
-<title>Vault P2P Mesh</title><script src="https://cdn.tailwindcss.com"></script><script>
-tailwind.config={
- darkMode:'class',
- theme:{
-  extend:{
-   colors:{
-    vault:'#2563eb',
-    ink:'#07111f'
-   }
-  }
- }
-}
-</script><style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Inter,system-ui,sans-serif}
-body{background:#f5f7fb;color:#101827}
-body.dark{background:#050b14;color:#e8eef8}
-button,input,textarea{font:inherit}
-button{cursor:pointer}
-.no-scrollbar::-webkit-scrollbar{display:none}
-.no-scrollbar{scrollbar-width:none}
-.safe-top{padding-top:max(10px,env(safe-area-inset-top))}
-.safe-bottom{padding-bottom:max(10px,env(safe-area-inset-bottom))}
-.glass{background:rgba(255,255,255,.82);backdrop-filter:blur(18px)}
-.dark .glass{background:rgba(8,16,29,.84)}
-.bubble-me{background:#2563eb;color:white;border-bottom-right-radius:5px}
-.bubble-you{background:#fff;color:#111827;border:1px solid #e5e7eb;border-bottom-left-radius:5px}
-.dark .bubble-you{background:#101a2a;color:#e8eef8;border-color:#1d2a3e}
-.msg-translation{font-size:.78rem;opacity:.72;font-style:italic;margin-top:5px;border-top:1px solid rgba(128,128,128,.18);padding-top:4px}
-.fade{animation:fade .18s ease}
-.pop{animation:pop .2s ease}
-@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-@keyframes pop{0%{transform:scale(.94);opacity:.5}100%{transform:scale(1);opacity:1}}
-.ring{animation:ring 1.2s linear infinite}
-@keyframes ring{to{transform:rotate(360deg)}}
-.typing-dot{animation:blink 1.2s infinite}
-.typing-dot:nth-child(2){animation-delay:.15s}.typing-dot:nth-child(3){animation-delay:.3s}
-@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
-#chatMessages{background-image:radial-gradient(rgba(37,99,235,.035) 1px,transparent 1px);background-size:18px 18px}
-.dark #chatMessages{background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px)}
-video{max-width:100%;border-radius:14px}
-.modal-bg{background:rgba(0,0,0,.65);backdrop-filter:blur(8px)}
-.toast{animation:toast .25s ease}
-@keyframes toast{from{transform:translate(-50%,20px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
-.link{color:#60a5fa;text-decoration:underline;word-break:break-all}
-</style></head><body>
-<div id="app" class="h-full w-full"><!-- HEADER --><header class="glass dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 safe-top h-[72px] flex items-center px-4">
- <div class="flex items-center gap-3 w-full">
-  <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-blue-600/20">
-   V
-  </div>
-  <div class="min-w-0 flex-1">
-   <div class="font-black tracking-tight">Vault P2P</div>
-   <div class="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-    <span id="netDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-    <span id="networkText">Hazırlanır...</span>
-   </div>
-  </div>
-  <button id="newChatBtn" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-   <span class="text-lg">＋</span>
-  </button>
- </div>
-</header><!-- MAIN --><main id="main" class="h-[calc(100%-136px)] overflow-hidden"><!-- CHATS --><section id="screenChats" class="h-full overflow-y-auto no-scrollbar">
- <div class="px-4 pt-4 pb-2">
-  <div class="relative">
-   <input id="searchChats" placeholder="Çatlarda axtar..."
-    class="w-full h-12 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-transparent focus:border-blue-500 outline-none px-11">
-   <span class="absolute left-4 top-3.5 opacity-50">⌕</span>
-  </div>
- </div> <div id="chatList" class="px-2 pb-5"></div> <div id="emptyChats" class="h-[60vh] flex flex-col items-center justify-center text-center px-8">
-  <div class="w-20 h-20 rounded-[28px] bg-blue-600/10 text-blue-500 flex items-center justify-center text-4xl mb-5">⌁</div>
-  <h2 class="font-black text-xl mb-2">P2P söhbət başlat</h2>
-  <p class="text-sm text-slate-500 leading-6">Heç bir hesab və telefon nömrəsi lazım deyil. QR vasitəsilə başqa cihazla birbaşa bağlantı qur.</p>
-  <button id="startConnectionBtn" class="mt-5 px-5 py-3 rounded-2xl bg-blue-600 text-white font-bold">QR ilə qoşul</button>
- </div>
-</section><!-- CONTACTS --><section id="screenContacts" class="hidden h-full overflow-y-auto no-scrollbar">
- <div class="p-4">
-  <div class="flex items-center justify-between mb-4">
-   <div>
-    <h2 class="text-2xl font-black">Kontaktlar</h2>
-    <p class="text-xs text-slate-500">P2P cihazlar</p>
-   </div>
-   <button id="contactQrBtn" class="w-11 h-11 rounded-2xl bg-blue-600 text-white">QR</button>
-  </div>
-  <div id="contactsList"></div>
- </div>
-</section><!-- QR --><section id="screenQR" class="hidden h-full overflow-y-auto no-scrollbar">
- <div class="p-4">
-  <h2 class="text-2xl font-black">P2P QR</h2>
-  <p class="text-sm text-slate-500 mt-1">Qoşulma məlumatını QR ilə mübadilə et.</p>  <div class="grid grid-cols-2 gap-3 mt-5">
-   <button id="offerBtn" class="p-4 rounded-2xl bg-blue-600 text-white font-bold">
-    Təklif yarat
-   </button>
-   <button id="scanBtn" class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900 font-bold">
-    QR skan et
-   </button>
-  </div>  <div id="qrArea" class="hidden mt-5 rounded-3xl bg-slate-100 dark:bg-slate-900 p-5 text-center">
-   <div id="qrTitle" class="font-bold mb-4"></div>
-   <canvas id="qrCanvas" class="mx-auto rounded-xl bg-white p-3 max-w-full"></canvas>
-   <div id="qrInfo" class="text-xs text-slate-500 mt-4 break-all"></div>
-   <button id="qrCopyBtn" class="mt-4 px-5 py-3 rounded-2xl bg-blue-600 text-white font-bold">Mətni kopyala</button>
-  </div>  <div class="mt-5 p-4 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300 text-sm leading-6">
-   <b>Server yoxdur.</b> QR yalnız WebRTC qoşulma məlumatını digər telefona ötürmək üçün istifadə olunur.
-  </div>
- </div>
-</section><!-- PROFILE --><section id="screenProfile" class="hidden h-full overflow-y-auto no-scrollbar">
- <div class="p-4">
-  <h2 class="text-2xl font-black mb-5">Profil</h2>  <div class="rounded-3xl bg-slate-100 dark:bg-slate-900 p-5">
-   <div class="flex items-center gap-4">
-    <button id="avatarBtn" class="relative w-20 h-20 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center text-2xl font-black">
-     <span id="avatarLetter">V</span>
-     <img id="avatarImg" class="absolute inset-0 w-full h-full object-cover hidden">
-    </button>
-    <div class="flex-1">
-     <input id="profileName" class="w-full bg-transparent text-xl font-black outline-none" placeholder="Adınız">
-     <input id="profileStatus" class="w-full mt-1 bg-transparent text-sm text-slate-500 outline-none" placeholder="Status">
-    </div>
-   </div>   <input id="avatarFile" type="file" accept="image/*" capture="user" class="hidden">   <div class="mt-6 p-3 rounded-2xl bg-white/60 dark:bg-slate-950/50">
-    <div class="text-[10px] uppercase tracking-widest text-slate-500">Peer ID</div>
-    <div id="myPeerId" class="font-mono text-xs break-all mt-1"></div>
-   </div>   <button id="shareProfileBtn" class="w-full mt-4 h-12 rounded-2xl bg-blue-600 text-white font-bold">
-    Profilimi paylaş
-   </button>
-  </div>  <div class="mt-4 space-y-2">
-   <button id="themeBtn" class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-900 text-left">☼ &nbsp; Açıq / Qaranlıq rejim</button>
-   <button id="langBtn" class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-900 text-left">文 &nbsp; Dil: Azərbaycan</button>
-   <button id="exportBtn" class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-900 text-left">↓ &nbsp; Məlumatları eksport et</button>
-   <button id="clearBtn" class="w-full p-4 rounded-2xl bg-red-500/10 text-red-500 text-left">⌫ &nbsp; Lokal yaddaşı təmizlə</button>
-  </div>
- </div>
-</section><!-- SETTINGS --><section id="screenSettings" class="hidden h-full overflow-y-auto no-scrollbar">
- <div class="p-4">
-  <h2 class="text-2xl font-black mb-5">Tənzimləmələr</h2>  <div class="space-y-3">
-   <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900">
-    <div class="font-bold">Tərcümə</div>
-    <div class="text-xs text-slate-500 mt-1">Mesajların ikinci dilini göstər</div>
-    <select id="translationMode" class="mt-3 w-full h-11 rounded-xl bg-white dark:bg-slate-800 px-3 outline-none">
-     <option value="on">Orijinal + Tərcümə</option>
-     <option value="off">Yalnız orijinal</option>
-    </select>
-   </div>   <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900">
-    <div class="font-bold">Mənim dilim</div>
-    <select id="myLang" class="mt-3 w-full h-11 rounded-xl bg-white dark:bg-slate-800 px-3 outline-none">
-     <option value="az">Azərbaycan</option>
-     <option value="ru">Русский</option>
-     <option value="en">English</option>
-     <option value="tr">Türkçe</option>
-     <option value="de">Deutsch</option>
-    </select>
-   </div>   <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900">
-    <div class="font-bold">Təhlükəsizlik</div>
-    <p class="text-xs text-slate-500 mt-2 leading-5">
-     WebRTC DTLS nəqliyyat şifrələməsindən əlavə mesaj qatında AES-GCM istifadə olunur.
-     Şəxsi açarlar cihazdan kənara çıxmır.
-    </p>
-   </div>   <div class="p-4 rounded-2xl bg-green-500/10 text-green-600 dark:text-green-400">
-    <div class="font-bold">Mərkəzi hesab yoxdur</div>
-    <p class="text-xs mt-1 opacity-80">Telefon, e-poçt və parol tələb edilmir.</p>
-   </div>
-  </div>
- </div>
-</section><!-- CHAT --><section id="screenChat" class="hidden h-full flex flex-col bg-slate-50 dark:bg-slate-950">
- <div class="h-[64px] shrink-0 glass border-b border-slate-200 dark:border-slate-800 px-3 flex items-center gap-3">
-  <button id="backChat" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800">‹</button>
-  <div id="chatAvatar" class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">V</div>
-  <div class="min-w-0 flex-1">
-   <div id="chatName" class="font-bold truncate">P2P Kontakt</div>
-   <div id="chatStatus" class="text-[11px] text-slate-500">qoşulur...</div>
-  </div>
-  <button id="chatSearchBtn" class="w-9 h-9">⌕</button>
-  <button id="chatMenuBtn" class="w-9 h-9">⋮</button>
- </div> <div id="chatSearchBox" class="hidden px-3 py-2 border-b border-slate-200 dark:border-slate-800">
-  <input id="chatSearch" placeholder="Bu söhbətdə axtar..."
-   class="w-full h-10 rounded-xl bg-slate-100 dark:bg-slate-900 px-3 outline-none">
- </div> <div id="typingBar" class="hidden h-7 px-5 text-xs text-blue-500 items-center gap-1">
-  Yazır <span class="typing-dot">●</span><span class="typing-dot">●</span><span class="typing-dot">●</span>
- </div> <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-3 space-y-2"></div> <div class="shrink-0 p-2 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 safe-bottom">
-  <div class="flex items-end gap-2">
-   <button id="attachBtn" class="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-slate-900">＋</button>
-   <input id="fileInput" type="file" class="hidden" multiple>
-   <textarea id="messageInput" rows="1" placeholder="Mesaj yaz..."
-    class="flex-1 max-h-32 resize-none rounded-2xl bg-slate-100 dark:bg-slate-900 px-4 py-3 outline-none"></textarea>
-   <button id="micBtn" class="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-slate-900">●</button>
-   <button id="sendBtn" class="w-11 h-11 rounded-2xl bg-blue-600 text-white">➤</button>
-  </div>
- </div>
-</section></main><!-- BOTTOM NAV --><nav id="bottomNav" class="h-[64px] shrink-0 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 safe-bottom grid grid-cols-5">
- <button data-screen="Chats" class="navBtn text-blue-600 flex flex-col items-center justify-center gap-0.5">
-  <span class="text-xl">▤</span><small>Çatlar</small>
- </button>
- <button data-screen="Contacts" class="navBtn text-slate-500 flex flex-col items-center justify-center gap-0.5">
-  <span class="text-xl">♙</span><small>Kontaktlar</small>
- </button>
- <button data-screen="QR" class="navBtn text-slate-500 flex flex-col items-center justify-center gap-0.5">
-  <span class="text-xl">▦</span><small>QR</small>
- </button>
- <button data-screen="Profile" class="navBtn text-slate-500 flex flex-col items-center justify-center gap-0.5">
-  <span class="text-xl">○</span><small>Profil</small>
- </button>
- <button data-screen="Settings" class="navBtn text-slate-500 flex flex-col items-center justify-center gap-0.5">
-  <span class="text-xl">⚙</span><small>Ayar</small>
- </button>
-</nav></div><!-- MODAL --><div id="modal" class="hidden fixed inset-0 z-50 modal-bg items-center justify-center p-4">
- <div class="w-full max-w-md rounded-[28px] bg-white dark:bg-slate-900 p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
-  <div class="flex items-center justify-between mb-4">
-   <h3 id="modalTitle" class="text-xl font-black"></h3>
-   <button id="modalClose" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800">×</button>
-  </div>
-  <div id="modalBody"></div>
- </div>
-</div><!-- SCANNER --><div id="scanner" class="hidden fixed inset-0 z-[60] bg-black">
- <video id="scannerVideo" autoplay playsinline class="w-full h-full object-cover"></video>
- <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-  <div class="w-64 h-64 border-2 border-white rounded-3xl shadow-[0_0_0_9999px_rgba(0,0,0,.5)]"></div>
- </div>
- <button id="scannerClose" class="absolute top-5 right-5 w-12 h-12 rounded-full bg-white/20 text-white text-2xl">×</button>
- <div class="absolute bottom-12 left-0 right-0 text-center text-white text-sm">QR kodu çərçivənin içinə gətir</div>
-</div><div id="toast" class="hidden fixed z-[100] bottom-24 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl bg-slate-900 text-white text-sm shadow-xl"></div><script>
-/*
- VAULT P2P MESH CHAT
- Single-file WebRTC application.
-
- Qeyd:
- - Signaling server istifadə edilmir.
- - QR kod SDP offer/answer məlumatının daşınması üçündür.
- - WebRTC DataChannel əlaqəni birbaşa cihazlar arasında qurur.
- - Web Crypto AES-GCM + ECDH əlavə tətbiq səviyyəli şifrələmə qatıdır.
- - IndexedDB mesaj və kontaktları lokal saxlayır.
-*/
-
-// ---------------------------------------------------------
-// GLOBAL STATE
-// ---------------------------------------------------------
-
-const S={
- db:null,
- me:null,
- chats:{},
- contacts:{},
- activeChat:null,
- pc:null,
- dc:null,
- remoteKey:null,
- cryptoKey:null,
- makingOffer:false,
- iceTimer:null,
- scannerStream:null,
- scanRAF:null,
- recording:null,
- chunks:[],
- pendingFiles:new Map(),
- transferRx:new Map()
-};
-
-const $=id=>document.getElementById(id);
-
-// ---------------------------------------------------------
-// HELPERS
-// ---------------------------------------------------------
-
-function uid(n=16){
- const a=new Uint8Array(n);
- crypto.getRandomValues(a);
- return [...a].map(x=>x.toString(16).padStart(2,'0')).join('');
-}
-
-function now(){
- return Date.now();
-}
-
-function time(ts){
- return new Date(ts).toLocaleTimeString([],{
-  hour:'2-digit',
-  minute:'2-digit'
- });
-}
-
-function esc(s){
- return String(s??'')
-  .replaceAll('&','&amp;')
-  .replaceAll('<','&lt;')
-  .replaceAll('>','&gt;')
-  .replaceAll('"','&quot;')
-  .replaceAll("'","&#039;");
-}
-
-function linkify(s){
- return esc(s).replace(
-  /(https?:\/\/[^\s<]+)/g,
-  '<a class="link" target="_blank" rel="noopener noreferrer" href="$1">$1</a>'
- );
-}
-
-function toast(msg){
- const t=$('toast');
- t.textContent=msg;
- t.classList.remove('hidden');
- clearTimeout(toast.timer);
- toast.timer=setTimeout(()=>t.classList.add('hidden'),2600);
-}
-
-function modal(title,html){
- $('modalTitle').textContent=title;
- $('modalBody').innerHTML=html;
- $('modal').classList.remove('hidden');
- $('modal').classList.add('flex');
-}
-
-function closeModal(){
- $('modal').classList.add('hidden');
- $('modal').classList.remove('flex');
-}
-
-$('modalClose').onclick=closeModal;
-
-// ---------------------------------------------------------
-// INDEXED DB
-// ---------------------------------------------------------
-
-function openDB(){
- return new Promise((resolve,reject)=>{
-  const req=indexedDB.open('VaultP2P',1);
-
-  req.onupgradeneeded=e=>{
-   const db=e.target.result;
-
-   if(!db.objectStoreNames.contains('settings'))
-    db.createObjectStore('settings',{keyPath:'id'});
-
-   if(!db.objectStoreNames.contains('contacts'))
-    db.createObjectStore('contacts',{keyPath:'id'});
-
-   if(!db.objectStoreNames.contains('messages'))
-    db.createObjectStore('messages',{keyPath:'id'});
-
-   if(!db.objectStoreNames.contains('files'))
-    db.createObjectStore('files',{keyPath:'id'});
-  };
-
-  req.onsuccess=e=>{
-   S.db=e.target.result;
-   resolve();
-  };
-
-  req.onerror=()=>reject(req.error);
- });
-}
-
-function dbPut(store,obj){
- return new Promise((resolve,reject)=>{
-  const tx=S.db.transaction(store,'readwrite');
-  tx.objectStore(store).put(obj);
-  tx.oncomplete=()=>resolve();
-  tx.onerror=()=>reject(tx.error);
- });
-}
-
-function dbGet(store,id){
- return new Promise((resolve,reject)=>{
-  const tx=S.db.transaction(store,'readonly');
-  const r=tx.objectStore(store).get(id);
-  r.onsuccess=()=>resolve(r.result);
-  r.onerror=()=>reject(r.error);
- });
-}
-
-function dbAll(store){
- return new Promise((resolve,reject)=>{
-  const tx=S.db.transaction(store,'readonly');
-  const r=tx.objectStore(store).getAll();
-  r.onsuccess=()=>resolve(r.result||[]);
-  r.onerror=()=>reject(r.error);
- });
-}
-
-function dbClear(store){
- return new Promise((resolve,reject)=>{
-  const tx=S.db.transaction(store,'readwrite');
-  tx.objectStore(store).clear();
-  tx.oncomplete=resolve;
-  tx.onerror=()=>reject(tx.error);
- });
-}
-
-// ---------------------------------------------------------
-// LOCAL PROFILE
-// ---------------------------------------------------------
-
-async function loadProfile(){
- let p=await dbGet('settings','profile');
-
- if(!p){
-  const id=await makePeerId();
-  p={
-   id:'profile',
-   peerId:id,
-   name:'Vault User',
-   status:'P2P hazır',
-   lang:navigator.language?.toLowerCase().startsWith('ru')?'ru':
-        navigator.language?.toLowerCase().startsWith('en')?'en':'az',
-   avatar:'',
-   theme:'dark',
-   translation:'on'
-  };
-  await dbPut('settings',p);
- }
-
- S.me=p;
-
- $('profileName').value=p.name;
- $('profileStatus').value=p.status;
- $('myPeerId').textContent=p.peerId;
- $('myLang').value=p.lang;
- $('translationMode').value=p.translation;
-
- if(p.avatar){
-  $('avatarImg').src=p.avatar;
-  $('avatarImg').classList.remove('hidden');
-  $('avatarLetter').classList.add('hidden');
- }
-
- document.documentElement.classList.toggle('dark',p.theme==='dark');
- document.body.classList.toggle('dark',p.theme==='dark');
-}
-
-async function makePeerId(){
- const key=await crypto.subtle.generateKey(
-  {name:'ECDH',namedCurve:'P-256'},
-  true,
-  ['deriveKey','deriveBits']
- );
-
- const pub=await crypto.subtle.exportKey('raw',key.publicKey);
-
- const hash=await crypto.subtle.digest('SHA-256',pub);
-
- return 'vlt-'+
-  [...new Uint8Array(hash)]
-  .map(x=>x.toString(16).padStart(2,'0'))
-  .join('')
-  .slice(0,32);
-}
-
-async function saveProfile(){
- S.me.name=$('profileName').value.trim()||'Vault User';
- S.me.status=$('profileStatus').value.trim()||'P2P hazır';
- S.me.lang=$('myLang').value;
- S.me.translation=$('translationMode').value;
- await dbPut('settings',S.me);
-}
-
-// ---------------------------------------------------------
-// ECDH / AES-GCM
-// ---------------------------------------------------------
-
-async function createCryptoIdentity(){
- let saved=await dbGet('settings','crypto');
-
- if(saved?.jwk){
-  try{
-   const privateKey=await crypto.subtle.importKey(
-    'jwk',saved.jwk,
-    {name:'ECDH',namedCurve:'P-256'},
-    true,
-    ['deriveKey','deriveBits']
-   );
-
-   const publicKey=await crypto.subtle.importKey(
-    'jwk',saved.pub,
-    {name:'ECDH',namedCurve:'P-256'},
-    true,
-    []
-   );
-
-   return {privateKey,publicKey};
-  }catch(e){}
- }
-
- const kp=await crypto.subtle.generateKey(
-  {name:'ECDH',namedCurve:'P-256'},
-  true,
-  ['deriveKey','deriveBits']
- );
-
- const priv=await crypto.subtle.exportKey('jwk',kp.privateKey);
- const pub=await crypto.subtle.exportKey('jwk',kp.publicKey);
-
- await dbPut('settings',{
-  id:'crypto',
-  jwk:priv,
-  pub
- });
-
- return kp;
-}
-
-async function deriveAES(remoteJwk){
- const local=await createCryptoIdentity();
-
- const remote=await crypto.subtle.importKey(
-  'jwk',
-  remoteJwk,
-  {name:'ECDH',namedCurve:'P-256'},
-  false,
-  []
- );
-
- return crypto.subtle.deriveKey(
-  {
-   name:'ECDH',
-   public:remote
-  },
-  local.privateKey,
-  {
-   name:'AES-GCM',
-   length:256
-  },
-  false,
-  ['encrypt','decrypt']
- );
-}
-
-async function encryptText(text){
- if(!S.cryptoKey)return {plain:text};
-
- const iv=crypto.getRandomValues(new Uint8Array(12));
-
- const enc=new TextEncoder();
-
- const data=await crypto.subtle.encrypt(
-  {name:'AES-GCM',iv},
-  S.cryptoKey,
-  enc.encode(text)
- );
-
- return {
-  enc:true,
-  iv:Array.from(iv),
-  data:Array.from(new Uint8Array(data))
- };
-}
-
-async function decryptText(obj){
- if(!obj?.enc)return obj?.plain??'';
-
- if(!S.cryptoKey)throw Error('Encryption key unavailable');
-
- const data=await crypto.subtle.decrypt(
-  {
-   name:'AES-GCM',
-   iv:new Uint8Array(obj.iv)
-  },
-  S.cryptoKey,
-  new Uint8Array(obj.data)
- );
-
- return new TextDecoder().decode(data);
-}
-
-// ---------------------------------------------------------
-// WEBRTC
-// ---------------------------------------------------------
-
-function newPeerConnection(){
- if(S.pc){
-  try{S.pc.close()}catch(e){}
- }
-
- S.pc=new RTCPeerConnection({
-  iceServers:[
-   {urls:'stun:stun.l.google.com:19302'},
-   {urls:'stun:stun.cloudflare.com:3478'}
-  ]
- });
-
- S.pc.oniceconnectionstatechange=()=>{
-  const st=S.pc.iceConnectionState;
-
-  if(st==='connected'||st==='completed'){
-   setNetwork(true,'P2P Mesh Onlayn');
-   $('chatStatus').textContent='P2P qoşuludur';
-  }
-
-  if(st==='disconnected'||st==='failed'){
-   setNetwork(false,'P2P yenidən qoşulur...');
-   $('chatStatus').textContent='bağlantı kəsildi';
-   scheduleReconnect();
-  }
- };
-
- S.pc.onconnectionstatechange=()=>{
-  if(S.pc.connectionState==='connected'){
-   setNetwork(true,'P2P Mesh Onlayn');
-  }
- };
-
- S.pc.ondatachannel=e=>{
-  attachChannel(e.channel);
- };
-}
-
-function attachChannel(ch){
- S.dc=ch;
-
- ch.binaryType='arraybuffer';
-
- ch.onopen=async()=>{
-  setNetwork(true,'P2P Mesh Onlayn');
-  $('chatStatus').textContent='P2P qoşuludur';
-
-  await sendPacket({
-   type:'hello',
-   profile:{
-    peerId:S.me.peerId,
-    name:S.me.name,
-    status:S.me.status,
-    lang:S.me.lang
-   }
-  });
- };
-
- ch.onclose=()=>{
-  $('chatStatus').textContent='bağlantı kəsildi';
-  setNetwork(false,'Oflayn');
-  scheduleReconnect();
- };
-
- ch.onerror=()=>{
-  setNetwork(false,'P2P xəta');
- };
-
- ch.onmessage=handleChannelMessage;
-}
-
-function scheduleReconnect(){
- clearTimeout(S.reconnectTimer);
-
- S.reconnectTimer=setTimeout(()=>{
-  if(S.activeChat) toast('P2P yenidən qoşulmağa çalışır...');
- },4000);
-}
-
-async function sendPacket(packet){
- if(!S.dc||S.dc.readyState!=='open')return false;
-
- try{
-  S.dc.send(JSON.stringify(packet));
-  return true;
- }catch(e){
-  return false;
- }
-}
-
-async function createOffer(){
- newPeerConnection();
-
- const ch=S.pc.createDataChannel('vault-chat',{
-  ordered:true
- });
-
- attachChannel(ch);
-
- const offer=await S.pc.createOffer();
- await S.pc.setLocalDescription(offer);
-
- await waitICE();
-
- const identity=await createCryptoIdentity();
- const pub=await crypto.subtle.exportKey('jwk',identity.publicKey);
-
- const payload={
-  v:1,
-  kind:'offer',
-  from:S.me.peerId,
-  sdp:S.pc.localDescription.sdp,
-  crypto:pub,
-  profile:{
-   peerId:S.me.peerId,
-   name:S.me.name,
-   status:S.me.status,
-   lang:S.me.lang
-  }
- };
-
- showQR(payload,'Bu QR-ni qarşı tərəf skan etsin');
-}
-
-async function acceptOffer(payload){
- try{
-  newPeerConnection();
-
-  await S.pc.setRemoteDescription({
-   type:'offer',
-   sdp:payload.sdp
-  });
-
-  S.cryptoKey=await deriveAES(payload.crypto);
-
-  saveRemoteProfile(payload.profile);
-
-  const answer=await S.pc.createAnswer();
-  await S.pc.setLocalDescription(answer);
-
-  await waitICE();
-
-  const identity=await createCryptoIdentity();
-  const pub=await crypto.subtle.exportKey('jwk',identity.publicKey);
-
-  const response={
-   v:1,
-   kind:'answer',
-   from:S.me.peerId,
-   sdp:S.pc.localDescription.sdp,
-   crypto:pub,
-   profile:{
-    peerId:S.me.peerId,
-    name:S.me.name,
-    status:S.me.status,
-    lang:S.me.lang
-   }
-  };
-
-  showQR(response,'Bu cavab QR-ni birinci telefona qaytar');
- }catch(e){
-  toast('Offer qəbul edilmədi: '+e.message);
- }
-}
-
-async function acceptAnswer(payload){
- try{
-  if(!S.pc){
-   toast('Əvvəlcə Offer yaradın');
-   return;
-  }
-
-  await S.pc.setRemoteDescription({
-   type:'answer',
-   sdp:payload.sdp
-  });
-
-  S.cryptoKey=await deriveAES(payload.crypto);
-
-  saveRemoteProfile(payload.profile);
-
-  toast('Cavab qəbul edildi. Bağlantı qurulur...');
- }catch(e){
-  toast('Answer xətası');
- }
-}
-
-function waitICE(){
- return new Promise(resolve=>{
-  if(!S.pc)return resolve();
-
-  if(
-   S.pc.iceGatheringState==='complete'
-  )return resolve();
-
-  const fn=()=>{
-   if(S.pc.iceGatheringState==='complete'){
-    S.pc.removeEventListener('icegatheringstatechange',fn);
-    resolve();
-   }
-  };
-
-  S.pc.addEventListener('icegatheringstatechange',fn);
-
-  setTimeout(resolve,6000);
- });
-}
-
-// ---------------------------------------------------------
-// CHANNEL PACKETS
-// ---------------------------------------------------------
-
-async function handleChannelMessage(e){
- if(typeof e.data!=='string')return;
-
- let p;
-
- try{
-  p=JSON.parse(e.data);
- }catch(err){
-  return;
- }
-
- switch(p.type){
-
-  case'hello':
-   if(p.profile){
-    saveRemoteProfile(p.profile);
-
-    if(S.dc?.readyState==='open'){
-     await sendPacket({
-      type:'helloAck',
-      profile:{
-       peerId:S.me.peerId,
-       name:S.me.name,
-       status:S.me.status,
-       lang:S.me.lang
-      }
-     });
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Video Generator Studio</title>
+  <!-- MP4Muxer kitabxanası - Brauzerdə MP4 faylı kodlaşdırmaq üçün -->
+  <script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.0/build/mp4-muxer.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
     }
-   }
-   break;
-
-  case'helloAck':
-   if(p.profile)saveRemoteProfile(p.profile);
-   break;
-
-  case'message':
-   await receiveMessage(p);
-   break;
-
-  case'delivered':
-   updateMessageStatus(p.id,'delivered');
-   break;
-
-  case'read':
-   updateMessageStatus(p.id,'read');
-   break;
-
-  case'typing':
-   showTyping(p.value);
-   break;
-
-  case'reaction':
-   addReaction(p.id,p.reaction);
-   break;
-
-  case'delete':
-   deleteMessageLocal(p.id);
-   break;
-
-  case'fileStart':
-   startFileReceive(p);
-   break;
-
-  case'fileChunk':
-   receiveFileChunk(p);
-   break;
-
-  case'fileEnd':
-   finishFileReceive(p);
-   break;
- }
-}
-
-// ---------------------------------------------------------
-// CONTACTS
-// ---------------------------------------------------------
-
-async function saveRemoteProfile(profile){
- if(!profile?.peerId)return;
-
- const c={
-  id:profile.peerId,
-  peerId:profile.peerId,
-  name:profile.name||'P2P Kontakt',
-  status:profile.status||'',
-  lang:profile.lang||'en',
-  lastSeen:now()
- };
-
- S.contacts[c.id]=c;
- await dbPut('contacts',c);
-
- renderContacts();
- renderChats();
-}
-
-async function loadContacts(){
- const list=await dbAll('contacts');
-
- S.contacts={};
-
- list.forEach(x=>S.contacts[x.id]=x);
-
- renderContacts();
-}
-
-// ---------------------------------------------------------
-// CHATS / MESSAGES
-// ---------------------------------------------------------
-
-async function loadMessages(){
- const list=await dbAll('messages');
-
- S.chats={};
-
- for(const m of list){
-  if(!S.chats[m.chatId])S.chats[m.chatId]=[];
-  S.chats[m.chatId].push(m);
- }
-
- Object.values(S.chats).forEach(a=>a.sort((x,y)=>x.ts-y.ts));
-
- renderChats();
-}
-
-function renderChats(){
- const box=$('chatList');
- const empty=$('emptyChats');
-
- const ids=Object.keys(S.chats);
-
- if(!ids.length){
-  box.innerHTML='';
-  empty.classList.remove('hidden');
-  return;
- }
-
- empty.classList.add('hidden');
-
- const query=$('searchChats').value.toLowerCase();
-
- const rows=ids.map(id=>{
-  const arr=S.chats[id]||[];
-  const last=arr[arr.length-1];
-  const c=S.contacts[id]||{
-   name:'P2P Kontakt',
-   status:''
-  };
-
-  return {id,last,c};
- })
- .sort((a,b)=>(b.last?.ts||0)-(a.last?.ts||0))
- .filter(x=>
-  !query||
-  x.c.name.toLowerCase().includes(query)||
-  String(x.last?.plain||'').toLowerCase().includes(query)
- );
-
- box.innerHTML=rows.map(x=>`
-  <button data-chat="${esc(x.id)}"
-   class="chatOpen w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-900 text-left">
-   <div class="w-12 h-12 shrink-0 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
-    ${esc((x.c.name||'V')[0].toUpperCase())}
-   </div>
-   <div class="min-w-0 flex-1">
-    <div class="font-bold truncate">${esc(x.c.name)}</div>
-    <div class="text-xs text-slate-500 truncate">${x.last?esc(x.last.plain||'Media'):'Söhbətə başla'}</div>
-   </div>
-   <div class="text-[10px] text-slate-400">${x.last?time(x.last.ts):''}</div>
-  </button>
- `).join('');
-
- document.querySelectorAll('.chatOpen').forEach(b=>{
-  b.onclick=()=>openChat(b.dataset.chat);
- });
-}
-
-function renderContacts(){
- const box=$('contactsList');
- const list=Object.values(S.contacts);
-
- if(!list.length){
-  box.innerHTML=`
-   <div class="text-center py-20 text-slate-500">
-    Hələ kontakt yoxdur.<br>
-    QR ilə ilk cihazı əlavə et.
-   </div>`;
-  return;
- }
-
- box.innerHTML=list.map(c=>`
-  <button data-contact="${esc(c.id)}"
-   class="contactOpen w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-100 dark:bg-slate-900 mb-2 text-left">
-   <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
-    ${esc((c.name||'V')[0].toUpperCase())}
-   </div>
-   <div class="flex-1 min-w-0">
-    <div class="font-bold truncate">${esc(c.name)}</div>
-    <div class="text-xs text-slate-500 truncate">${esc(c.status||'P2P istifadəçi')}</div>
-   </div>
-   <span class="text-[10px] text-slate-400">›</span>
-  </button>
- `).join('');
-
- document.querySelectorAll('.contactOpen').forEach(b=>{
-  b.onclick=()=>openChat(b.dataset.contact);
- });
-}
-
-async function openChat(id){
- S.activeChat=id;
-
- if(!S.chats[id])S.chats[id]=[];
-
- const c=S.contacts[id]||{
-  name:'P2P Kontakt',
-  status:''
- };
-
- $('chatName').textContent=c.name;
- $('chatStatus').textContent=S.dc?.readyState==='open'?'P2P qoşuludur':'Qoşulma gözlənilir';
- $('chatAvatar').textContent=(c.name||'V')[0].toUpperCase();
-
- hideScreens();
- $('screenChat').classList.remove('hidden');
- $('bottomNav').classList.add('hidden');
-
- renderMessages();
-
- const unread=S.chats[id].filter(m=>m.from!=='me'&&m.status!=='read');
-
- for(const m of unread){
-  m.status='read';
-  await dbPut('messages',m);
-  if(S.dc?.readyState==='open')
-   sendPacket({type:'read',id:m.id});
- }
-}
-
-function renderMessages(){
- const box=$('chatMessages');
- const arr=S.chats[S.activeChat]||[];
- const query=$('chatSearch').value.toLowerCase();
-
- const visible=arr.filter(m=>
-  !query||
-  String(m.plain||'').toLowerCase().includes(query)
- );
-
- box.innerHTML=visible.map(messageHTML).join('');
-
- box.querySelectorAll('[data-long]').forEach(el=>{
-  el.addEventListener('contextmenu',e=>{
-   e.preventDefault();
-   messageMenu(el.dataset.long);
-  });
-
-  let timer;
-  el.addEventListener('touchstart',()=>{
-   timer=setTimeout(()=>messageMenu(el.dataset.long),600);
-  });
-  el.addEventListener('touchend',()=>clearTimeout(timer));
- });
-
- box.querySelectorAll('[data-speak]').forEach(b=>{
-  b.onclick=()=>{
-   const m=findMessage(b.dataset.speak);
-   if(m)speak(m.plain,S.me.lang);
-  };
- });
-
- box.querySelectorAll('[data-react]').forEach(b=>{
-  b.onclick=()=>reactMessage(b.dataset.react,'❤️');
- });
-
- box.querySelectorAll('img[data-media]').forEach(img=>{
-  img.onclick=()=>openImage(img.src);
- });
-
- box.querySelectorAll('video[data-media]').forEach(v=>{
-  v.onclick=e=>e.stopPropagation();
- });
-
- requestAnimationFrame(()=>{
-  box.scrollTop=box.scrollHeight;
- });
-}
-
-function messageHTML(m){
- const me=m.from==='me';
-
- let body='';
-
- if(m.kind==='text'){
-  body=`
-   <div class="text-[15px] leading-5">${linkify(m.plain)}</div>
-   ${
-    S.me.translation==='on'&&m.translation
-    ?`<div class="msg-translation">${esc(m.translation)}</div>`
-    :''
-   }
-  `;
- }
-
- if(m.kind==='image'&&m.url){
-  body=`
-   <img data-media src="${m.url}" class="max-w-[230px] max-h-[300px] object-cover rounded-xl">
-   ${m.translation?`<div class="msg-translation">${esc(m.translation)}</div>`:''}
-  `;
- }
-
- if(m.kind==='video'&&m.url){
-  body=`
-   <video data-media controls playsinline class="max-w-[260px]">
-    <source src="${m.url}">
-   </video>
-  `;
- }
-
- if(m.kind==='file'){
-  body=`
-   <button data-file="${esc(m.fileId)}" class="fileDownload text-left flex items-center gap-3">
-    <div class="w-11 h-11 rounded-xl bg-black/10 dark:bg-white/10 flex items-center justify-center">▱</div>
-    <div>
-     <div class="font-bold text-sm">${esc(m.fileName)}</div>
-     <div class="text-xs opacity-60">${formatBytes(m.size)} · Endirmə</div>
-    </div>
-   </button>
-  `;
- }
-
- if(m.kind==='audio'){
-  body=`
-   <audio controls src="${m.url}" class="max-w-[230px]"></audio>
-  `;
- }
-
- return `
- <div data-long="${esc(m.id)}" class="flex ${me?'justify-end':'justify-start'} fade">
-  <div class="max-w-[82%] ${me?'bubble-me':'bubble-you'} rounded-2xl px-3 py-2 shadow-sm">
-   ${body}
-   <div class="flex items-center justify-end gap-1 mt-1">
-    <span class="text-[10px] opacity-60">${time(m.ts)}</span>
-    ${me?`<span class="text-[11px]">${m.status==='read'?'✓✓':m.status==='delivered'?'✓✓':'✓'}</span>`:''}
-   </div>
-   ${m.reaction?`<div class="text-sm -mb-5 ml-1 relative z-10">${m.reaction}</div>`:''}
-  </div>
- </div>`;
-}
-
-function findMessage(id){
- return (S.chats[S.activeChat]||[]).find(m=>m.id===id);
-}
-
-async function saveMessage(m){
- if(!S.chats[m.chatId])S.chats[m.chatId]=[];
- S.chats[m.chatId].push(m);
- S.chats[m.chatId].sort((a,b)=>a.ts-b.ts);
- await dbPut('messages',m);
- renderMessages();
- renderChats();
-}
-
-// ---------------------------------------------------------
-// SEND TEXT
-// ---------------------------------------------------------
-
-let typingTimer;
-
-$('messageInput').addEventListener('input',()=>{
- autoGrow($('messageInput'));
-
- if(S.dc?.readyState==='open'){
-  sendPacket({type:'typing',value:true});
-  clearTimeout(typingTimer);
-  typingTimer=setTimeout(()=>{
-   sendPacket({type:'typing',value:false});
-  },900);
- }
-});
-
-$('messageInput').addEventListener('keydown',e=>{
- if(e.key==='Enter'&&!e.shiftKey){
-  e.preventDefault();
-  sendText();
- }
-});
-
-$('sendBtn').onclick=sendText;
-
-async function sendText(){
- const input=$('messageInput');
- const text=input.value.trim();
-
- if(!text)return;
-
- input.value='';
- autoGrow(input);
-
- const msg={
-  id:uid(),
-  chatId:S.activeChat,
-  from:'me',
-  ts:now(),
-  kind:'text',
-  plain:text,
-  status:'sent'
- };
-
- // Sadə client-side dil cütləri üçün lokal mini tərcümə.
- msg.translation=await localTranslate(text,S.me.lang,getRemoteLang());
-
- await saveMessage(msg);
-
- const packet={
-  type:'message',
-  id:msg.id,
-  ts:msg.ts,
-  kind:'text',
-  payload:await encryptText(text),
-  translation:msg.translation||''
- };
-
- const ok=await sendPacket(packet);
-
- if(ok){
-  msg.status='delivered';
-  await dbPut('messages',msg);
-  renderMessages();
-  sendPacket({type:'delivered',id:msg.id});
- }else{
-  toast('Mesaj növbəyə salındı — P2P bağlantı gözlənilir');
- }
-}
-
-// ---------------------------------------------------------
-// RECEIVE MESSAGE
-// ---------------------------------------------------------
-
-async function receiveMessage(p){
- let text='';
-
- try{
-  text=await decryptText(p.payload);
- }catch(e){
-  text='[Şifrəli mesaj oxunmadı]';
- }
-
- const c=S.contacts[S.activeChat||p.from];
-
- const chatId=p.from||c?.peerId;
-
- const msg={
-  id:p.id||uid(),
-  chatId,
-  from:'you',
-  ts:p.ts||now(),
-  kind:p.kind||'text',
-  plain:text,
-  translation:p.translation||'',
-  status:'delivered'
- };
-
- if(p.fileId){
-  msg.fileId=p.fileId;
- }
-
- await saveMessage(msg);
-
- sendPacket({type:'delivered',id:msg.id});
-
- if(S.activeChat===chatId){
-  msg.status='read';
-  await dbPut('messages',msg);
-  sendPacket({type:'read',id:msg.id});
- }else{
-  notifyMessage(c?.name||'Vault P2P',text);
- }
-
- playChime();
-}
-
-// ---------------------------------------------------------
-// TRANSLATION
-// ---------------------------------------------------------
-
-function getRemoteLang(){
- const c=S.contacts[S.activeChat];
- return c?.lang||'en';
-}
-
-async function localTranslate(text,from,to){
- if(!text||from===to)return '';
-
- // Lokal phrase/word buffer.
- const dict={
-  az:{
-   ru:{
-    'salam':'привет',
-    'necəsən':'как дела',
-    'necəsən?':'как дела?',
-    'sağ ol':'спасибо',
-    'təşəkkür edirəm':'спасибо',
-    'bəli':'да',
-    'xeyr':'нет',
-    'görüşərik':'увидимся',
-    'sabah':'завтра',
-    'bu gün':'сегодня',
-    'iş':'работа',
-    'ev':'дом'
-   },
-   en:{
-    'salam':'hello',
-    'necəsən':'how are you',
-    'necəsən?':'how are you?',
-    'sağ ol':'thank you',
-    'bəli':'yes',
-    'xeyr':'no',
-    'sabah':'tomorrow',
-    'bu gün':'today',
-    'iş':'work',
-    'ev':'home'
-   },
-   tr:{
-    'salam':'merhaba',
-    'necəsən':'nasılsın',
-    'sağ ol':'teşekkürler',
-    'bəli':'evet',
-    'xeyr':'hayır'
-   }
-  },
-  ru:{
-   az:{
-    'привет':'salam',
-    'спасибо':'sağ ol',
-    'да':'bəli',
-    'нет':'xeyr',
-    'завтра':'sabah',
-    'сегодня':'bu gün',
-    'работа':'iş',
-    'дом':'ev'
-   },
-   en:{
-    'привет':'hello',
-    'спасибо':'thank you',
-    'да':'yes',
-    'нет':'no'
-   }
-  },
-  en:{
-   az:{
-    'hello':'salam',
-    'thank you':'sağ ol',
-    'yes':'bəli',
-    'no':'xeyr',
-    'tomorrow':'sabah',
-    'today':'bu gün',
-    'work':'iş',
-    'home':'ev'
-   },
-   ru:{
-    'hello':'привет',
-    'thank you':'спасибо',
-    'yes':'да',
-    'no':'нет'
-   }
-  }
- };
-
- const source=dict[from]?.[to];
-
- if(source){
-  const key=text.trim().toLowerCase();
-
-  if(source[key])return source[key];
-
-  let result=text;
-
-  Object.entries(source)
-   .sort((a,b)=>b[0].length-a[0].length)
-   .forEach(([a,b])=>{
-    result=result.replace(
-     new RegExp('\\b'+escapeRegex(a)+'\\b','gi'),
-     b
-    );
-   });
-
-  if(result!==text)return result;
- }
-
- /*
-  Burada xarici API qoşulmadan təhlükəsiz fallback saxlanılır.
-  Real 100+ dil tərcüməsi üçün ayrıca translation backend/model
-  tələb olunur. Bu versiya serverə məlumat göndərmir.
- */
- return '';
-}
-
-function escapeRegex(s){
- return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-}
-
-// ---------------------------------------------------------
-// FILE TRANSFER
-// ---------------------------------------------------------
-
-$('attachBtn').onclick=()=>$('fileInput').click();
-
-$('fileInput').onchange=async e=>{
- const files=[...e.target.files];
-
- for(const file of files){
-  await sendFile(file);
- }
-
- e.target.value='';
-};
-
-async function sendFile(file){
- if(!S.dc||S.dc.readyState!=='open'){
-  toast('Fayl üçün P2P bağlantı lazımdır');
-  return;
- }
-
- const id=uid();
- const chunkSize=64*1024;
-
- const msg={
-  id:uid(),
-  chatId:S.activeChat,
-  from:'me',
-  ts:now(),
-  kind:file.type.startsWith('image/')?'image':
-       file.type.startsWith('video/')?'video':'file',
-  fileId:id,
-  fileName:file.name,
-  size:file.size,
-  status:'sent',
-  progress:0
- };
-
- // Lokal faylı saxla.
- await dbPut('files',{
-  id,
-  blob:file,
-  name:file.name,
-  type:file.type,
-  size:file.size
- });
-
- if(msg.kind==='image'){
-  msg.url=URL.createObjectURL(file);
- }
-
- if(msg.kind==='video'){
-  msg.url=URL.createObjectURL(file);
- }
-
- await saveMessage(msg);
-
- await sendPacket({
-  type:'fileStart',
-  fileId:id,
-  messageId:msg.id,
-  name:file.name,
-  size:file.size,
-  mime:file.type,
-  total:Math.ceil(file.size/chunkSize)
- });
-
- let offset=0;
- let index=0;
-
- while(offset<file.size){
-  const chunk=await file.slice(offset,offset+chunkSize).arrayBuffer();
-
-  const encrypted=await encryptBytes(chunk);
-
-  while(S.dc.bufferedAmount>2*1024*1024){
-   await sleep(20);
-  }
-
-  S.dc.send(JSON.stringify({
-   type:'fileChunk',
-   fileId:id,
-   index,
-   data:encrypted
-  }));
-
-  offset+=chunk.byteLength;
-  index++;
-
-  msg.progress=Math.round(offset/file.size*100);
-
-  if(msg.progress%10===0){
-   renderMessages();
-  }
- }
-
- await sendPacket({
-  type:'fileEnd',
-  fileId:id,
-  messageId:msg.id
- });
-
- msg.progress=100;
- await dbPut('messages',msg);
- renderMessages();
-
- toast('Fayl göndərildi');
-}
-
-async function encryptBytes(buffer){
- if(!S.cryptoKey)return {
-  plain:Array.from(new Uint8Array(buffer))
- };
-
- const iv=crypto.getRandomValues(new Uint8Array(12));
-
- const encrypted=await crypto.subtle.encrypt(
-  {name:'AES-GCM',iv},
-  S.cryptoKey,
-  buffer
- );
-
- return {
-  enc:true,
-  iv:Array.from(iv),
-  data:Array.from(new Uint8Array(encrypted))
- };
-}
-
-async function decryptBytes(obj){
- if(!obj.enc)return new Uint8Array(obj.plain).buffer;
-
- const data=await crypto.subtle.decrypt(
-  {name:'AES-GCM',iv:new Uint8Array(obj.iv)},
-  S.cryptoKey,
-  new Uint8Array(obj.data)
- );
-
- return data;
-}
-
-function startFileReceive(p){
- S.transferRx.set(p.fileId,{
-  fileId:p.fileId,
-  messageId:p.messageId,
-  name:p.name,
-  size:p.size,
-  mime:p.mime,
-  total:p.total,
-  chunks:new Array(p.total),
-  received:0
- });
-}
-
-async function receiveFileChunk(p){
- const t=S.transferRx.get(p.fileId);
-
- if(!t)return;
-
- try{
-  t.chunks[p.index]=await decryptBytes(p.data);
-  t.received++;
- }catch(e){
-  toast('Fayl şifrəsi açıla bilmədi');
- }
-}
-
-async function finishFileReceive(p){
- const t=S.transferRx.get(p.fileId);
-
- if(!t)return;
-
- const parts=t.chunks.filter(Boolean);
-
- const blob=new Blob(parts,{type:t.mime});
-
- await dbPut('files',{
-  id:t.fileId,
-  blob,
-  name:t.name,
-  type:t.mime,
-  size:t.size
- });
-
- let msg=findMessage(t.messageId);
-
- if(!msg){
-  msg={
-   id:t.messageId,
-   chatId:S.activeChat,
-   from:'you',
-   ts:now(),
-   kind:t.mime.startsWith('image/')?'image':
-        t.mime.startsWith('video/')?'video':'file',
-   fileId:t.fileId,
-   fileName:t.name,
-   size:t.size,
-   status:'delivered'
-  };
-
-  await saveMessage(msg);
- }else{
-  msg.progress=100;
-  await dbPut('messages',msg);
- }
-
- if(msg.kind==='image'||msg.kind==='video'||msg.kind==='audio'){
-  msg.url=URL.createObjectURL(blob);
- }
-
- S.transferRx.delete(p.fileId);
-
- renderMessages();
- toast('Fayl qəbul edildi');
-}
-
-// ---------------------------------------------------------
-// DOWNLOAD
-// ---------------------------------------------------------
-
-document.addEventListener('click',async e=>{
- const b=e.target.closest('[data-file]');
- if(!b)return;
-
- const f=await dbGet('files',b.dataset.file);
-
- if(!f){
-  toast('Fayl lokal yaddaşda tapılmadı');
-  return;
- }
-
- const url=URL.createObjectURL(f.blob);
-
- const a=document.createElement('a');
- a.href=url;
- a.download=f.name;
- a.click();
-
- setTimeout(()=>URL.revokeObjectURL(url),5000);
-});
-
-// ---------------------------------------------------------
-// MESSAGE MENU / REACTION / DELETE
-// ---------------------------------------------------------
-
-function messageMenu(id){
- const m=findMessage(id);
-
- if(!m)return;
-
- modal('Mesaj',{
-  toString(){}
- });
-
- $('modalBody').innerHTML=`
-  <div class="space-y-2">
-   <button id="copyMessage" class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-left">Kopyala</button>
-   <button id="speakMessage" class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-left">Səsləndir</button>
-   <button id="reactionMessage" class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-left">❤️ Reaksiya</button>
-   <button id="deleteMessage" class="w-full p-4 rounded-2xl bg-red-500/10 text-red-500 text-left">Sil</button>
-  </div>
- `;
-
- $('copyMessage').onclick=async()=>{
-  await navigator.clipboard?.writeText(m.plain||'');
-  toast('Kopyalandı');
-  closeModal();
- };
-
- $('speakMessage').onclick=()=>{
-  speak(m.plain,S.me.lang);
-  closeModal();
- };
-
- $('reactionMessage').onclick=()=>{
-  reactMessage(id,'❤️');
-  closeModal();
- };
-
- $('deleteMessage').onclick=()=>{
-  deleteMessage(id);
-  closeModal();
- };
-}
-
-async function deleteMessage(id){
- const m=findMessage(id);
-
- if(!m)return;
-
- m.deleted=true;
- m.plain='Bu mesaj silindi';
- m.translation='';
- m.kind='text';
-
- await dbPut('messages',m);
-
- await sendPacket({
-  type:'delete',
-  id
- });
-
- renderMessages();
-}
-
-async function deleteMessageLocal(id){
- const m=findMessage(id);
-
- if(!m)return;
-
- m.deleted=true;
- m.plain='Bu mesaj silindi';
- m.translation='';
- m.kind='text';
-
- await dbPut('messages',m);
-
- renderMessages();
-}
-
-async function reactMessage(id,reaction){
- const m=findMessage(id);
-
- if(!m)return;
-
- m.reaction=reaction;
-
- await dbPut('messages',m);
-
- await sendPacket({
-  type:'reaction',
-  id,
-  reaction
- });
-
- renderMessages();
-}
-
-function addReaction(id,reaction){
- const m=findMessage(id);
-
- if(!m)return;
-
- m.reaction=reaction;
- dbPut('messages',m);
- renderMessages();
-}
-
-// ---------------------------------------------------------
-// TTS
-// ---------------------------------------------------------
-
-function speak(text,lang){
- if(!('speechSynthesis'in window)){
-  toast('Bu brauzerdə səs sistemi yoxdur');
-  return;
- }
-
- const u=new SpeechSynthesisUtterance(text);
-
- const map={
-  az:'az-AZ',
-  ru:'ru-RU',
-  en:'en-US',
-  tr:'tr-TR',
-  de:'de-DE'
- };
-
- u.lang=map[lang]||lang||'en-US';
- u.rate=1;
-
- speechSynthesis.cancel();
- speechSynthesis.speak(u);
-}
-
-// ---------------------------------------------------------
-// VOICE RECORDING
-// ---------------------------------------------------------
-
-$('micBtn').onclick=async()=>{
- if(S.recording){
-  S.recording.stop();
-  return;
- }
-
- if(!navigator.mediaDevices?.getUserMedia){
-  toast('Mikrofon dəstəklənmir');
-  return;
- }
-
- try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-
-  S.chunks=[];
-
-  S.recording=new MediaRecorder(stream);
-
-  S.recording.ondataavailable=e=>{
-   if(e.data.size)S.chunks.push(e.data);
-  };
-
-  S.recording.onstop=async()=>{
-   stream.getTracks().forEach(t=>t.stop());
-
-   const blob=new Blob(S.chunks,{type:'audio/webm'});
-
-   S.recording=null;
-
-   await sendAudio(blob);
-
-   $('micBtn').textContent='●';
-  };
-
-  S.recording.start();
-
-  $('micBtn').textContent='■';
-
-  toast('Səs yazılır... dayandırmaq üçün toxun');
- }catch(e){
-  toast('Mikrofon icazəsi verilmədi');
- }
-};
-
-async function sendAudio(blob){
- const id=uid();
-
- await dbPut('files',{
-  id,
-  blob,
-  name:'voice.webm',
-  type:blob.type,
-  size:blob.size
- });
-
- const msg={
-  id:uid(),
-  chatId:S.activeChat,
-  from:'me',
-  ts:now(),
-  kind:'audio',
-  fileId:id,
-  size:blob.size,
-  url:URL.createObjectURL(blob),
-  status:'sent'
- };
-
- await saveMessage(msg);
-
- /*
-  Səs faylı da eyni chunk transfer mühərrikindən istifadə edir.
- */
- if(S.dc?.readyState!=='open'){
-  toast('Səs lokal saxlanıldı; P2P gözlənilir');
-  return;
- }
-
- await sendFileInternal(blob,id,'voice.webm',blob.type,msg.id);
-}
-
-async function sendFileInternal(file,fileId,name,mime,messageId){
- const chunkSize=64*1024;
- const total=Math.ceil(file.size/chunkSize);
-
- await sendPacket({
-  type:'fileStart',
-  fileId,
-  messageId,
-  name,
-  size:file.size,
-  mime,
-  total
- });
-
- let offset=0,index=0;
-
- while(offset<file.size){
-  const chunk=await file.slice(offset,offset+chunkSize).arrayBuffer();
-
-  while(S.dc.bufferedAmount>2*1024*1024)
-   await sleep(20);
-
-  S.dc.send(JSON.stringify({
-   type:'fileChunk',
-   fileId,
-   index,
-   data:await encryptBytes(chunk)
-  }));
-
-  offset+=chunk.byteLength;
-  index++;
- }
-
- await sendPacket({
-  type:'fileEnd',
-  fileId,
-  messageId
- });
-}
-
-// ---------------------------------------------------------
-// CAMERA / QR SCANNER
-// ---------------------------------------------------------
-
-$('scanBtn').onclick=startScanner;
-$('scannerClose').onclick=stopScanner;
-
-async function startScanner(){
- if(!navigator.mediaDevices?.getUserMedia){
-  toast('Kamera dəstəklənmir');
-  return;
- }
-
- try{
-  S.scannerStream=await navigator.mediaDevices.getUserMedia({
-   video:{facingMode:{ideal:'environment'}},
-   audio:false
-  });
-
-  $('scannerVideo').srcObject=S.scannerStream;
-  $('scanner').classList.remove('hidden');
-
-  if('BarcodeDetector'in window){
-   const detector=new BarcodeDetector({formats:['qr_code']});
-
-   const scan=async()=>{
-    if($('scanner').classList.contains('hidden'))return;
-
-    try{
-     const codes=await detector.detect($('scannerVideo'));
-
-     if(codes.length&&codes[0].rawValue){
-      handleQR(codes[0].rawValue);
-      stopScanner();
-      return;
-     }
-    }catch(e){}
-
-    S.scanRAF=requestAnimationFrame(scan);
-   };
-
-   S.scanRAF=requestAnimationFrame(scan);
-  }else{
-   toast('Bu brauzerdə QR BarcodeDetector yoxdur. QR mətnini kopyalayıb yapışdır.');
-  }
-
- }catch(e){
-  toast('Kamera icazəsi verilmədi');
- }
-}
-
-function stopScanner(){
- if(S.scanRAF)cancelAnimationFrame(S.scanRAF);
-
- S.scannerStream?.getTracks().forEach(t=>t.stop());
-
- S.scannerStream=null;
- $('scannerVideo').srcObject=null;
- $('scanner').classList.add('hidden');
-}
-
-async function handleQR(raw){
- try{
-  const payload=JSON.parse(raw);
-
-  if(payload.kind==='offer'){
-   await acceptOffer(payload);
-  }else if(payload.kind==='answer'){
-   await acceptAnswer(payload);
-  }else if(payload.kind==='profile'){
-   saveRemoteProfile(payload.profile);
-  }else{
-   toast('Naməlum QR kod');
-  }
- }catch(e){
-  toast('QR məlumatı düzgün deyil');
- }
-}
-
-// ---------------------------------------------------------
-// QR GENERATOR
-// ---------------------------------------------------------
-
-/*
- Xarici QR kitabxanası istifadə etmirik.
- Sadə QR encoder üçün qrcode-generator CDN yüklənir.
- Tək HTML qalır; kitabxana ayrıca backend tələb etmir.
-*/
-
-function loadQR(){
- return new Promise(resolve=>{
-  if(window.qrcode)return resolve();
-
-  const s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
-  s.onload=resolve;
-  s.onerror=()=>resolve();
-  document.head.appendChild(s);
- });
-}
-
-async function showQR(payload,title){
- await loadQR();
-
- $('qrArea').classList.remove('hidden');
- $('qrTitle').textContent=title;
-
- const raw=JSON.stringify(payload);
-
- $('qrInfo').textContent=raw.length>7000
-  ?'QR məlumatı böyükdür. Aşağıdakı mətni də istifadə edə bilərsən.'
-  :`Məlumat ölçüsü: ${raw.length} simvol`;
-
- const canvas=$('qrCanvas');
- const ctx=canvas.getContext('2d');
-
- if(window.qrcode){
-  try{
-   const qr=qrcode(0,'M');
-   qr.addData(raw);
-   qr.make();
-
-   const size=Math.min(320,window.innerWidth-70);
-   const cells=qr.getModuleCount();
-   const cell=Math.floor(size/cells);
-   const actual=cell*cells;
-
-   canvas.width=actual+24;
-   canvas.height=actual+24;
-
-   ctx.fillStyle='#fff';
-   ctx.fillRect(0,0,canvas.width,canvas.height);
-
-   ctx.fillStyle='#000';
-
-   for(let r=0;r<cells;r++){
-    for(let c=0;c<cells;c++){
-     if(qr.isDark(r,c))
-      ctx.fillRect(12+c*cell,12+r*cell,cell,cell);
+    .container {
+      background: #1e293b;
+      padding: 25px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid #334155;
     }
-   }
-  }catch(e){
-   canvas.width=300;
-   canvas.height=100;
-   ctx.fillStyle='#000';
-   ctx.font='12px monospace';
-   ctx.fillText('QR məlumatı çox böyükdür',10,30);
-  }
- }else{
-  canvas.width=300;
-  canvas.height=120;
-  ctx.fillStyle='#111';
-  ctx.font='13px monospace';
-  ctx.fillText('QR kitabxanası yüklənmədi',10,40);
- }
-
- $('qrCopyBtn').onclick=async()=>{
-  try{
-   await navigator.clipboard.writeText(raw);
-   toast('P2P məlumatı kopyalandı');
-  }catch(e){
-   modal('P2P məlumatı',`
-    <textarea class="w-full h-48 p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs">${esc(raw)}</textarea>`);
-}
-};
-}
-
-// ---------------------------------------------------------
-// PROFILE QR
-// ---------------------------------------------------------
-
-async function showProfileQR(){
-await loadQR();
-
-const payload={
-kind:'profile',
-profile:{
-peerId:S.me.peerId,
-name:S.me.name,
-status:S.me.status,
-lang:S.me.lang
-}
-};
-
-showQR(payload,'Profil QR kodun');
-}
-
-// ---------------------------------------------------------
-// NAVIGATION
-// ---------------------------------------------------------
-
-function hideScreens(){
-[
-'screenChats',
-'screenContacts',
-'screenQR',
-'screenProfile',
-'screenSettings',
-'screenChat'
-].forEach(id=>$(id).classList.add('hidden'));
-
-$('bottomNav').classList.remove('hidden');
-}
-
-function showScreen(name){
-hideScreens();
-
-const id='screen'+name;
-
-if($(id))$(id).classList.remove('hidden');
-
-document.querySelectorAll('.navBtn').forEach(b=>{
-b.classList.remove('text-blue-600');
-b.classList.add('text-slate-500');
-
-if(b.dataset.screen===name){
-b.classList.add('text-blue-600');
-b.classList.remove('text-slate-500');
-}
-});
-}
-
-document.querySelectorAll('.navBtn').forEach(b=>{
-b.onclick=()=>showScreen(b.dataset.screen);
-});
-
-$('backChat').onclick=()=>{
-showScreen('Chats');
-};
-
-$('startConnectionBtn').onclick=()=>{
-showScreen('QR');
-};
-
-$('newChatBtn').onclick=()=>{
-showScreen('QR');
-};
-
-// ---------------------------------------------------------
-// QR ACTIONS
-// ---------------------------------------------------------
-
-$('offerBtn').onclick=createOffer;
-
-$('contactQrBtn').onclick=showProfileQR;
-
-// ---------------------------------------------------------
-// PROFILE
-// ---------------------------------------------------------
-
-$('profileName').onchange=saveProfile;
-$('profileStatus').onchange=saveProfile;
-
-$('avatarBtn').onclick=()=>$('avatarFile').click();
-
-$('avatarFile').onchange=async e=>{
-const file=e.target.files[0];
-
-if(!file)return;
-
-const reader=new FileReader();
-
-reader.onload=async()=>{
-S.me.avatar=reader.result;
-
-$('avatarImg').src=reader.result;
-$('avatarImg').classList.remove('hidden');
-$('avatarLetter').classList.add('hidden');
-
-await saveProfile();
-};
-
-reader.readAsDataURL(file);
-};
-
-$('shareProfileBtn').onclick=async()=>{
-const data=JSON.stringify({
-kind:'profile',
-profile:{
-peerId:S.me.peerId,
-name:S.me.name,
-status:S.me.status,
-lang:S.me.lang
-}
-});
-
-if(navigator.share){
-try{
-await navigator.share({
-title:'Vault P2P',
-text:'Vault P2P profil bağlantısı',
-url:location.href+'#p2p='+btoa(unescape(encodeURIComponent(data)))
-});
-}catch(e){}
-}else{
-showProfileQR();
-}
-};
-
-$('themeBtn').onclick=async()=>{
-S.me.theme=S.me.theme==='dark'?'light':'dark';
-
-document.documentElement.classList.toggle('dark',S.me.theme==='dark');
-document.body.classList.toggle('dark',S.me.theme==='dark');
-
-await saveProfile();
-};
-
-$('langBtn').onclick=()=>{
-const langs=['az','ru','en'];
-const i=langs.indexOf(S.me.lang);
-S.me.lang=langs[(i+1)%langs.length];
-
-$('myLang').value=S.me.lang;
-
-saveProfile();
-
-toast(
-S.me.lang==='az'?'Dil: Azərbaycan':
-S.me.lang==='ru'?'Язык: Русский':'Language: English'
-);
-};
-
-$('myLang').onchange=saveProfile;
-$('translationMode').onchange=saveProfile;
-
-// ---------------------------------------------------------
-// SEARCH
-// ---------------------------------------------------------
-
-$('searchChats').oninput=renderChats;
-
-$('chatSearchBtn').onclick=()=>{
-$('chatSearchBox').classList.toggle('hidden');
-$('chatSearch').focus();
-};
-
-$('chatSearch').oninput=renderMessages;
-
-// ---------------------------------------------------------
-// SETTINGS / EXPORT
-// ---------------------------------------------------------
-
-$('exportBtn').onclick=async()=>{
-const messages=await dbAll('messages');
-const contacts=await dbAll('contacts');
-
-const data={
-exportedAt:new Date().toISOString(),
-profile:{
-peerId:S.me.peerId,
-name:S.me.name,
-status:S.me.status,
-lang:S.me.lang
-},
-contacts,
-messages
-};
-
-const blob=new Blob(
-[JSON.stringify(data,null,2)],
-{type:'application/json'}
-);
-
-const url=URL.createObjectURL(blob);
-
-const a=document.createElement('a');
-a.href=url;
-a.download='vault-p2p-export.json';
-a.click();
-
-setTimeout(()=>URL.revokeObjectURL(url),3000);
-
-toast('Eksport hazırlandı');
-};
-
-$('clearBtn').onclick=()=>{
-modal('Yaddaşı təmizlə',`
-
-  <p class="text-sm text-slate-500 leading-6">
-   Bütün lokal profil, kontakt və mesaj məlumatları silinəcək.
-   Bu əməliyyat geri qaytarılmır.
-  </p>
-  <button id="reallyClear" class="w-full mt-4 p-4 rounded-2xl bg-red-600 text-white font-bold">
-   Bəli, hamısını sil
-  </button>
- `);$('reallyClear').onclick=async()=>{
-await dbClear('messages');
-await dbClear('contacts');
-await dbClear('settings');
-
-location.reload();
-};
-};
-
-// ---------------------------------------------------------
-// NETWORK
-// ---------------------------------------------------------
-
-function setNetwork(ok,text){
-$('netDot').className='w-2 h-2 rounded-full '+(ok?'bg-green-500':'bg-amber-400');
-$('networkText').textContent=text;
-}
-
-// ---------------------------------------------------------
-// NOTIFICATIONS
-// ---------------------------------------------------------
-
-async function notifyMessage(title,text){
-if(!('Notification'in window))return;
-
-if(Notification.permission==='default'){
-try{
-await Notification.requestPermission();
-}catch(e){}
-}
-
-if(Notification.permission==='granted'){
-try{
-new Notification(title,{
-body:text.slice(0,120),
-tag:'vault-message'
-});
-}catch(e){}
-}
-}
-
-function playChime(){
-try{
-const AC=window.AudioContext||window.webkitAudioContext;
-
-if(!AC)return;
-
-const ac=new AC();
-const osc=ac.createOscillator();
-const gain=ac.createGain();
-
-osc.frequency.value=660;
-gain.gain.value=.035;
-
-osc.connect(gain);
-gain.connect(ac.destination);
-
-osc.start();
-
-setTimeout(()=>{
-osc.frequency.value=880;
-},80);
-
-setTimeout(()=>{
-osc.stop();
-ac.close();
-},150);
-}catch(e){}
-}
-
-// ---------------------------------------------------------
-// TYPING
-// ---------------------------------------------------------
-
-let typingHide;
-
-function showTyping(v){
-const bar=$('typingBar');
-
-if(v){
-bar.classList.remove('hidden');
-bar.classList.add('flex');
-
-clearTimeout(typingHide);
-
-typingHide=setTimeout(()=>{
-bar.classList.add('hidden');
-bar.classList.remove('flex');
-},1600);
-}else{
-bar.classList.add('hidden');
-bar.classList.remove('flex');
-}
-}
-
-// ---------------------------------------------------------
-// MESSAGE STATUS
-// ---------------------------------------------------------
-
-async function updateMessageStatus(id,status){
-for(const arr of Object.values(S.chats)){
-const m=arr.find(x=>x.id===id);
-
-if(m){
-m.status=status;
-await dbPut('messages',m);
-
-if(S.activeChat===m.chatId)
-renderMessages();
-
-return;
-}
-}
-}
-
-// ---------------------------------------------------------
-// IMAGE VIEWER
-// ---------------------------------------------------------
-
-function openImage(src){
-modal('Şəkil',`
-
-  <div class="bg-black rounded-2xl overflow-hidden">
-   <img src="${src}" class="w-full max-h-[65vh] object-contain">
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #38bdf8;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+    textarea, select, input {
+      width: 100%;
+      padding: 12px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    textarea { height: 80px; resize: none; }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+    button:hover { background: #1d4ed8; }
+    button:disabled { background: #475569; cursor: not-allowed; }
+    
+    #previewCanvas {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-top: 15px;
+      background: #000;
+      display: block;
+    }
+    
+    .status {
+      margin-top: 15px;
+      font-size: 0.85rem;
+      text-align: center;
+      color: #38bdf8;
+      min-height: 20px;
+    }
+    video {
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>AI Video Generator</h1>
+
+  <div class="input-group">
+    <label for="videoText">Video Mətni / Titr:</label>
+    <textarea id="videoText" placeholder="Videoda görünəcək mətni yazın...">Gələcəyin Texnologiyası İndi Başlayır!</textarea>
   </div>
-  <a href="${src}" download="vault-image" class="block mt-3 text-center p-3 rounded-xl bg-blue-600 text-white font-bold">
-   Yüklə
-  </a>
- `);
-}// ---------------------------------------------------------
-// UTILS
-// ---------------------------------------------------------
 
-function autoGrow(el){
-el.style.height='auto';
-el.style.height=Math.min(el.scrollHeight,128)+'px';
+  <div class="input-group">
+    <label for="bgStyle">Vizual Stili Seçin:</label>
+    <select id="bgStyle">
+      <option value="cyberpunk">Cyberpunk Neon</option>
+      <option value="space">Kainat Dumanlığı</option>
+      <option value="gradient">Dinamik Qradiyent</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label for="duration">Video Müddəti (saniyə):</label>
+    <select id="duration">
+      <option value="3">3 Saniyə</option>
+      <option value="5" selected>5 Saniyə</option>
+      <option value="10">10 Saniyə</option>
+    </select>
+  </div>
+
+  <button id="generateBtn" onclick="generateVideo()">Video Hazırla və Yüklə (MP4)</button>
+
+  <div id="status" class="status"></div>
+
+  <!-- Gizli çəkiliş canvası -->
+  <canvas id="previewCanvas" width="720" height="1280"></canvas>
+  
+  <!-- Nəticə videosu -->
+  <video id="resultVideo" controls></video>
+</div>
+
+<script>
+async function generateVideo() {
+  const text = document.getElementById('videoText').value || "Sınaq Mətni";
+  const style = document.getElementById('bgStyle').value;
+  const durationSec = parseInt(document.getElementById('duration').value);
+  const btn = document.getElementById('generateBtn');
+  const status = document.getElementById('status');
+  const canvas = document.getElementById('previewCanvas');
+  const ctx = canvas.getContext('2d');
+  const resultVideo = document.getElementById('resultVideo');
+
+  if (!window.VideoEncoder) {
+    alert("Brauzeriniz WebCodecs API dəstəkləmir. Zəhmət olmasa Chrome və ya Edge brauzerindən istifadə edin.");
+    return;
+  }
+
+  btn.disabled = true;
+  resultVideo.style.display = 'none';
+  status.textContent = "Video kadroları hazırlanır...";
+
+  const fps = 30;
+  const totalFrames = durationSec * fps;
+  const width = 720;
+  const height = 1280;
+
+  // MP4 Muxer konfiqurasiyası
+  let muxer = new Mp4Muxer.Muxer({
+    target: new Mp4Muxer.ArrayBufferTarget(),
+    video: {
+      codec: 'avc',
+      width: width,
+      height: height
+    },
+    fastStart: 'in-memory'
+  });
+
+  let videoEncoder = new VideoEncoder({
+    output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+    error: (e) => console.error(e)
+  });
+
+  videoEncoder.configure({
+    codec: 'avc1.42001f', // H.264 High Profile
+    width: width,
+    height: height,
+    bitrate: 3_000_000 // 3 Mbps
+  });
+
+  // Kadroların çəkilməsi dövrü
+  for (let frameIndex = 0; frameIndex < totalFrames; frameIndex++) {
+    const progress = frameIndex / totalFrames;
+    status.textContent = `Kadrlar yaradılır: ${frameIndex + 1} / ${totalFrames}`;
+
+    // 1. Fonu çək
+    drawBackground(ctx, width, height, progress, style);
+
+    // 2. Mətni çək (böyümə və şəffaflıq animasiyası ilə)
+    drawText(ctx, text, width, height, progress);
+
+    // 3. Cadrdan VideoFrame yarat
+    const frame = new VideoFrame(canvas, {
+      timestamp: (frameIndex / fps) * 1_000_000 // mikrosaniyə
+    });
+
+    // 4. Enkodere göndər (hər 30 kadrdan bir KeyFrame)
+    videoEncoder.encode(frame, { keyFrame: frameIndex % 30 === 0 });
+    frame.close();
+
+    // UI donmasın deyə kiçik fasilə
+    await new Promise(r => setTimeout(r, 5));
+  }
+
+  status.textContent = "MP4 faylı formalaşdırılır...";
+  await videoEncoder.flush();
+  muxer.finalize();
+
+  // Yükləmə linki yarat
+  const { buffer } = muxer.target;
+  const blob = new Blob([buffer], { type: 'video/mp4' });
+  const url = URL.createObjectURL(blob);
+
+  resultVideo.src = url;
+  resultVideo.style.display = 'block';
+  status.textContent = "Video hazır oldu! Aşağıda baxa və ya yükləyə bilərsiniz.";
+
+  // Avtomatik yüklə
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ai-video-${Date.now()}.mp4`;
+  a.click();
+
+  btn.disabled = false;
 }
 
-function sleep(ms){
-return new Promise(r=>setTimeout(r,ms));
+// Fon animasiya effekti
+function drawBackground(ctx, w, h, t, style) {
+  if (style === 'cyberpunk') {
+    ctx.fillStyle = '#09090e';
+    ctx.fillRect(0, 0, w, h);
+    
+    // Yanan dairələr
+    let gradient = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, 400 + Math.sin(t * Math.PI * 2) * 50);
+    gradient.addColorStop(0, 'rgba(255, 0, 128, 0.8)');
+    gradient.addColorStop(0.5, 'rgba(0, 255, 240, 0.4)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+
+  } else if (style === 'space') {
+    let gradient = ctx.createLinearGradient(0, 0, w, h);
+    gradient.addColorStop(0, '#020617');
+    gradient.addColorStop(0.5, '#1e1b4b');
+    gradient.addColorStop(1, '#0f172a');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+
+    // Ulduzlar
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 50; i++) {
+      let x = (Math.sin(i * 99 + t) * 0.5 + 0.5) * w;
+      let y = (Math.cos(i * 33 + t) * 0.5 + 0.5) * h;
+      let size = (Math.sin(t * 10 + i) + 1.5) * 2;
+      ctx.fillRect(x, y, size, size);
+    }
+
+  } else {
+    // Qradiyent
+    let gradient = ctx.createLinearGradient(0, 0, w * Math.sin(t * Math.PI), h);
+    gradient.addColorStop(0, '#2563eb');
+    gradient.addColorStop(1, '#9333ea');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, w, h);
+  }
 }
 
-function formatBytes(n){
-if(!n)return'0 B';
+// Mətni kadra çəkmək
+function drawText(ctx, text, w, h, t) {
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  // Animasiya: daxil olma və miqyas alma
+  let scale = 0.8 + Math.sin(t * Math.PI) * 0.3;
+  let alpha = Math.sin(t * Math.PI); // evə girib-çıxma şəffaflığı
 
-const units=['B','KB','MB','GB'];
-const i=Math.floor(Math.log(n)/Math.log(1024));
+  ctx.translate(w / 2, h / 2);
+  ctx.scale(scale, scale);
 
-return "${(n/Math.pow(1024,i)).toFixed(i?1:0)} ${units[i]}";
+  ctx.font = 'bold 48px sans-serif';
+  ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(alpha * 1.5, 1)})`;
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur = 20;
+
+  // Çoxsətirli mətni bölmək
+  const words = text.split(' ');
+  let line = '';
+  let lines = [];
+  
+  for(let n = 0; n < words.length; n++) {
+    let testLine = line + words[n] + ' ';
+    let metrics = ctx.measureText(testLine);
+    if (metrics.width > w - 100 && n > 0) {
+      lines.push(line);
+      line = words[n] + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+  lines.push(line);
+
+  let lineHeight = 60;
+  let startY = -((lines.length - 1) * lineHeight) / 2;
+
+  lines.forEach((l, index) => {
+    ctx.fillText(l.trim(), 0, startY + (index * lineHeight));
+  });
+
+  ctx.restore();
 }
-
-// ---------------------------------------------------------
-// PWA — GENERATED INLINE MANIFEST
-// ---------------------------------------------------------
-
-function installManifest(){
-const manifest={
-name:'Vault P2P Mesh',
-short_name:'Vault P2P',
-start_url:location.href,
-display:'standalone',
-background_color:'#050b14',
-theme_color:'#07111f',
-description:'Serverless P2P encrypted messenger',
-icons:[]
-};
-
-const blob=new Blob(
-[JSON.stringify(manifest)],
-{type:'application/manifest+json'}
-);
-
-const url=URL.createObjectURL(blob);
-
-const link=document.createElement('link');
-link.rel='manifest';
-link.href=url;
-
-document.head.appendChild(link);
-}
-
-// ---------------------------------------------------------
-// SERVICE WORKER
-// ---------------------------------------------------------
-
-/*
-Service Worker blob URL-ləri bəzi brauzerlərdə bloklandığı üçün
-burada tətbiqin özü işləməyə davam edir. GitHub Pages-də sonrakı
-mərhələdə ayrıca sw.js daha etibarlı PWA cache verir.
-*/
-
-// ---------------------------------------------------------
-// START
-// ---------------------------------------------------------
-
-async function init(){
-
-try{
-await openDB();
-await loadProfile();
-await loadContacts();
-await loadMessages();
-
-await createCryptoIdentity();
-
-setNetwork(false,'QR bağlantısı gözlənilir');
-
-if('Notification'in window&&Notification.permission==='default'){
-// Sakit şəkildə icazə sorğusu vermirik.
-}
-
-// URL hash ilə paylaşılmış profil
-if(location.hash.startsWith('#p2p=')){
-try{
-const raw=decodeURIComponent(
-escape(atob(location.hash.slice(5)))
-);
-
-const payload=JSON.parse(raw);
-
-if(payload.kind==='profile'){
- await saveRemoteProfile(payload.profile);
- showScreen('Contacts');
- toast('Profil kontaktlara əlavə edildi');
-}
-
-}catch(e){}
-}
-
-}catch(e){
-console.error(e);
-toast('Vault başladılarkən xəta baş verdi');
-}
-}
-
-window.addEventListener('online',()=>{
-setNetwork(false,'P2P bağlantısı gözlənilir');
-
-if(S.dc?.readyState==='open')
-setNetwork(true,'P2P Mesh Onlayn');
-});
-
-window.addEventListener('offline',()=>{
-setNetwork(false,'Oflayn Rejim');
-});
-
-window.addEventListener('beforeunload',()=>{
-try{S.pc?.close()}catch(e){}
-});
-
-init();
-
 </script>
+
 </body>
-      </html>
+</html>
