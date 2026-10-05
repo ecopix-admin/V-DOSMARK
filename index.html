@@ -2,31 +2,33 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#05070c">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>ARWORLD — Spatial World</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f">
+<meta name="description" content="Private universal P2P encrypted translation chat">
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<title>VAULT CHAT — Private P2P</title>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 
 <style>
 :root{
-  --bg:#05070c;
-  --panel:#0c111b;
-  --panel2:#101722;
-  --panel3:#151d2b;
-  --line:rgba(255,255,255,.09);
-  --line2:rgba(255,255,255,.15);
-  --text:#f4f7fb;
-  --muted:#7f8a9e;
-  --cyan:#00d9ff;
-  --blue:#477dff;
-  --green:#22d99b;
-  --red:#ff5577;
-  --yellow:#ffd45c;
-  --header:72px;
-  --nav:76px;
+  --bg:#06101d;
+  --panel:#0b1726;
+  --panel2:#101f31;
+  --panel3:#15283d;
+  --line:rgba(255,255,255,.08);
+  --text:#eef6ff;
+  --muted:#91a6ba;
+  --blue:#1687ff;
+  --blue2:#42a5ff;
+  --green:#20d68b;
+  --red:#ff5571;
+  --yellow:#ffc857;
+  --bubble:#10283f;
+  --bubble2:#087df0;
+  --shadow:0 18px 60px rgba(0,0,0,.38);
 }
 
 *{
@@ -41,2404 +43,1261 @@ html,body{
   overflow:hidden;
   background:var(--bg);
   color:var(--text);
-  font-family:
-    Inter,
-    Roboto,
-    Arial,
-    sans-serif;
+  font-family:Inter,Roboto,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
-body{
-  overscroll-behavior:none;
-}
-
-button,
-input,
-textarea,
-select{
+button,input,textarea,select{
   font:inherit;
 }
 
 button{
-  color:inherit;
-}
-
-#app{
-  position:fixed;
-  inset:0;
-  overflow:hidden;
-  background:var(--bg);
-}
-
-/* =====================================================
-   VIEWS
-===================================================== */
-
-.view{
-  position:absolute;
-  inset:0;
-  display:none;
-}
-
-.view.active{
-  display:block;
-}
-
-/* =====================================================
-   HEADER
-===================================================== */
-
-.topbar{
-  position:absolute;
-  z-index:500;
-  top:0;
-  left:0;
-  right:0;
-  height:var(--header);
-  padding:
-    calc(env(safe-area-inset-top) + 9px)
-    12px
-    8px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  pointer-events:none;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(3,5,10,.96),
-      rgba(3,5,10,.72),
-      transparent
-    );
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  pointer-events:auto;
-}
-
-.brandMark{
-  width:36px;
-  height:36px;
-  border-radius:11px;
-  border:1px solid rgba(0,217,255,.42);
-  background:
-    linear-gradient(
-      145deg,
-      rgba(0,217,255,.12),
-      rgba(71,125,255,.07)
-    );
-  display:grid;
-  place-items:center;
-  color:var(--cyan);
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:-1px;
-}
-
-.brandText strong{
-  display:block;
-  font-size:17px;
-  letter-spacing:.8px;
-}
-
-.brandText small{
-  display:block;
-  margin-top:2px;
-  font-size:8px;
-  color:var(--cyan);
-  letter-spacing:1.7px;
-}
-
-.headerRight{
-  margin-left:auto;
-  display:flex;
-  gap:7px;
-  pointer-events:auto;
-}
-
-.iconButton{
-  width:40px;
-  height:40px;
-  border-radius:13px;
-  border:1px solid var(--line);
-  background:rgba(12,17,27,.86);
-  display:grid;
-  place-items:center;
-  font-size:18px;
-  backdrop-filter:blur(15px);
-  cursor:pointer;
-}
-
-.iconButton:active{
-  transform:scale(.94);
-}
-
-/* =====================================================
-   AR CAMERA
-===================================================== */
-
-#camera{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  background:#000;
-}
-
-.cameraShade{
-  position:absolute;
-  inset:0;
-  z-index:2;
-  pointer-events:none;
-  background:
-    radial-gradient(
-      ellipse at center,
-      transparent 0%,
-      rgba(0,0,0,.05) 45%,
-      rgba(0,0,0,.45) 100%
-    );
-}
-
-.arStatus{
-  position:absolute;
-  z-index:100;
-  left:12px;
-  right:12px;
-  top:
-    calc(
-      env(safe-area-inset-top) +
-      78px
-    );
-  display:flex;
-  gap:6px;
-  pointer-events:none;
-}
-
-.status{
-  padding:7px 10px;
-  border-radius:999px;
-  background:rgba(4,8,14,.72);
-  border:1px solid rgba(255,255,255,.11);
-  backdrop-filter:blur(14px);
-  color:#cbd4e3;
-  font-size:9px;
-}
-
-.status b{
-  color:var(--green);
-}
-
-/* =====================================================
-   SEARCH
-===================================================== */
-
-.searchWrap{
-  position:absolute;
-  z-index:150;
-  left:12px;
-  right:12px;
-  top:
-    calc(
-      env(safe-area-inset-top) +
-      120px
-    );
-  display:none;
-  gap:7px;
-}
-
-.searchWrap.show{
-  display:flex;
-}
-
-.searchInput{
-  min-width:0;
-  flex:1;
-  height:45px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(4,8,15,.82);
-  color:#fff;
-  padding:0 13px;
-  outline:none;
-  backdrop-filter:blur(16px);
-}
-
-.searchButton{
-  width:75px;
-  height:45px;
-  border-radius:14px;
-  border:1px solid rgba(0,217,255,.22);
-  background:rgba(0,217,255,.10);
-  color:var(--cyan);
-  font-size:10px;
-  font-weight:800;
-  cursor:pointer;
-}
-
-.searchResults{
-  position:absolute;
-  z-index:160;
-  left:12px;
-  right:12px;
-  top:
-    calc(
-      env(safe-area-inset-top) +
-      172px
-    );
-  max-height:46vh;
-  overflow:auto;
-  display:none;
-}
-
-.searchResults.show{
-  display:block;
-}
-
-.searchResult{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:11px;
-  margin-bottom:6px;
-  border-radius:14px;
-  background:rgba(7,11,19,.94);
-  border:1px solid var(--line);
-  backdrop-filter:blur(15px);
-  cursor:pointer;
-}
-
-.resultMark{
-  width:34px;
-  height:34px;
-  border-radius:10px;
-  display:grid;
-  place-items:center;
-  background:rgba(0,217,255,.08);
-  color:var(--cyan);
-  font-weight:800;
-}
-
-.resultMain{
-  min-width:0;
-  flex:1;
-}
-
-.resultTitle{
-  font-size:11px;
-  font-weight:800;
-}
-
-.resultSub{
-  margin-top:3px;
-  color:var(--muted);
-  font-size:8px;
-  line-height:1.3;
-}
-
-.resultAction{
-  padding:7px 8px;
-  border-radius:99px;
-  background:#151e2d;
-  color:#d7dfed;
-  font-size:8px;
-  white-space:nowrap;
-}
-
-/* =====================================================
-   AR LAYER
-===================================================== */
-
-#arObjects{
-  position:absolute;
-  z-index:40;
-  inset:0;
-  bottom:var(--nav);
-  pointer-events:none;
-  overflow:hidden;
-}
-
-#arLines{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  overflow:hidden;
-  z-index:1;
-}
-
-.arConnection{
-  position:absolute;
-  height:1px;
-  transform-origin:0 50%;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(0,217,255,.04),
-      rgba(0,217,255,.60),
-      rgba(71,125,255,.15)
-    );
-}
-
-.arDot{
-  position:absolute;
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  transform:translate(-50%,-50%);
-  background:var(--cyan);
-  box-shadow:
-    0 0 0 4px rgba(0,217,255,.09),
-    0 0 16px rgba(0,217,255,.8);
-}
-
-/* =====================================================
-   AR CARD
-===================================================== */
-
-.arCard{
-  position:absolute;
-  z-index:10;
-  width:min(315px,77vw);
-  min-height:108px;
-  transform:
-    translate3d(-50%,-50%,0)
-    scale(var(--scale,1));
-  padding:10px;
-  border-radius:17px;
-  border:1px solid rgba(0,217,255,.40);
-  background:
-    linear-gradient(
-      145deg,
-      rgba(8,14,24,.95),
-      rgba(8,10,17,.91)
-    );
-  box-shadow:
-    0 18px 48px rgba(0,0,0,.52),
-    0 0 25px rgba(0,217,255,.06);
-  backdrop-filter:blur(16px);
-  pointer-events:auto;
-  touch-action:manipulation;
-  overflow:hidden;
-  will-change:left,top,transform;
-  cursor:pointer;
-}
-
-.arCard.large{
-  width:min(430px,88vw);
-}
-
-.arCard.pinned{
-  border-color:var(--yellow);
-  box-shadow:
-    0 20px 55px rgba(0,0,0,.6),
-    0 0 30px rgba(255,212,92,.15);
-}
-
-.arCardGrid{
-  display:grid;
-  grid-template-columns:82px minmax(0,1fr);
-  gap:9px;
-}
-
-.arCard.large .arCardGrid{
-  grid-template-columns:120px minmax(0,1fr);
-}
-
-.arMedia{
-  height:86px;
-  overflow:hidden;
-  border-radius:12px;
-  background:
-    linear-gradient(
-      145deg,
-      #101c2c,
-      #080c14
-    );
-  display:grid;
-  place-items:center;
-  color:#738096;
-  font-size:20px;
-}
-
-.arCard.large .arMedia{
-  height:118px;
-}
-
-.arMedia img,
-.arMedia video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-.arInfo{
-  min-width:0;
-}
-
-.arName{
-  font-size:14px;
-  font-weight:900;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.arUser{
-  margin-top:3px;
-  color:var(--cyan);
-  font-size:8px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.arDescription{
-  margin-top:6px;
-  color:#aab4c5;
-  font-size:10px;
-  line-height:1.35;
-  display:-webkit-box;
-  -webkit-line-clamp:3;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-}
-
-.arBottom{
-  margin-top:7px;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-
-.arDistance{
-  color:#758198;
-  font-size:8px;
-  flex:1;
-}
-
-.arOpen{
-  min-height:27px;
-  padding:0 9px;
-  border-radius:8px;
-  border:1px solid rgba(0,217,255,.18);
-  background:rgba(0,217,255,.08);
-  color:var(--cyan);
-  font-size:8px;
-  font-weight:800;
-  cursor:pointer;
-}
-
-/* =====================================================
-   EDGE POINTER
-===================================================== */
-
-.arEdge{
-  position:absolute;
-  z-index:5;
-  width:125px;
-  padding:7px 8px;
-  border-radius:11px;
-  background:rgba(5,9,16,.87);
-  border:1px solid rgba(255,255,255,.10);
-  backdrop-filter:blur(12px);
-  text-align:center;
-  font-size:8px;
-  pointer-events:auto;
-  cursor:pointer;
-}
-
-.arEdge strong{
-  color:var(--cyan);
-  font-size:14px;
-}
-
-.arEdge div{
-  margin-top:2px;
-  color:#b9c3d4;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-/* =====================================================
-   AR CONTROLS
-===================================================== */
-
-.scanInfo{
-  position:absolute;
-  z-index:120;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:
-    calc(
-      var(--nav) +
-      82px
-    );
-  padding:7px 11px;
-  border-radius:999px;
-  background:rgba(4,8,14,.72);
-  border:1px solid rgba(255,255,255,.10);
-  backdrop-filter:blur(12px);
-  color:#aeb8ca;
-  font-size:8px;
-  white-space:nowrap;
-  pointer-events:none;
-}
-
-.crosshair{
-  position:absolute;
-  z-index:15;
-  left:50%;
-  top:47%;
-  width:31px;
-  height:31px;
-  transform:translate(-50%,-50%);
-  border:1px solid rgba(0,217,255,.60);
-  border-radius:50%;
-  pointer-events:none;
-}
-
-.crosshair:before,
-.crosshair:after{
-  content:"";
-  position:absolute;
-  background:rgba(0,217,255,.65);
-}
-
-.crosshair:before{
-  left:10px;
-  top:14px;
-  width:9px;
-  height:1px;
-}
-
-.crosshair:after{
-  left:14px;
-  top:10px;
-  width:1px;
-  height:9px;
-}
-
-.arActions{
-  position:absolute;
-  z-index:180;
-  right:12px;
-  bottom:
-    calc(
-      var(--nav) +
-      18px
-    );
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.roundButton{
-  width:49px;
-  height:49px;
-  border-radius:15px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(7,12,21,.86);
-  backdrop-filter:blur(15px);
-  display:grid;
-  place-items:center;
-  font-size:19px;
-  cursor:pointer;
-}
-
-.roundButton.primary{
-  background:
-    linear-gradient(
-      145deg,
-      #00c6e3,
-      #3b78ff
-    );
   border:0;
-  box-shadow:
-    0 10px 32px rgba(0,160,255,.25);
-}
-
-/* =====================================================
-   BOTTOM NAV
-===================================================== */
-
-.bottomNav{
-  position:absolute;
-  z-index:600;
-  left:0;
-  right:0;
-  bottom:0;
-  height:var(--nav);
-  padding:
-    7px
-    7px
-    calc(env(safe-area-inset-bottom) + 7px);
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  background:rgba(4,7,12,.94);
-  border-top:1px solid rgba(255,255,255,.08);
-  backdrop-filter:blur(20px);
-}
-
-.navButton{
-  border:0;
-  border-radius:13px;
-  background:transparent;
-  color:#68748a;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
   cursor:pointer;
 }
 
-.navIcon{
-  width:25px;
-  height:25px;
-  border:1px solid currentColor;
-  border-radius:8px;
-  display:grid;
-  place-items:center;
-  font-size:10px;
-  font-weight:900;
-}
-
-.navLabel{
-  font-size:8px;
-}
-
-.navButton.active{
-  color:var(--cyan);
-  background:rgba(0,217,255,.055);
-}
-
-/* =====================================================
-   NORMAL PAGES
-===================================================== */
-
-.page{
-  position:absolute;
-  inset:0;
-  overflow:auto;
-  padding:
-    calc(env(safe-area-inset-top) + 88px)
-    13px
-    calc(var(--nav) + 18px);
+.app{
+  width:100%;
+  height:100dvh;
+  display:flex;
+  overflow:hidden;
   background:
-    radial-gradient(
-      circle at 90% 0%,
-      rgba(0,217,255,.07),
-      transparent 34%
-    ),
+    radial-gradient(circle at 20% 0%,rgba(22,135,255,.10),transparent 35%),
+    radial-gradient(circle at 100% 100%,rgba(32,214,139,.06),transparent 30%),
     var(--bg);
 }
 
-.pageHeader{
+/* SIDEBAR */
+
+.sidebar{
+  width:360px;
+  min-width:360px;
+  height:100%;
+  border-right:1px solid var(--line);
+  background:rgba(7,17,29,.94);
+  display:flex;
+  flex-direction:column;
+  z-index:5;
+}
+
+.brand{
+  height:74px;
   display:flex;
   align-items:center;
-  gap:9px;
-  margin-bottom:17px;
+  gap:12px;
+  padding:0 18px;
+  border-bottom:1px solid var(--line);
 }
 
-.backButton{
-  width:39px;
-  height:39px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:var(--panel2);
-  font-size:18px;
-  cursor:pointer;
-}
-
-.pageTitle{
-  font-size:23px;
+.logo{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  background:linear-gradient(145deg,#1592ff,#0754bb);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 8px 30px rgba(0,120,255,.25);
+  font-size:21px;
   font-weight:900;
 }
 
-.pageSubtitle{
-  color:var(--muted);
-  font-size:10px;
-  margin-top:3px;
+.brand-title{
+  font-weight:900;
+  font-size:17px;
+  letter-spacing:.4px;
 }
 
-/* =====================================================
-   WORLD / FEED CARDS
-===================================================== */
-
-.worldCard{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:12px;
-  margin-bottom:8px;
-  border-radius:16px;
-  border:1px solid var(--line);
-  background:rgba(12,17,27,.88);
-  cursor:pointer;
-}
-
-.objectMark{
-  width:47px;
-  height:47px;
-  border-radius:13px;
-  border:1px solid rgba(0,217,255,.15);
-  background:rgba(0,217,255,.06);
-  display:grid;
-  place-items:center;
-  color:var(--cyan);
+.brand-sub{
   font-size:11px;
-  font-weight:900;
+  color:var(--muted);
+  margin-top:2px;
 }
 
-.objectMain{
-  min-width:0;
-  flex:1;
+.profile-card{
+  margin:14px;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
 }
 
-.objectName{
-  font-size:12px;
+.profile-row{
+  display:flex;
+  align-items:center;
+  gap:11px;
+}
+
+.avatar{
+  width:44px;
+  height:44px;
+  border-radius:15px;
+  background:linear-gradient(145deg,#194a72,#0b2945);
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-weight:800;
-  white-space:nowrap;
   overflow:hidden;
-  text-overflow:ellipsis;
+  flex-shrink:0;
 }
 
-.objectSub{
-  margin-top:4px;
-  color:#7f8a9e;
-  font-size:9px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.objectDistance{
-  color:var(--cyan);
-  font-size:8px;
-  white-space:nowrap;
-}
-
-/* =====================================================
-   PROFILE
-===================================================== */
-
-.profileHero{
-  text-align:center;
-  padding-bottom:16px;
-}
-
-.profileAvatar{
-  position:relative;
-  width:91px;
-  height:91px;
-  margin:auto;
-  border-radius:50%;
-  overflow:hidden;
-  border:2px solid rgba(0,217,255,.40);
-  background:
-    linear-gradient(
-      145deg,
-      #102b3b,
-      #15142a
-    );
-  display:grid;
-  place-items:center;
-  color:var(--cyan);
-  font-weight:900;
-  font-size:20px;
-}
-
-.profileAvatar img{
+.avatar img{
   width:100%;
   height:100%;
   object-fit:cover;
 }
 
-.avatarEdit{
-  position:absolute;
-  right:-2px;
-  bottom:2px;
-  width:28px;
-  height:28px;
-  border-radius:9px;
-  border:1px solid rgba(255,255,255,.15);
-  background:#111927;
-  color:var(--cyan);
-  cursor:pointer;
+.profile-name{
+  font-weight:800;
 }
 
-.profileName{
-  margin-top:11px;
-  font-size:19px;
-  font-weight:900;
-}
-
-.profileUsername{
+.profile-status{
+  font-size:11px;
+  color:var(--green);
   margin-top:3px;
-  color:var(--cyan);
-  font-size:9px;
 }
 
-.profileBio{
-  max-width:430px;
-  margin:9px auto;
-  color:#9ba6b8;
-  font-size:10px;
-  line-height:1.45;
+.id-mini{
+  margin-top:10px;
+  padding:8px 10px;
+  border-radius:10px;
+  background:#07111d;
+  color:#87b8df;
+  font-family:monospace;
+  font-size:11px;
+  word-break:break-all;
 }
 
-.profileStats{
+.search{
+  margin:0 14px 12px;
+  position:relative;
+}
+
+.search input{
+  width:100%;
+  height:45px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#091522;
+  color:var(--text);
+  outline:none;
+  padding:0 14px 0 40px;
+}
+
+.search input:focus{
+  border-color:rgba(22,135,255,.55);
+}
+
+.search-icon{
+  position:absolute;
+  left:14px;
+  top:13px;
+  color:var(--muted);
+}
+
+.contacts{
+  flex:1;
+  overflow:auto;
+  padding:0 10px 10px;
+}
+
+.contact{
   display:flex;
-  justify-content:center;
-  gap:30px;
-  margin-top:13px;
+  align-items:center;
+  gap:11px;
+  padding:11px;
+  border-radius:15px;
+  margin-bottom:4px;
+  transition:.18s;
 }
 
-.stat b{
-  display:block;
-  font-size:17px;
+.contact:hover{
+  background:rgba(255,255,255,.04);
 }
 
-.stat span{
-  color:#6e7a8e;
-  font-size:7px;
+.contact.active{
+  background:linear-gradient(90deg,rgba(22,135,255,.17),rgba(22,135,255,.05));
 }
 
-/* =====================================================
-   MAP
-===================================================== */
-
-#mapView{
-  background:#071019;
+.contact-main{
+  min-width:0;
+  flex:1;
 }
 
-#map{
-  position:absolute;
-  inset:0;
-  bottom:var(--nav);
+.contact-name{
+  font-size:14px;
+  font-weight:750;
 }
 
-.mapTop{
-  position:absolute;
-  z-index:500;
-  left:12px;
-  right:12px;
-  top:
-    calc(env(safe-area-inset-top) + 84px);
+.contact-preview{
+  color:var(--muted);
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  margin-top:3px;
+}
+
+.contact-time{
+  color:#6e8499;
+  font-size:10px;
+}
+
+.sidebar-bottom{
+  padding:12px;
+  border-top:1px solid var(--line);
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:7px;
+}
+
+.side-btn{
+  min-height:44px;
+  border-radius:13px;
+  background:#0d1d2d;
+  color:#a9bdd0;
+  border:1px solid var(--line);
+}
+
+/* CHAT */
+
+.chat{
+  flex:1;
+  min-width:0;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+.chat-header{
+  height:74px;
+  min-height:74px;
+  border-bottom:1px solid var(--line);
+  background:rgba(8,18,30,.84);
+  backdrop-filter:blur(18px);
+  display:flex;
+  align-items:center;
+  padding:0 18px;
+  gap:12px;
+  z-index:3;
+}
+
+.back-btn{
+  display:none;
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  background:#102237;
+  color:white;
+}
+
+.chat-user{
+  flex:1;
+  min-width:0;
+}
+
+.chat-user-name{
+  font-weight:850;
+}
+
+.chat-user-status{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:3px;
+}
+
+.header-actions{
   display:flex;
   gap:7px;
 }
 
-.mapSearch{
-  min-width:0;
-  flex:1;
-  height:44px;
+.icon-btn{
+  width:42px;
+  height:42px;
   border-radius:13px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(5,9,15,.84);
-  color:#fff;
-  padding:0 12px;
-  outline:none;
-  backdrop-filter:blur(15px);
-}
-
-.mapSearchBtn{
-  width:72px;
-  height:44px;
-  border-radius:13px;
-  border:1px solid rgba(0,217,255,.18);
-  background:rgba(0,217,255,.08);
-  color:var(--cyan);
-  font-size:9px;
-  font-weight:800;
-  cursor:pointer;
-}
-
-.mapHint{
-  position:absolute;
-  z-index:510;
-  left:12px;
-  right:12px;
-  bottom:
-    calc(var(--nav) + 12px);
-  padding:8px 10px;
-  border-radius:12px;
-  background:rgba(5,9,15,.82);
+  background:#0d1d2d;
+  color:#bfd1e2;
   border:1px solid var(--line);
-  color:#98a4b7;
-  font-size:8px;
-  text-align:center;
-  pointer-events:none;
-}
-
-/* =====================================================
-   MODALS / SHEETS
-===================================================== */
-
-.modal{
-  position:fixed;
-  z-index:2000;
-  inset:0;
-  display:none;
-  align-items:flex-end;
-  background:rgba(0,0,0,.68);
-  backdrop-filter:blur(5px);
-}
-
-.modal.show{
-  display:flex;
-}
-
-.sheet{
-  width:100%;
-  max-height:92vh;
-  overflow:auto;
-  padding:
-    10px
-    13px
-    calc(env(safe-area-inset-bottom) + 20px);
-  border-radius:24px 24px 0 0;
-  background:
-    linear-gradient(
-      180deg,
-      #111824,
-      #080b11
-    );
-  border-top:1px solid rgba(255,255,255,.10);
-}
-
-.sheetHeader{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:14px;
-  position:sticky;
-  top:0;
-  z-index:5;
-  padding-bottom:6px;
-  background:#111824;
-}
-
-.sheetHeader h2{
-  margin:0;
-  flex:1;
   font-size:17px;
 }
 
-.sheetClose,
-.sheetBack{
-  width:37px;
-  height:37px;
-  border-radius:11px;
-  border:1px solid var(--line);
-  background:#171f2d;
-  cursor:pointer;
-}
-
-.field{
-  margin-bottom:10px;
-}
-
-.field label{
-  display:block;
-  margin:0 0 5px 2px;
-  color:#778398;
-  font-size:8px;
-  font-weight:700;
-  letter-spacing:.3px;
-}
-
-.field input,
-.field textarea,
-.field select{
-  width:100%;
-  min-height:43px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.09);
-  background:#090e16;
-  color:#fff;
-  padding:10px 11px;
-  outline:none;
-}
-
-.field textarea{
-  min-height:75px;
-  resize:vertical;
-}
-
-.row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-}
-
-.actionButton{
-  width:100%;
-  min-height:44px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#151d2a;
+.security-bar{
+  min-height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:5px 12px;
+  background:rgba(32,214,139,.055);
+  border-bottom:1px solid rgba(32,214,139,.08);
+  color:#75dcae;
   font-size:10px;
-  font-weight:800;
-  margin-top:6px;
-  cursor:pointer;
+  text-align:center;
 }
 
-.actionButton.primary{
-  border:0;
-  background:
-    linear-gradient(
-      135deg,
-      #00bad6,
-      #3b78ff
-    );
+.messages{
+  flex:1;
+  overflow:auto;
+  padding:20px clamp(12px,5vw,70px);
+  display:flex;
+  flex-direction:column;
+  gap:7px;
 }
 
-.actionButton.danger{
-  color:#ff7891;
-  background:rgba(255,85,119,.08);
-  border-color:rgba(255,85,119,.17);
+.empty{
+  margin:auto;
+  max-width:480px;
+  text-align:center;
+  color:var(--muted);
+}
+
+.empty-logo{
+  width:74px;
+  height:74px;
+  margin:0 auto 18px;
+  border-radius:25px;
+  background:linear-gradient(145deg,#138aff,#064da9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  box-shadow:0 20px 70px rgba(0,120,255,.22);
+}
+
+.empty h2{
+  color:white;
+  margin:0 0 8px;
+}
+
+.empty p{
+  line-height:1.6;
+  font-size:13px;
+}
+
+.message{
+  max-width:min(720px,84%);
+  display:flex;
+  flex-direction:column;
+}
+
+.message.me{
+  align-self:flex-end;
+  align-items:flex-end;
+}
+
+.message.them{
+  align-self:flex-start;
+  align-items:flex-start;
+}
+
+.bubble{
+  position:relative;
+  padding:10px 12px 7px;
+  border-radius:17px;
+  background:var(--bubble);
+  border:1px solid rgba(255,255,255,.055);
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+  word-wrap:break-word;
+}
+
+.me .bubble{
+  background:linear-gradient(145deg,#0c7de9,#0968c6);
+  border-bottom-right-radius:5px;
+}
+
+.them .bubble{
+  border-bottom-left-radius:5px;
+}
+
+.original{
+  white-space:pre-wrap;
+  line-height:1.45;
+  font-size:14px;
+}
+
+.translation{
+  margin-top:7px;
+  padding-top:7px;
+  border-top:1px solid rgba(255,255,255,.12);
+  color:#aee1ff;
+  white-space:pre-wrap;
+  line-height:1.42;
+  font-size:13px;
+}
+
+.translation-label{
+  font-size:9px;
+  color:#78b8e5;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  margin-bottom:3px;
+}
+
+.message-meta{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  color:#7890a4;
+  font-size:9px;
+  margin:3px 5px 5px;
+}
+
+.me .message-meta{
+  color:#77b8e9;
 }
 
 .check{
-  display:flex;
-  align-items:flex-start;
-  gap:8px;
-  padding:7px 0;
-  color:#8995a8;
-  font-size:9px;
-  line-height:1.4;
+  color:#6ee6bc;
+  font-weight:bold;
 }
 
-.check input{
-  margin-top:1px;
-  accent-color:var(--cyan);
-}
-
-.mediaButtons{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:7px;
-}
-
-.mediaButton{
-  min-height:52px;
-  border-radius:12px;
+.date-separator{
+  align-self:center;
+  margin:13px 0;
+  padding:5px 10px;
+  background:#0d1b2a;
   border:1px solid var(--line);
-  background:#101722;
-  color:#aab5c8;
-  font-size:9px;
-  cursor:pointer;
-}
-
-.mediaList{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:7px;
-}
-
-.mediaChip{
-  padding:6px 8px;
-  border-radius:8px;
-  background:#151d2a;
-  color:#8f9bad;
-  font-size:8px;
-}
-
-/* =====================================================
-   DETAIL
-===================================================== */
-
-.detailMedia{
-  display:grid;
-  gap:7px;
-  margin-bottom:13px;
-}
-
-.detailMedia img,
-.detailMedia video{
-  width:100%;
-  max-height:350px;
-  object-fit:cover;
-  border-radius:15px;
-  background:#05070b;
-}
-
-.detailName{
-  font-size:23px;
-  font-weight:900;
-}
-
-.detailUser{
-  margin-top:3px;
-  color:var(--cyan);
-  font-size:9px;
-}
-
-.detailText{
-  margin-top:12px;
-  color:#aab4c6;
+  border-radius:20px;
+  color:#70869a;
   font-size:10px;
-  line-height:1.6;
-  white-space:pre-wrap;
 }
 
-.detailInfo{
-  margin-top:12px;
-  padding:10px;
+.typing{
+  min-height:23px;
+  padding:0 16px 5px;
+  color:#7190a7;
+  font-size:11px;
+}
+
+.composer{
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  background:rgba(7,17,29,.92);
+  border-top:1px solid var(--line);
+}
+
+.composer-row{
+  max-width:1000px;
+  margin:auto;
+  display:flex;
+  gap:7px;
+  align-items:flex-end;
+}
+
+.compose-tools{
+  display:flex;
+  gap:5px;
+}
+
+.tool{
+  width:42px;
+  height:42px;
   border-radius:13px;
-  background:#090e16;
+  background:#0d1d2d;
+  color:#abc1d4;
   border:1px solid var(--line);
-  color:#788499;
-  font-size:8px;
-  line-height:1.7;
+  flex-shrink:0;
 }
 
-/* =====================================================
-   SEARCH PAGE RESULT
-===================================================== */
+.text-wrap{
+  flex:1;
+  position:relative;
+}
 
-.placeResult{
-  margin-top:10px;
-  padding:12px;
+textarea{
+  width:100%;
+  min-height:44px;
+  max-height:140px;
+  resize:none;
+  border:1px solid var(--line);
   border-radius:15px;
-  border:1px solid rgba(0,217,255,.15);
-  background:rgba(0,217,255,.035);
-}
-
-.placeResultTitle{
-  font-size:12px;
-  font-weight:900;
-}
-
-.placeResultAddress{
-  margin-top:5px;
-  color:#9aa5b8;
-  font-size:9px;
+  outline:none;
+  background:#0b1827;
+  color:white;
+  padding:12px 45px 11px 13px;
   line-height:1.4;
 }
 
-.coordinate{
-  margin-top:7px;
-  color:var(--cyan);
-  font-size:8px;
+textarea:focus{
+  border-color:rgba(22,135,255,.6);
 }
 
-/* =====================================================
-   LEGAL
-===================================================== */
-
-.legal{
-  color:#98a3b6;
-  font-size:9px;
-  line-height:1.7;
+.send{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  background:linear-gradient(145deg,#168cff,#0764c8);
+  color:white;
+  font-size:17px;
+  box-shadow:0 7px 24px rgba(0,110,255,.24);
 }
 
-.legal h3{
-  color:#e5eaf3;
-  font-size:11px;
-  margin:15px 0 5px;
+.emoji-panel{
+  display:none;
+  padding:10px;
+  margin-bottom:7px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:#0c1b2a;
+  grid-template-columns:repeat(8,1fr);
+  gap:5px;
 }
 
-/* =====================================================
-   TOAST
-===================================================== */
+.emoji-panel.open{
+  display:grid;
+}
 
-#toast{
+.emoji{
+  height:35px;
+  background:transparent;
+  border-radius:8px;
+  font-size:21px;
+}
+
+/* MODAL */
+
+.overlay{
   position:fixed;
-  z-index:5000;
-  left:50%;
-  bottom:
-    calc(var(--nav) + 17px);
-  transform:
-    translate(-50%,20px);
-  opacity:0;
-  max-width:88vw;
-  padding:10px 13px;
-  border-radius:12px;
-  background:#121a27;
-  border:1px solid rgba(255,255,255,.11);
-  color:#e7edf8;
-  font-size:9px;
-  text-align:center;
-  box-shadow:0 15px 40px rgba(0,0,0,.45);
-  pointer-events:none;
-  transition:.22s ease;
-}
-
-#toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
-}
-
-/* =====================================================
-   STARTUP
-===================================================== */
-
-#startup{
-  position:fixed;
-  z-index:6000;
   inset:0;
+  z-index:50;
+  background:rgba(0,0,0,.68);
+  backdrop-filter:blur(12px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+}
+
+.overlay.open{
+  display:flex;
+}
+
+.modal{
+  width:min(560px,100%);
+  max-height:min(90dvh,760px);
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:23px;
+  background:#0a1725;
+  box-shadow:var(--shadow);
+}
+
+.modal-head{
+  display:flex;
+  align-items:center;
+  padding:17px;
+  border-bottom:1px solid var(--line);
+}
+
+.modal-title{
+  flex:1;
+  font-weight:850;
+}
+
+.close{
+  width:38px;
+  height:38px;
+  border-radius:11px;
+  background:#132438;
+  color:#c9d8e6;
+}
+
+.modal-body{
+  padding:17px;
+}
+
+.setting{
+  padding:14px 0;
+  border-bottom:1px solid var(--line);
+}
+
+.setting:last-child{
+  border-bottom:0;
+}
+
+.setting-title{
+  font-weight:750;
+  font-size:13px;
+}
+
+.setting-desc{
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
+  margin-top:4px;
+}
+
+.toggle-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+}
+
+.switch{
+  position:relative;
+  width:48px;
+  height:28px;
+  flex-shrink:0;
+}
+
+.switch input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+
+.slider{
+  position:absolute;
+  inset:0;
+  border-radius:20px;
+  background:#203245;
+  transition:.2s;
+}
+
+.slider:before{
+  content:"";
+  position:absolute;
+  width:20px;
+  height:20px;
+  left:4px;
+  top:4px;
+  border-radius:50%;
+  background:#9eb2c4;
+  transition:.2s;
+}
+
+.switch input:checked+.slider{
+  background:#087ce8;
+}
+
+.switch input:checked+.slider:before{
+  transform:translateX(20px);
+  background:white;
+}
+
+.input{
+  width:100%;
+  height:45px;
+  margin-top:8px;
+  padding:0 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#07131f;
+  color:white;
+  outline:none;
+}
+
+.select{
+  width:100%;
+  height:44px;
+  margin-top:8px;
+  padding:0 10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#07131f;
+  color:white;
+}
+
+.primary{
+  width:100%;
+  min-height:45px;
+  border-radius:13px;
+  background:linear-gradient(145deg,#168cff,#0764c8);
+  color:white;
+  font-weight:750;
+  margin-top:10px;
+}
+
+.secondary{
+  width:100%;
+  min-height:44px;
+  border-radius:13px;
+  background:#102235;
+  color:#c3d4e4;
+  border:1px solid var(--line);
+  margin-top:8px;
+}
+
+.danger{
+  background:rgba(255,85,113,.10);
+  border-color:rgba(255,85,113,.2);
+  color:#ff8297;
+}
+
+.fingerprint{
+  padding:13px;
+  margin-top:9px;
+  border-radius:13px;
+  background:#040c14;
+  border:1px solid rgba(32,214,139,.18);
+  font-family:monospace;
+  font-size:11px;
+  line-height:1.7;
+  word-break:break-all;
+  color:#6fe3b2;
+}
+
+.warning{
+  padding:11px;
+  border-radius:12px;
+  background:rgba(255,200,87,.07);
+  border:1px solid rgba(255,200,87,.15);
+  color:#e6c574;
+  font-size:11px;
+  line-height:1.5;
+  margin-top:9px;
+}
+
+.success{
+  padding:11px;
+  border-radius:12px;
+  background:rgba(32,214,139,.07);
+  border:1px solid rgba(32,214,139,.14);
+  color:#70dcae;
+  font-size:11px;
+  line-height:1.5;
+}
+
+#qrBox{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  background:white;
+  border-radius:16px;
+  margin:10px auto;
+  width:max-content;
+}
+
+#qrBox img,#qrBox table{
+  max-width:260px;
+}
+
+#reader{
+  width:100%;
+  overflow:hidden;
+  border-radius:15px;
+}
+
+.toast-area{
+  position:fixed;
+  top:15px;
+  right:15px;
+  z-index:100;
+  width:min(360px,calc(100% - 30px));
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  pointer-events:none;
+}
+
+.toast{
+  padding:12px 14px;
+  border-radius:14px;
+  background:#112337;
+  border:1px solid var(--line);
+  box-shadow:0 12px 40px rgba(0,0,0,.3);
+  color:#e9f5ff;
+  font-size:12px;
+  animation:toastIn .22s ease;
+}
+
+.toast.error{
+  border-color:rgba(255,85,113,.3);
+}
+
+.toast.success{
+  border-color:rgba(32,214,139,.3);
+}
+
+@keyframes toastIn{
+  from{transform:translateY(-10px);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+
+.connection-pill{
+  padding:5px 9px;
+  border-radius:20px;
+  background:#112335;
+  font-size:10px;
+  color:#9eb2c4;
+  white-space:nowrap;
+}
+
+.connection-pill.online{
+  color:#65dfad;
+  background:rgba(32,214,139,.08);
+}
+
+.connection-pill.secure{
+  color:#62dca8;
+}
+
+.private-pill{
+  padding:5px 9px;
+  border-radius:20px;
+  background:rgba(32,214,139,.07);
+  color:#68dbaa;
+  font-size:9px;
+  font-weight:800;
+}
+
+.file-card{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:210px;
+}
+
+.file-icon{
+  width:40px;
+  height:40px;
+  border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:#05070c;
-  transition:.25s ease;
+  background:rgba(255,255,255,.08);
 }
 
-.startupBox{
+.file-name{
+  font-size:12px;
+  font-weight:700;
+  word-break:break-all;
+}
+
+.file-size{
+  color:#9fc1dd;
+  font-size:10px;
+  margin-top:2px;
+}
+
+.image-message{
+  max-width:260px;
+  max-height:320px;
+  display:block;
+  border-radius:12px;
+  cursor:pointer;
+}
+
+.audio-player{
+  width:230px;
+}
+
+.reply-box{
+  display:none;
+  margin-bottom:7px;
+  padding:8px 11px;
+  border-left:3px solid var(--blue);
+  background:#0c1b2a;
+  border-radius:9px;
+}
+
+.reply-box.open{
+  display:block;
+}
+
+.reply-name{
+  color:#59aaff;
+  font-size:10px;
+  font-weight:800;
+}
+
+.reply-text{
+  color:#90a5b8;
+  font-size:11px;
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.message-actions{
+  display:none;
+  gap:4px;
+  margin-top:3px;
+}
+
+.message:hover .message-actions{
+  display:flex;
+}
+
+.message-actions button{
+  font-size:10px;
+  padding:4px 7px;
+  border-radius:7px;
+  background:#0b1826;
+  color:#8fa6ba;
+}
+
+.drop-zone{
+  position:fixed;
+  inset:0;
+  z-index:40;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(5,14,25,.85);
+  backdrop-filter:blur(10px);
+}
+
+.drop-zone.active{
+  display:flex;
+}
+
+.drop-box{
+  width:min(420px,90%);
+  padding:40px;
   text-align:center;
+  border:2px dashed #1687ff;
+  border-radius:25px;
+  color:#7bbcff;
 }
 
-.startupLogo{
-  width:60px;
-  height:60px;
-  margin:auto;
-  border-radius:18px;
-  border:1px solid rgba(0,217,255,.35);
-  display:grid;
-  place-items:center;
-  color:var(--cyan);
-  font-size:18px;
-  font-weight:900;
-  box-shadow:0 0 35px rgba(0,217,255,.08);
+.camera-video{
+  width:100%;
+  max-height:55dvh;
+  object-fit:cover;
+  background:#000;
+  border-radius:15px;
 }
 
-.startupBox strong{
-  display:block;
-  margin-top:13px;
-  font-size:16px;
-  letter-spacing:1px;
+.camera-controls{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
 }
 
-.startupBox small{
-  display:block;
-  margin-top:4px;
-  color:#6d788b;
-  font-size:8px;
+.camera-controls button{
+  flex:1;
+  min-height:45px;
+  border-radius:12px;
+  background:#12263b;
+  color:white;
 }
 
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
-@media(max-width:360px){
-
-  .arCard{
-    width:82vw;
+@media(max-width:800px){
+  .sidebar{
+    position:absolute;
+    inset:0;
+    width:100%;
+    min-width:0;
+    transform:translateX(0);
+    transition:.25s;
   }
 
-  .arCardGrid{
-    grid-template-columns:72px minmax(0,1fr);
+  .chat{
+    width:100%;
   }
 
-  .arMedia{
-    height:76px;
+  body.chat-open .sidebar{
+    transform:translateX(-100%);
   }
 
+  .back-btn{
+    display:block;
+  }
+
+  .message{
+    max-width:90%;
+  }
+
+  .header-actions .desktop-only{
+    display:none;
+  }
+}
+
+@media(max-width:500px){
+  .brand{
+    height:66px;
+  }
+
+  .chat-header{
+    height:66px;
+    min-height:66px;
+    padding:0 9px;
+  }
+
+  .security-bar{
+    font-size:9px;
+  }
+
+  .messages{
+    padding:13px 9px;
+  }
+
+  .compose-tools .optional{
+    display:none;
+  }
+
+  .composer{
+    padding-left:8px;
+    padding-right:8px;
+  }
+
+  .header-actions{
+    gap:3px;
+  }
+
+  .icon-btn{
+    width:38px;
+    height:38px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div id="app">
+<div class="app">
 
-<!-- =====================================================
-     AR VIEW
-===================================================== -->
-
-<section id="arView" class="view active">
-
-  <video
-    id="camera"
-    autoplay
-    muted
-    playsinline>
-  </video>
-
-  <div class="cameraShade"></div>
-
-  <header class="topbar">
+  <aside class="sidebar">
 
     <div class="brand">
-
-      <div class="brandMark">AW</div>
-
-      <div class="brandText">
-        <strong>ARWORLD</strong>
-        <small>SPATIAL WORLD</small>
-      </div>
-
-    </div>
-
-    <div class="headerRight">
-
-      <button
-        class="iconButton"
-        id="searchToggle"
-        aria-label="Search">
-        ⌕
-      </button>
-
-      <button
-        class="iconButton"
-        id="languageButton">
-        EN
-      </button>
-
-      <button
-        class="iconButton"
-        id="refreshButton">
-        ↻
-      </button>
-
-    </div>
-
-  </header>
-
-
-  <div class="arStatus">
-
-    <div class="status" id="gpsStatus">
-      GPS <b>...</b>
-    </div>
-
-    <div class="status" id="compassStatus">
-      <span data-i18n="compass">Kompas</span>
-      <b>...</b>
-    </div>
-
-  </div>
-
-
-  <div
-    class="searchWrap"
-    id="searchWrap">
-
-    <input
-      class="searchInput"
-      id="globalSearch"
-      autocomplete="off"
-      placeholder="Məkan, şəhər, küçə və ya koordinat...">
-
-    <button
-      class="searchButton"
-      id="searchButton">
-      <span data-i18n="search">Axtar</span>
-    </button>
-
-  </div>
-
-
-  <div
-    class="searchResults"
-    id="searchResults">
-  </div>
-
-
-  <div id="arObjects">
-
-    <div id="arLines"></div>
-
-  </div>
-
-
-  <div class="crosshair"></div>
-
-
-  <div
-    class="scanInfo"
-    id="scanInfo">
-    Spatial scan
-  </div>
-
-
-  <div class="arActions">
-
-    <button
-      class="roundButton"
-      id="spreadButton">
-      ◇
-    </button>
-
-    <button
-      class="roundButton primary"
-      id="placeButton">
-      +
-    </button>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     WORLD
-===================================================== -->
-
-<section id="worldView" class="view">
-
-  <header class="topbar">
-
-    <div class="brand">
-      <div class="brandMark">AW</div>
-      <div class="brandText">
-        <strong>WORLD</strong>
-        <small>NEARBY WORLD</small>
-      </div>
-    </div>
-
-  </header>
-
-  <div class="page">
-
-    <div class="pageHeader">
-
-      <button
-        class="backButton"
-        data-back="ar">
-        ←
-      </button>
-
+      <div class="logo">V</div>
       <div>
-        <div class="pageTitle" data-i18n="world">
-          Dünya
-        </div>
-
-        <div
-          class="pageSubtitle"
-          data-i18n="nearbyObjects">
-          Yaxınlıqdakı obyektlər
-        </div>
-      </div>
-
-    </div>
-
-    <div id="worldList"></div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     MAP
-===================================================== -->
-
-<section id="mapView" class="view">
-
-  <div id="map"></div>
-
-  <div class="mapTop">
-
-    <button
-      class="backButton"
-      id="mapBack">
-      ←
-    </button>
-
-    <input
-      class="mapSearch"
-      id="mapSearch"
-      placeholder="Dünya üzrə yer axtar...">
-
-    <button
-      class="mapSearchBtn"
-      id="mapSearchButton">
-      AXTAR
-    </button>
-
-  </div>
-
-  <div class="mapHint">
-    Xəritədə nöqtəyə toxunaraq həmin koordinata məlumat yerləşdirə bilərsən.
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     FEED
-===================================================== -->
-
-<section id="feedView" class="view">
-
-  <header class="topbar">
-
-    <div class="brand">
-      <div class="brandMark">AW</div>
-      <div class="brandText">
-        <strong>FEED</strong>
-        <small>SPATIAL CONTENT</small>
+        <div class="brand-title">VAULT CHAT</div>
+        <div class="brand-sub">Private P2P Translation</div>
       </div>
     </div>
 
-  </header>
-
-  <div class="page">
-
-    <div class="pageHeader">
-
-      <button
-        class="backButton"
-        data-back="ar">
-        ←
-      </button>
-
-      <div>
-
-        <div
-          class="pageTitle"
-          data-i18n="feed">
-          Axın
-        </div>
-
-        <div
-          class="pageSubtitle">
-          Spatial content
-        </div>
-
-      </div>
-
-    </div>
-
-    <div id="feedList"></div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     PROFILE
-===================================================== -->
-
-<section id="profileView" class="view">
-
-  <header class="topbar">
-
-    <div class="brand">
-      <div class="brandMark">AW</div>
-      <div class="brandText">
-        <strong>PROFILE</strong>
-        <small>MY SPATIAL ID</small>
-      </div>
-    </div>
-
-    <div class="headerRight">
-
-      <button
-        class="iconButton"
-        id="profileLanguageButton">
-        EN
-      </button>
-
-    </div>
-
-  </header>
-
-
-  <div class="page">
-
-    <div class="pageHeader">
-
-      <button
-        class="backButton"
-        data-back="ar">
-        ←
-      </button>
-
-      <div>
-        <div
-          class="pageTitle"
-          data-i18n="profile">
-          Profil
+    <div class="profile-card">
+      <div class="profile-row">
+        <div class="avatar" id="myAvatar">V</div>
+        <div>
+          <div class="profile-name" id="myName">Anonymous</div>
+          <div class="profile-status">● Ready</div>
         </div>
       </div>
 
+      <div class="id-mini" id="myId">Generating secure ID...</div>
     </div>
 
+    <div class="search">
+      <span class="search-icon">⌕</span>
+      <input id="searchInput" placeholder="Kontakt axtar...">
+    </div>
 
-    <div class="profileHero">
+    <div class="contacts" id="contacts"></div>
 
-      <div class="profileAvatar">
+    <div class="sidebar-bottom">
+      <button class="side-btn" id="addBtn">＋</button>
+      <button class="side-btn" id="qrBtn">QR</button>
+      <button class="side-btn" id="settingsBtn">⚙</button>
+    </div>
 
-        <span id="avatarPlaceholder">
-          AW
-        </span>
+  </aside>
 
-        <img
-          id="profileAvatarImage"
-          style="display:none"
-          alt="">
 
-        <button
-          class="avatarEdit"
-          id="avatarButton">
-          +
+  <main class="chat">
+
+    <header class="chat-header">
+
+      <button class="back-btn" id="backBtn">‹</button>
+
+      <div class="avatar" id="remoteAvatar">?</div>
+
+      <div class="chat-user">
+        <div class="chat-user-name" id="remoteName">
+          Yeni söhbət
+        </div>
+        <div class="chat-user-status" id="remoteStatus">
+          Peer ID ilə qoşul
+        </div>
+      </div>
+
+      <div class="header-actions">
+
+        <div class="connection-pill" id="connectionPill">
+          Offline
+        </div>
+
+        <div class="private-pill" id="privatePill">
+          PRIVATE
+        </div>
+
+        <button class="icon-btn desktop-only" id="fingerBtn">
+          🔐
+        </button>
+
+        <button class="icon-btn" id="chatInfoBtn">
+          ⋮
         </button>
 
       </div>
 
-
-      <input
-        id="avatarInput"
-        type="file"
-        accept="image/*"
-        hidden>
+    </header>
 
 
-      <div
-        class="profileName"
-        id="profileName">
-        ARWORLD
-      </div>
-
-      <div
-        class="profileUsername"
-        id="profileUsername">
-        @arworld
-      </div>
-
-      <div
-        class="profileBio"
-        id="profileBio">
-        Fiziki dünyaya rəqəmsal iz burax.
-      </div>
-
-
-      <div class="profileStats">
-
-        <div class="stat">
-          <b id="profileObjectCount">0</b>
-          <span>OBJECTS</span>
-        </div>
-
-        <div class="stat">
-          <b>AR</b>
-          <span>WORLD</span>
-        </div>
-
-        <div class="stat">
-          <b>∞</b>
-          <span>SPACE</span>
-        </div>
-
-      </div>
-
+    <div class="security-bar">
+      🔒 E2E • ECDH + AES-256-GCM • WebRTC DTLS
+      <span id="securityState">• gözlənilir</span>
     </div>
 
 
-    <button
-      class="actionButton primary"
-      id="editProfileButton">
-      <span data-i18n="editProfile">
-        Profili redaktə et
-      </span>
-    </button>
+    <section class="messages" id="messages">
 
+      <div class="empty" id="emptyState">
 
-    <button
-      class="actionButton"
-      id="privacyButton">
-      <span data-i18n="privacy">
-        Məxfilik və hüquqi məlumat
-      </span>
-    </button>
+        <div class="empty-logo">🔐</div>
 
+        <h2>Private P2P Chat</h2>
 
-    <div id="profileObjects"></div>
+        <p>
+          Mesajlar əvvəlcə tətbiq səviyyəsində şifrələnir,
+          sonra WebRTC kanalından göndərilir.
+          Söhbətə başlamaq üçün aşağıdakı <b>＋</b> düyməsinə bas.
+        </p>
 
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     CREATE MODAL
-===================================================== -->
-
-<div
-  class="modal"
-  id="createModal">
-
-  <div class="sheet">
-
-    <div class="sheetHeader">
-
-      <button
-        class="sheetBack"
-        data-close="createModal">
-        ←
-      </button>
-
-      <h2 data-i18n="placeTitle">
-        Məkana yerləşdir
-      </h2>
-
-      <button
-        class="sheetClose"
-        data-close="createModal">
-        ×
-      </button>
-
-    </div>
-
-
-    <div class="field">
-
-      <label data-i18n="format">
-        FORMAT
-      </label>
-
-      <select id="createMode">
-
-        <option value="listing">
-          Spatial object
-        </option>
-
-        <option value="social">
-          Spatial profile
-        </option>
-
-      </select>
-
-    </div>
-
-
-    <div class="field">
-
-      <label data-i18n="category">
-        KATEQORİYA
-      </label>
-
-      <select id="createType">
-
-        <option value="business">Business</option>
-        <option value="service">Service</option>
-        <option value="car">Vehicle</option>
-        <option value="building">Building</option>
-        <option value="person">Person</option>
-        <option value="place">Place</option>
-        <option value="tourism">Tourism</option>
-        <option value="event">Event</option>
-        <option value="warning">Warning</option>
-        <option value="information">Information</option>
-
-      </select>
-
-    </div>
-
-
-    <div class="field">
-
-      <label data-i18n="title">
-        BAŞLIQ
-      </label>
-
-      <input
-        id="createName"
-        placeholder="Məsələn: Colorado Street Notice">
-
-    </div>
-
-
-    <div class="field">
-
-      <label>
-        USERNAME
-      </label>
-
-      <input
-        id="createUsername"
-        placeholder="@username">
-
-    </div>
-
-
-    <div class="field">
-
-      <label data-i18n="shortInfo">
-        QISA MƏLUMAT
-      </label>
-
-      <textarea
-        id="createBio"
-        placeholder="Məkan haqqında məlumat..."></textarea>
-
-    </div>
-
-
-    <div class="field">
-
-      <label data-i18n="article">
-        ƏTRAFLI MƏLUMAT
-      </label>
-
-      <textarea
-        id="createArticle"
-        placeholder="Daha geniş məlumat..."></textarea>
-
-    </div>
-
-
-    <div class="row">
-
-      <div class="field">
-
-        <label>PHONE</label>
-
-        <input
-          id="createPhone"
-          inputmode="tel"
-          placeholder="+994">
-
-      </div>
-
-      <div class="field">
-
-        <label>WHATSAPP</label>
-
-        <input
-          id="createWhatsapp"
-          inputmode="tel"
-          placeholder="+994">
-
-      </div>
-
-    </div>
-
-
-    <div class="field">
-
-      <label>SOCIAL / WEBSITE</label>
-
-      <input
-        id="createSocial"
-        placeholder="https://...">
-
-    </div>
-
-
-    <div class="row">
-
-      <div class="field">
-
-        <label data-i18n="radius">
-          RADIUS
-        </label>
-
-        <select id="createRadius">
-
-          <option value="50">50 m</option>
-          <option value="100">100 m</option>
-          <option value="300" selected>300 m</option>
-          <option value="500">500 m</option>
-          <option value="1000">1 km</option>
-          <option value="5000">5 km</option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="size">
-          SIZE
-        </label>
-
-        <select id="createSize">
-
-          <option value="normal">
-            Normal
-          </option>
-
-          <option value="large">
-            Large
-          </option>
-
-          <option value="building">
-            Building
-          </option>
-
-        </select>
-
-      </div>
-
-    </div>
-
-
-    <div class="field">
-
-      <label data-i18n="coordinates">
-        KOORDİNAT
-      </label>
-
-      <div class="row">
-
-        <input
-          id="createLat"
-          inputmode="decimal"
-          placeholder="Latitude">
-
-        <input
-          id="createLng"
-          inputmode="decimal"
-          placeholder="Longitude">
-
-      </div>
-
-
-      <button
-        class="actionButton"
-        id="currentLocationButton">
-        ◎ Hazırkı GPS nöqtəm
-      </button>
-
-
-      <button
-        class="actionButton"
-        id="pickMapButton">
-        ◇ Xəritədən nöqtə seç
-      </button>
-
-    </div>
-
-
-    <div
-      class="placeResult"
-      id="selectedPlaceBox"
-      style="display:none">
-
-      <div
-        class="placeResultTitle"
-        id="selectedPlaceTitle">
-      </div>
-
-      <div
-        class="placeResultAddress"
-        id="selectedPlaceAddress">
-      </div>
-
-      <div
-        class="coordinate"
-        id="selectedPlaceCoordinates">
-      </div>
-
-    </div>
-
-
-    <div class="field">
-
-      <label data-i18n="media">
-        FOTO / VİDEO
-      </label>
-
-      <div class="mediaButtons">
-
-        <button
-          class="mediaButton"
-          id="galleryButton">
-          GALLERY
-        </button>
-
-        <button
-          class="mediaButton"
-          id="photoButton">
-          CAMERA
-        </button>
-
-        <button
-          class="mediaButton"
-          id="videoButton">
-          VIDEO
+        <button class="primary" id="emptyAdd">
+          Yeni P2P əlaqə yarat
         </button>
 
       </div>
 
+    </section>
 
-      <input
-        id="galleryInput"
-        type="file"
-        accept="image/*,video/*"
+
+    <div class="typing" id="typing"></div>
+
+
+    <div class="composer">
+
+      <div class="reply-box" id="replyBox">
+        <div class="reply-name" id="replyName"></div>
+        <div class="reply-text" id="replyText"></div>
+      </div>
+
+      <div class="emoji-panel" id="emojiPanel">
+        <button class="emoji">😀</button>
+        <button class="emoji">😂</button>
+        <button class="emoji">❤️</button>
+        <button class="emoji">👍</button>
+        <button class="emoji">🔥</button>
+        <button class="emoji">😍</button>
+        <button class="emoji">😎</button>
+        <button class="emoji">🤝</button>
+        <button class="emoji">👏</button>
+        <button class="emoji">🙏</button>
+        <button class="emoji">🤣</button>
+        <button class="emoji">😊</button>
+        <button class="emoji">😢</button>
+        <button class="emoji">😡</button>
+        <button class="emoji">🎉</button>
+        <button class="emoji">🚀</button>
+      </div>
+
+      <div class="composer-row">
+
+        <div class="compose-tools">
+          <button class="tool" id="fileBtn">＋</button>
+          <button class="tool optional" id="cameraBtn">📷</button>
+          <button class="tool optional" id="micBtn">🎙</button>
+        </div>
+
+        <div class="text-wrap">
+          <textarea id="messageInput"
+            placeholder="Şifrəli mesaj yaz..."
+            rows="1"></textarea>
+        </div>
+
+        <button class="send" id="sendBtn">➤</button>
+
+      </div>
+
+      <input type="file" id="fileInput"
+        hidden
         multiple
-        hidden>
+        accept="image/*,audio/*,video/*,.pdf,.txt,.zip,.doc,.docx">
+
+    </div>
+
+  </main>
+
+</div>
 
 
-      <input
-        id="photoInput"
-        type="file"
-        accept="image/*"
-        capture="environment"
-        hidden>
+<!-- ADD CONTACT -->
 
+<div class="overlay" id="addModal">
 
-      <input
-        id="videoInput"
-        type="file"
-        accept="video/*"
-        capture="environment"
-        hidden>
+  <div class="modal">
 
+    <div class="modal-head">
+      <div class="modal-title">P2P əlaqə</div>
+      <button class="close" data-close="addModal">×</button>
+    </div>
 
-      <div
-        class="mediaList"
-        id="selectedMedia">
+    <div class="modal-body">
+
+      <div class="setting">
+
+        <div class="setting-title">
+          Qarşı tərəfin Peer ID-si
+        </div>
+
+        <div class="setting-desc">
+          Digər istifadəçi öz ID-sini və ya QR kodunu sənə göndərməlidir.
+        </div>
+
+        <input class="input"
+          id="peerInput"
+          placeholder="Məsələn: 48372615">
+
+        <button class="primary" id="connectBtn">
+          🔗 Təhlükəsiz qoşul
+        </button>
+
+      </div>
+
+      <div class="setting">
+
+        <div class="setting-title">
+          Mənim dəvət linkim
+        </div>
+
+        <input class="input"
+          id="inviteInput"
+          readonly>
+
+        <button class="secondary" id="copyInvite">
+          Linki kopyala
+        </button>
+
+        <button class="secondary" id="shareInvite">
+          Paylaş
+        </button>
+
       </div>
 
     </div>
 
-
-    <div class="check">
-
-      <input
-        type="checkbox"
-        id="createPublic"
-        checked>
-
-      <label for="createPublic">
-        Obyekt digər istifadəçilər üçün açıq olsun.
-      </label>
-
-    </div>
-
-
-    <div class="check">
-
-      <input
-        type="checkbox"
-        id="createContact">
-
-      <label for="createContact">
-        Telefon və WhatsApp məlumatını göstər.
-      </label>
-
-    </div>
-
-
-    <div class="check">
-
-      <input
-        type="checkbox"
-        id="createConsent">
-
-      <label for="createConsent">
-        Bu məzmunu paylaşmaq hüququm olduğunu təsdiq edirəm.
-      </label>
-
-    </div>
-
-
-    <button
-      class="actionButton primary"
-      id="saveObjectButton">
-      <span data-i18n="place">
-        MƏKANA YERLƏŞDİR
-      </span>
-    </button>
-
   </div>
 
 </div>
 
 
-<!-- =====================================================
-     DETAIL MODAL
-===================================================== -->
+<!-- QR -->
 
-<div
-  class="modal"
-  id="detailModal">
+<div class="overlay" id="qrModal">
 
-  <div class="sheet">
+  <div class="modal">
 
-    <div class="sheetHeader">
+    <div class="modal-head">
+      <div class="modal-title">Mənim təhlükəsiz QR kodum</div>
+      <button class="close" data-close="qrModal">×</button>
+    </div>
 
-      <button
-        class="sheetBack"
-        data-close="detailModal">
-        ←
+    <div class="modal-body">
+
+      <div id="qrBox"></div>
+
+      <div class="success">
+        QR yalnız əlaqə yaratmaq üçün Peer ID-ni daşıyır.
+        Mesajların özü QR kodun içində saxlanılmır.
+      </div>
+
+      <button class="primary" id="scanQrBtn">
+        📷 QR skan et
       </button>
-
-      <h2>
-        Spatial Profile
-      </h2>
-
-      <button
-        class="sheetClose"
-        data-close="detailModal">
-        ×
-      </button>
-
-    </div>
-
-    <div id="detailContent"></div>
-
-  </div>
-
-</div>
-
-
-<!-- =====================================================
-     PROFILE EDIT
-===================================================== -->
-
-<div
-  class="modal"
-  id="profileModal">
-
-  <div class="sheet">
-
-    <div class="sheetHeader">
-
-      <button
-        class="sheetBack"
-        data-close="profileModal">
-        ←
-      </button>
-
-      <h2 data-i18n="editProfile">
-        Profili redaktə et
-      </h2>
-
-      <button
-        class="sheetClose"
-        data-close="profileModal">
-        ×
-      </button>
-
-    </div>
-
-
-    <div class="field">
-
-      <label>NAME</label>
-
-      <input
-        id="profileEditName">
-
-    </div>
-
-
-    <div class="field">
-
-      <label>USERNAME</label>
-
-      <input
-        id="profileEditUsername">
-
-    </div>
-
-
-    <div class="field">
-
-      <label>BIO</label>
-
-      <textarea
-        id="profileEditBio"></textarea>
-
-    </div>
-
-
-    <div class="field">
-
-      <label>ARTICLE</label>
-
-      <textarea
-        id="profileEditArticle"></textarea>
-
-    </div>
-
-
-    <div class="field">
-
-      <label>PHONE</label>
-
-      <input
-        id="profileEditPhone">
-
-    </div>
-
-
-    <div class="field">
-
-      <label>WHATSAPP</label>
-
-      <input
-        id="profileEditWhatsapp">
-
-    </div>
-
-
-    <div class="field">
-
-      <label>SOCIAL</label>
-
-      <input
-        id="profileEditSocial">
-
-    </div>
-
-
-    <button
-      class="actionButton primary"
-      id="saveProfileButton">
-      SAVE
-    </button>
-
-  </div>
-
-</div>
-
-
-<!-- =====================================================
-     LANGUAGE MODAL
-===================================================== -->
-
-<div
-  class="modal"
-  id="languageModal">
-
-  <div class="sheet">
-
-    <div class="sheetHeader">
-
-      <button
-        class="sheetBack"
-        data-close="languageModal">
-        ←
-      </button>
-
-      <h2>
-        Language
-      </h2>
-
-      <button
-        class="sheetClose"
-        data-close="languageModal">
-        ×
-      </button>
-
-    </div>
-
-
-    <button
-      class="actionButton"
-      data-language="az">
-      Azərbaycan dili
-    </button>
-
-    <button
-      class="actionButton"
-      data-language="en">
-      English
-    </button>
-
-    <button
-      class="actionButton"
-      data-language="ru">
-      Русский
-    </button>
-
-    <button
-      class="actionButton"
-      data-language="de">
-      Deutsch
-    </button>
-
-  </div>
-
-</div>
-
-
-<!-- =====================================================
-     PRIVACY
-===================================================== -->
-
-<div
-  class="modal"
-  id="privacyModal">
-
-  <div class="sheet">
-
-    <div class="sheetHeader">
-
-      <button
-        class="sheetBack"
-        data-close="privacyModal">
-        ←
-      </button>
-
-      <h2 data-i18n="privacy">
-        Məxfilik
-      </h2>
-
-      <button
-        class="sheetClose"
-        data-close="privacyModal">
-        ×
-      </button>
-
-    </div>
-
-
-    <div class="legal">
-
-      <h3>ARWORLD demo</h3>
-
-      <p>
-        Bu GitHub Pages versiyası məkan obyektlərini
-        əsasən cihazın lokal yaddaşında saxlayır.
-      </p>
-
-      <h3>GPS</h3>
-
-      <p>
-        GPS yalnız brauzer icazəsi verildikdə istifadə olunur.
-        Demo GPS koordinatını real serverə avtomatik göndərmir.
-      </p>
-
-      <h3>Media</h3>
-
-      <p>
-        Yüklənən foto və videolar demo rejimində cihazın
-        IndexedDB yaddaşında saxlanılır.
-      </p>
-
-      <h3>Məkan yerləşdirmə</h3>
-
-      <p>
-        İstifadəçi dünyanın istənilən koordinatına mətn,
-        profil, şəkil və video məlumatı yerləşdirə bilər.
-        Real ictimai xidmətə keçiddə Terms, Privacy,
-        Content Policy, copyright, report/block və
-        moderasiya mexanizmləri əlavə edilməlidir.
-      </p>
-
-      <h3>AR dəqiqliyi</h3>
-
-      <p>
-        Bu brauzer prototipində GPS + kompas +
-        ekran-məkanı collision sistemi istifadə olunur.
-        Bu, xüsusi ARCore/ARKit Geospatial sistemindəki
-        santimetr səviyyəli fiziki anchor demək deyil.
-      </p>
-
-      <h3>Hüquqi qeyd</h3>
-
-      <p>
-        Bu bölmə hüquqi məsləhət deyil. Real beynəlxalq
-        xidmət istifadəyə verilməzdən əvvəl fəaliyyət göstərilən
-        ölkələr üzrə hüquqi sənədlər hazırlanmalıdır.
-      </p>
 
     </div>
 
@@ -2447,820 +1306,1271 @@ button{
 </div>
 
 
-<!-- =====================================================
-     BOTTOM NAV
-===================================================== -->
+<!-- SCANNER -->
 
-<nav class="bottomNav">
+<div class="overlay" id="scanModal">
 
-  <button
-    class="navButton active"
-    data-view="ar">
+  <div class="modal">
 
-    <span class="navIcon">AR</span>
-    <span class="navLabel">AR</span>
-
-  </button>
-
-
-  <button
-    class="navButton"
-    data-view="world">
-
-    <span class="navIcon">W</span>
-    <span class="navLabel">WORLD</span>
-
-  </button>
-
-
-  <button
-    class="navButton"
-    data-view="map">
-
-    <span class="navIcon">M</span>
-    <span class="navLabel">MAP</span>
-
-  </button>
-
-
-  <button
-    class="navButton"
-    data-view="feed">
-
-    <span class="navIcon">F</span>
-    <span class="navLabel">FEED</span>
-
-  </button>
-
-
-  <button
-    class="navButton"
-    data-view="profile">
-
-    <span class="navIcon">P</span>
-    <span class="navLabel">PROFILE</span>
-
-  </button>
-
-</nav>
-
-
-<div id="toast"></div>
-
-
-<!-- STARTUP -->
-<div id="startup">
-
-  <div class="startupBox">
-
-    <div class="startupLogo">
-      AW
+    <div class="modal-head">
+      <div class="modal-title">QR skaner</div>
+      <button class="close" data-close="scanModal">×</button>
     </div>
 
-    <strong>ARWORLD</strong>
+    <div class="modal-body">
+      <div id="reader"></div>
 
-    <small>
-      SPATIAL WORLD
-    </small>
+      <div class="warning">
+        Kamera icazəsi lazımdır. GitHub Pages kimi HTTPS səhifəsində
+        istifadə et.
+      </div>
+    </div>
 
   </div>
 
 </div>
 
+
+<!-- SETTINGS -->
+
+<div class="overlay" id="settingsModal">
+
+  <div class="modal">
+
+    <div class="modal-head">
+      <div class="modal-title">Təhlükəsizlik və ayarlar</div>
+      <button class="close" data-close="settingsModal">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="setting">
+
+        <div class="setting-title">Profil adı</div>
+
+        <input class="input" id="nameInput"
+          placeholder="Adın">
+
+        <button class="primary" id="saveName">
+          Yadda saxla
+        </button>
+
+      </div>
+
+
+      <div class="setting">
+
+        <div class="toggle-row">
+
+          <div>
+            <div class="setting-title">
+              Private Mode
+            </div>
+
+            <div class="setting-desc">
+              Aktiv olduqda bulud tərcüməsi və potensial üçüncü tərəf
+              xidmətlərinə mətn göndərilməsi dayandırılır.
+            </div>
+          </div>
+
+          <label class="switch">
+            <input type="checkbox" id="privateToggle" checked>
+            <span class="slider"></span>
+          </label>
+
+        </div>
+
+      </div>
+
+
+      <div class="setting">
+
+        <div class="toggle-row">
+
+          <div>
+            <div class="setting-title">
+              Avtomatik tərcümə
+            </div>
+
+            <div class="setting-desc">
+              Qarşı tərəfin dilinə avtomatik çevirmə.
+            </div>
+
+          </div>
+
+          <label class="switch">
+            <input type="checkbox" id="translateToggle">
+            <span class="slider"></span>
+          </label>
+
+        </div>
+
+      </div>
+
+
+      <div class="setting">
+
+        <div class="setting-title">
+          Mənim dilim
+        </div>
+
+        <select class="select" id="myLang"></select>
+
+      </div>
+
+
+      <div class="setting">
+
+        <div class="setting-title">
+          Tərcümə dili
+        </div>
+
+        <select class="select" id="targetLang"></select>
+
+      </div>
+
+
+      <div class="setting">
+
+        <div class="setting-title">
+          Təhlükəsizlik fingerprint
+        </div>
+
+        <div class="setting-desc">
+          Qarşı tərəflə başqa etibarlı kanal vasitəsilə müqayisə et.
+          Bu, saxta vasitəçi / MITM riskini azaltmağa kömək edir.
+        </div>
+
+        <div class="fingerprint" id="myFingerprint">
+          Hesablanır...
+        </div>
+
+      </div>
+
+
+      <div class="setting">
+
+        <div class="setting-title">
+          Məlumatların saxlanması
+        </div>
+
+        <div class="setting-desc">
+          Mesaj tarixçəsi cihazdakı IndexedDB yaddaşında saxlanılır.
+          PeerJS serveri tətbiq səviyyəli mesaj plaintextini almır.
+        </div>
+
+        <button class="secondary" id="exportBtn">
+          Məlumatları export et
+        </button>
+
+        <button class="secondary danger" id="clearBtn">
+          Bütün yerli məlumatları sil
+        </button>
+
+      </div>
+
+
+      <div class="setting">
+
+        <div class="setting-title">
+          Vacib təhlükəsizlik qeydi
+        </div>
+
+        <div class="warning">
+          Bu tətbiq təhlükəsizlik auditi keçməyib.
+          Telefonun özü, brauzer, əməliyyat sistemi, keylogger,
+          screenshot, zərərli proqram və ya fiziki giriş kompromet
+          olunarsa, tətbiq plaintext-i qorumaq iqtidarında deyil.
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- FINGERPRINT -->
+
+<div class="overlay" id="fingerModal">
+
+  <div class="modal">
+
+    <div class="modal-head">
+      <div class="modal-title">E2E fingerprint</div>
+      <button class="close" data-close="fingerModal">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="success">
+        🔐 Bu fingerprint həmin ECDH public key-in
+        SHA-256 identifikatorudur.
+      </div>
+
+      <div class="setting">
+
+        <div class="setting-title">
+          Mənim fingerprint
+        </div>
+
+        <div class="fingerprint" id="fingerMine"></div>
+
+      </div>
+
+      <div class="setting">
+
+        <div class="setting-title">
+          Qarşı tərəfin fingerprint
+        </div>
+
+        <div class="fingerprint" id="fingerRemote">
+          Qoşulma gözlənilir...
+        </div>
+
+      </div>
+
+      <div class="warning">
+        Ən güclü yoxlama üçün bu kodu telefon zəngi və ya başqa
+        etibarlı kanal ilə qarşı tərəfin gördüyü kodla müqayisə et.
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- CAMERA -->
+
+<div class="overlay" id="cameraModal">
+
+  <div class="modal">
+
+    <div class="modal-head">
+      <div class="modal-title">Kamera</div>
+      <button class="close" data-close="cameraModal">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <video id="cameraVideo"
+        class="camera-video"
+        autoplay
+        playsinline></video>
+
+      <div class="camera-controls">
+        <button id="switchCamera">↔ Kamera</button>
+        <button id="takePhoto">📸 Çək</button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- AUDIO -->
+
+<div class="overlay" id="audioModal">
+
+  <div class="modal">
+
+    <div class="modal-head">
+      <div class="modal-title">Səs yazısı</div>
+      <button class="close" data-close="audioModal">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="success" id="recordState">
+        Hazırdır.
+      </div>
+
+      <button class="primary" id="recordStart">
+        🎙 Yazmağa başla
+      </button>
+
+      <button class="secondary" id="recordStop">
+        ■ Dayandır
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- INFO -->
+
+<div class="overlay" id="infoModal">
+
+  <div class="modal">
+
+    <div class="modal-head">
+      <div class="modal-title">Söhbət haqqında</div>
+      <button class="close" data-close="infoModal">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="setting">
+        <div class="setting-title">Transport</div>
+        <div class="setting-desc">
+          WebRTC DataChannel
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-title">Tətbiq səviyyəsi</div>
+        <div class="setting-desc">
+          ECDH P-256 + AES-256-GCM
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-title">Şəbəkə səviyyəsi</div>
+        <div class="setting-desc">
+          WebRTC DTLS
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-title">Translation</div>
+        <div class="setting-desc">
+          Private Mode aktivdirsə bulud tərcüməsi istifadə edilmir.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<div class="drop-zone" id="dropZone">
+  <div class="drop-box">
+    📦<br><br>
+    Faylı buraya burax
+  </div>
+</div>
+
+
+<div class="toast-area" id="toastArea"></div>
+
 
 <script>
-
-/* =========================================================
-   ARWORLD CORE
-========================================================= */
-
 "use strict";
 
+/* =========================================================
+   VAULT CHAT
+   PRIVATE P2P CORE
+   ========================================================= */
+
+const APP_VERSION = "1.0-secure-core";
+const DB_NAME = "vault_chat_db";
+const DB_VERSION = 1;
+
+const CHUNK_SIZE = 16 * 1024;
+const MAX_FILE_SIZE = 15 * 1024 * 1024;
+
+const state = {
+  peer: null,
+  peerId: null,
+  currentPeer: null,
+  sessions: new Map(),
+  contacts: new Map(),
+  messages: new Map(),
+  myProfile: {
+    name: localStorage.getItem("vault_name") || "Anonymous",
+    lang: localStorage.getItem("vault_lang") || navigator.language.slice(0,2) || "en"
+  },
+  settings: {
+    privateMode: localStorage.getItem("vault_private") !== "false",
+    autoTranslate: localStorage.getItem("vault_translate") === "true",
+    targetLang: localStorage.getItem("vault_target") || "en"
+  },
+  db: null,
+  typingTimer: null,
+  recording: null,
+  mediaStream: null,
+  facingMode: "user",
+  replyTo: null,
+  scanner: null
+};
+
 
 /* =========================================================
-   HELPERS
-========================================================= */
+   LANGUAGE LIST
+   ========================================================= */
+
+const LANGS = {
+  af:"Afrikaans",
+  sq:"Albanian",
+  am:"Amharic",
+  ar:"Arabic",
+  hy:"Armenian",
+  az:"Azerbaijani",
+  eu:"Basque",
+  be:"Belarusian",
+  bn:"Bengali",
+  bs:"Bosnian",
+  bg:"Bulgarian",
+  ca:"Catalan",
+  zh:"Chinese",
+  hr:"Croatian",
+  cs:"Czech",
+  da:"Danish",
+  nl:"Dutch",
+  en:"English",
+  et:"Estonian",
+  fi:"Finnish",
+  fr:"French",
+  gl:"Galician",
+  ka:"Georgian",
+  de:"German",
+  el:"Greek",
+  gu:"Gujarati",
+  he:"Hebrew",
+  hi:"Hindi",
+  hu:"Hungarian",
+  is:"Icelandic",
+  id:"Indonesian",
+  ga:"Irish",
+  it:"Italian",
+  ja:"Japanese",
+  jv:"Javanese",
+  kn:"Kannada",
+  kk:"Kazakh",
+  km:"Khmer",
+  ko:"Korean",
+  ku:"Kurdish",
+  ky:"Kyrgyz",
+  lo:"Lao",
+  lv:"Latvian",
+  lt:"Lithuanian",
+  mk:"Macedonian",
+  ms:"Malay",
+  ml:"Malayalam",
+  mt:"Maltese",
+  mr:"Marathi",
+  mn:"Mongolian",
+  ne:"Nepali",
+  no:"Norwegian",
+  ps:"Pashto",
+  fa:"Persian",
+  pl:"Polish",
+  pt:"Portuguese",
+  pa:"Punjabi",
+  ro:"Romanian",
+  ru:"Russian",
+  sr:"Serbian",
+  si:"Sinhala",
+  sk:"Slovak",
+  sl:"Slovenian",
+  so:"Somali",
+  es:"Spanish",
+  su:"Sundanese",
+  sw:"Swahili",
+  sv:"Swedish",
+  tl:"Tagalog",
+  tg:"Tajik",
+  ta:"Tamil",
+  te:"Telugu",
+  th:"Thai",
+  tr:"Turkish",
+  tk:"Turkmen",
+  uk:"Ukrainian",
+  ur:"Urdu",
+  uz:"Uzbek",
+  vi:"Vietnamese",
+  cy:"Welsh",
+  yi:"Yiddish"
+};
+
+
+/* =========================================================
+   DOM
+   ========================================================= */
 
 const $ = id => document.getElementById(id);
 
-
-function esc(value){
-
-  return String(value ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
+const messagesEl = $("messages");
+const emptyState = $("emptyState");
+const input = $("messageInput");
 
 
-function clamp(v,min,max){
+/* =========================================================
+   TOAST
+   ========================================================= */
 
-  return Math.max(min,Math.min(max,v));
+function toast(message, type=""){
+  const el = document.createElement("div");
+  el.className = "toast " + type;
+  el.textContent = message;
 
-}
+  $("toastArea").appendChild(el);
 
-
-function toast(message){
-
-  const el=$("toast");
-
-  el.textContent=message;
-
-  el.classList.add("show");
-
-  clearTimeout(
-    toast.timer
-  );
-
-  toast.timer=
-    setTimeout(
-      ()=>{
-        el.classList.remove("show");
-      },
-      2600
-    );
-
-}
-
-
-function openModal(id){
-
-  $(id).classList.add("show");
-
-}
-
-
-function closeModal(id){
-
-  $(id).classList.remove("show");
-
+  setTimeout(()=>{
+    el.style.opacity = "0";
+    el.style.transform = "translateY(-5px)";
+    setTimeout(()=>el.remove(),220);
+  },3500);
 }
 
 
 /* =========================================================
-   DATABASE
-========================================================= */
+   MODALS
+   ========================================================= */
 
-let db=null;
+function openModal(id){
+  $(id).classList.add("open");
+}
 
-let objects=[];
+function closeModal(id){
+  $(id).classList.remove("open");
+}
 
-let profile={
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    closeModal(btn.dataset.close);
+  });
+});
 
-  id:"me",
+document.querySelectorAll(".overlay").forEach(overlay=>{
+  overlay.addEventListener("click",e=>{
+    if(e.target === overlay){
+      overlay.classList.remove("open");
+    }
+  });
+});
 
-  name:"ARWORLD",
 
-  username:"@arworld",
+/* =========================================================
+   BASE64
+   ========================================================= */
 
-  bio:"Fiziki dünyaya rəqəmsal iz burax.",
+function bytesToBase64(bytes){
+  let binary = "";
+  const chunk = 0x8000;
 
-  article:"",
+  for(let i=0;i<bytes.length;i+=chunk){
+    binary += String.fromCharCode(
+      ...bytes.subarray(i,Math.min(i+chunk,bytes.length))
+    );
+  }
 
-  phone:"",
+  return btoa(binary);
+}
 
-  whatsapp:"",
+function base64ToBytes(str){
+  const binary = atob(str);
+  const out = new Uint8Array(binary.length);
 
-  social:"",
+  for(let i=0;i<binary.length;i++){
+    out[i] = binary.charCodeAt(i);
+  }
 
-  avatar:null
+  return out;
+}
 
-};
 
+/* =========================================================
+   CRYPTO
+   ========================================================= */
+
+async function sha256(data){
+  return new Uint8Array(
+    await crypto.subtle.digest(
+      "SHA-256",
+      typeof data === "string"
+        ? new TextEncoder().encode(data)
+        : data
+    )
+  );
+}
+
+async function fingerprintFromJwk(jwk){
+
+  const canonical = JSON.stringify({
+    k:jwk.k || "",
+    crv:jwk.crv || "",
+    x:jwk.x || "",
+    y:jwk.y || ""
+  });
+
+  const hash = await sha256(canonical);
+
+  const hex = [...hash]
+    .map(x=>x.toString(16).padStart(2,"0"))
+    .join("");
+
+  return hex.match(/.{1,4}/g).join(" ");
+}
+
+
+async function createCryptoSession(){
+
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name:"ECDH",
+      namedCurve:"P-256"
+    },
+    true,
+    ["deriveKey"]
+  );
+
+  const publicJwk = await crypto.subtle.exportKey(
+    "jwk",
+    keyPair.publicKey
+  );
+
+  return {
+    privateKey:keyPair.privateKey,
+    publicKey:keyPair.publicKey,
+    publicJwk,
+    remoteJwk:null,
+    key:null,
+    fingerprint:await fingerprintFromJwk(publicJwk),
+    remoteFingerprint:null,
+    ready:false,
+    queue:[]
+  };
+}
+
+
+async function deriveSessionKey(session, remoteJwk){
+
+  const remotePublic = await crypto.subtle.importKey(
+    "jwk",
+    remoteJwk,
+    {
+      name:"ECDH",
+      namedCurve:"P-256"
+    },
+    true,
+    []
+  );
+
+  session.key = await crypto.subtle.deriveKey(
+    {
+      name:"ECDH",
+      public:remotePublic
+    },
+    session.privateKey,
+    {
+      name:"AES-GCM",
+      length:256
+    },
+    false,
+    ["encrypt","decrypt"]
+  );
+
+  session.remoteJwk = remoteJwk;
+
+  session.remoteFingerprint =
+    await fingerprintFromJwk(remoteJwk);
+
+  session.ready = true;
+
+  updateSecurityUI();
+
+  flushSessionQueue(session);
+}
+
+
+function sessionAAD(peerId){
+
+  const ids = [state.peerId || "", peerId || ""]
+    .sort()
+    .join("|");
+
+  return new TextEncoder().encode(
+    "VAULT-CHAT-E2E-V1|" + ids
+  );
+}
+
+
+async function encryptObject(obj,session){
+
+  if(!session.key){
+    throw new Error("Secure session is not ready");
+  }
+
+  const iv = crypto.getRandomValues(
+    new Uint8Array(12)
+  );
+
+  const plaintext = new TextEncoder().encode(
+    JSON.stringify(obj)
+  );
+
+  const encrypted = await crypto.subtle.encrypt(
+    {
+      name:"AES-GCM",
+      iv,
+      additionalData:sessionAAD(state.currentPeer)
+    },
+    session.key,
+    plaintext
+  );
+
+  return {
+    type:"secure",
+    v:1,
+    iv:bytesToBase64(iv),
+    data:bytesToBase64(
+      new Uint8Array(encrypted)
+    )
+  };
+}
+
+
+async function decryptObject(packet,session){
+
+  if(!session.key){
+    throw new Error("No session key");
+  }
+
+  const decrypted = await crypto.subtle.decrypt(
+    {
+      name:"AES-GCM",
+      iv:base64ToBytes(packet.iv),
+      additionalData:sessionAAD(state.currentPeer)
+    },
+    session.key,
+    base64ToBytes(packet.data)
+  );
+
+  return JSON.parse(
+    new TextDecoder().decode(decrypted)
+  );
+}
+
+
+/* =========================================================
+   IDB
+   ========================================================= */
 
 function openDB(){
 
-  return new Promise(
-    (resolve,reject)=>{
+  return new Promise((resolve,reject)=>{
 
-      const req=
-        indexedDB.open(
-          "ARWORLD_WORLD_20",
-          1
+    const request = indexedDB.open(
+      DB_NAME,
+      DB_VERSION
+    );
+
+    request.onupgradeneeded = e => {
+
+      const db = e.target.result;
+
+      if(!db.objectStoreNames.contains("messages")){
+        const store = db.createObjectStore(
+          "messages",
+          {keyPath:"id"}
         );
 
+        store.createIndex(
+          "chat_ts",
+          ["chatId","ts"]
+        );
+      }
 
-      req.onupgradeneeded=
-        event=>{
+      if(!db.objectStoreNames.contains("contacts")){
+        db.createObjectStore(
+          "contacts",
+          {keyPath:"id"}
+        );
+      }
 
-          const database=
-            event.target.result;
+      if(!db.objectStoreNames.contains("media")){
+        db.createObjectStore(
+          "media",
+          {keyPath:"id"}
+        );
+      }
 
+    };
 
-          if(
-            !database.objectStoreNames
-              .contains("objects")
-          ){
+    request.onsuccess = ()=>{
+      state.db = request.result;
+      resolve(state.db);
+    };
 
-            database.createObjectStore(
-              "objects",
-              {
-                keyPath:"id"
-              }
-            );
+    request.onerror = ()=>{
+      reject(request.error);
+    };
 
-          }
-
-
-          if(
-            !database.objectStoreNames
-              .contains("profile")
-          ){
-
-            database.createObjectStore(
-              "profile",
-              {
-                keyPath:"id"
-              }
-            );
-
-          }
-
-        };
-
-
-      req.onsuccess=
-        event=>{
-
-          db=
-            event.target.result;
-
-          resolve(db);
-
-        };
-
-
-      req.onerror=
-        ()=>{
-          reject(req.error);
-        };
-
-    }
-  );
-
+  });
 }
 
 
-function dbGetAll(store){
+function dbPut(storeName,value){
 
-  return new Promise(
-    (resolve,reject)=>{
+  return new Promise((resolve,reject)=>{
 
-      if(!db){
+    const tx = state.db.transaction(
+      storeName,
+      "readwrite"
+    );
 
-        resolve([]);
+    tx.objectStore(storeName).put(value);
 
-        return;
-      }
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
 
-
-      const tx=
-        db.transaction(
-          store,
-          "readonly"
-        );
-
-
-      const req=
-        tx.objectStore(store)
-          .getAll();
-
-
-      req.onsuccess=
-        ()=>{
-          resolve(req.result || []);
-        };
-
-
-      req.onerror=
-        ()=>{
-          reject(req.error);
-        };
-
-    }
-  );
-
+  });
 }
 
 
-function dbPut(store,data){
+function dbDelete(storeName,key){
 
-  return new Promise(
-    (resolve,reject)=>{
+  return new Promise((resolve,reject)=>{
 
-      if(!db){
+    const tx = state.db.transaction(
+      storeName,
+      "readwrite"
+    );
 
-        reject(
-          new Error("DB unavailable")
-        );
+    tx.objectStore(storeName).delete(key);
 
-        return;
-      }
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
 
-
-      const tx=
-        db.transaction(
-          store,
-          "readwrite"
-        );
+  });
+}
 
 
-      tx.objectStore(store)
-        .put(data);
+function dbGetAll(storeName){
 
+  return new Promise((resolve,reject)=>{
 
-      tx.oncomplete=
-        ()=>resolve();
+    const tx = state.db.transaction(
+      storeName,
+      "readonly"
+    );
 
+    const request =
+      tx.objectStore(storeName).getAll();
 
-      tx.onerror=
-        ()=>reject(tx.error);
+    request.onsuccess = ()=>{
+      resolve(request.result || []);
+    };
 
-    }
-  );
+    request.onerror = ()=>{
+      reject(request.error);
+    };
 
+  });
 }
 
 
 /* =========================================================
-   LANGUAGE
-========================================================= */
+   ID
+   ========================================================= */
 
-const translations={
+function generatePeerId(){
 
-  az:{
-    search:"Axtar",
-    compass:"Kompas",
-    world:"Dünya",
-    nearbyObjects:"Yaxınlıqdakı obyektlər",
-    feed:"Axın",
-    profile:"Profil",
-    editProfile:"Profili redaktə et",
-    privacy:"Məxfilik və hüquqi məlumat",
-    placeTitle:"Məkana yerləşdir",
-    format:"FORMAT",
-    category:"KATEQORİYA",
-    title:"BAŞLIQ",
-    shortInfo:"QISA MƏLUMAT",
-    article:"ƏTRAFLI MƏLUMAT",
-    radius:"GÖRÜNMƏ MƏSAFƏSİ",
-    size:"ÖLÇÜ",
-    coordinates:"KOORDİNAT",
-    media:"FOTO / VİDEO",
-    place:"MƏKANA YERLƏŞDİR"
-  },
+  const stored =
+    localStorage.getItem("vault_peer_id");
 
-  en:{
-    search:"Search",
-    compass:"Compass",
-    world:"World",
-    nearbyObjects:"Nearby objects",
-    feed:"Feed",
-    profile:"Profile",
-    editProfile:"Edit profile",
-    privacy:"Privacy & legal",
-    placeTitle:"Place in world",
-    format:"FORMAT",
-    category:"CATEGORY",
-    title:"TITLE",
-    shortInfo:"SHORT INFO",
-    article:"FULL INFORMATION",
-    radius:"VISIBLE RADIUS",
-    size:"SIZE",
-    coordinates:"COORDINATES",
-    media:"PHOTO / VIDEO",
-    place:"PLACE IN WORLD"
-  },
-
-  ru:{
-    search:"Поиск",
-    compass:"Компас",
-    world:"Мир",
-    nearbyObjects:"Объекты рядом",
-    feed:"Лента",
-    profile:"Профиль",
-    editProfile:"Изменить профиль",
-    privacy:"Конфиденциальность и право",
-    placeTitle:"Разместить в мире",
-    format:"ФОРМАТ",
-    category:"КАТЕГОРИЯ",
-    title:"ЗАГОЛОВОК",
-    shortInfo:"КРАТКАЯ ИНФОРМАЦИЯ",
-    article:"ПОДРОБНАЯ ИНФОРМАЦИЯ",
-    radius:"РАДИУС ВИДИМОСТИ",
-    size:"РАЗМЕР",
-    coordinates:"КООРДИНАТЫ",
-    media:"ФОТО / ВИДЕО",
-    place:"РАЗМЕСТИТЬ"
-  },
-
-  de:{
-    search:"Suchen",
-    compass:"Kompass",
-    world:"Welt",
-    nearbyObjects:"Objekte in der Nähe",
-    feed:"Feed",
-    profile:"Profil",
-    editProfile:"Profil bearbeiten",
-    privacy:"Datenschutz & Recht",
-    placeTitle:"In der Welt platzieren",
-    format:"FORMAT",
-    category:"KATEGORIE",
-    title:"TITEL",
-    shortInfo:"KURZE INFO",
-    article:"DETAILINFORMATION",
-    radius:"SICHTBARKEIT",
-    size:"GRÖSSE",
-    coordinates:"KOORDINATEN",
-    media:"FOTO / VIDEO",
-    place:"PLATZIEREN"
+  if(stored && /^\d{8}$/.test(stored)){
+    return stored;
   }
 
-};
-
-
-let currentLanguage="az";
-
-
-function detectLanguage(){
-
-  const lang=
-    (
-      navigator.language ||
-      navigator.userLanguage ||
-      "az"
-    )
-    .toLowerCase();
-
-
-  if(lang.startsWith("ru")){
-    return "ru";
-  }
-
-  if(lang.startsWith("de")){
-    return "de";
-  }
-
-  if(lang.startsWith("en")){
-    return "en";
-  }
-
-  return "az";
-}
-
-
-function setLanguage(lang){
-
-  if(!translations[lang]){
-    lang="az";
-  }
-
-  currentLanguage=lang;
+  const id =
+    String(Math.floor(
+      10000000 +
+      Math.random()*90000000
+    ));
 
   localStorage.setItem(
-    "arworld_language",
-    lang
+    "vault_peer_id",
+    id
   );
 
+  return id;
+}
 
-  document.documentElement.lang=
-    lang;
 
+/* =========================================================
+   PEER INITIALIZATION
+   ========================================================= */
 
-  document
-    .querySelectorAll("[data-i18n]")
-    .forEach(el=>{
+function initPeer(){
 
-      const key=
-        el.dataset.i18n;
+  state.peerId = generatePeerId();
 
-      if(
-        translations[lang][key]
-      ){
+  $("myId").textContent =
+    "Peer ID: " + state.peerId;
 
-        el.textContent=
-          translations[lang][key];
+  $("inviteInput").value =
+    location.origin +
+    location.pathname +
+    "?ref=" +
+    state.peerId;
+
+  state.peer = new Peer(
+    state.peerId,
+    {
+      host:"0.peerjs.com",
+      port:443,
+      path:"/",
+      secure:true,
+      debug:0,
+      config:{
+        iceServers:[
+          {
+            urls:"stun:stun.l.google.com:19302"
+          }
+        ]
       }
-
-    });
-
-
-  $("languageButton")
-    .textContent=
-      lang.toUpperCase();
-
-  $("profileLanguageButton")
-    .textContent=
-      lang.toUpperCase();
-
-
-  const placeholders={
-
-    az:"Məkan, şəhər, küçə və ya koordinat...",
-    en:"Place, city, street or coordinates...",
-    ru:"Место, город, улица или координаты...",
-    de:"Ort, Stadt, Straße oder Koordinaten..."
-
-  };
-
-
-  $("globalSearch").placeholder=
-    placeholders[lang];
-
-
-  $("mapSearch").placeholder=
-    lang==="az"
-    ? "Dünya üzrə yer axtar..."
-    : lang==="ru"
-    ? "Искать место в мире..."
-    : lang==="de"
-    ? "Ort weltweit suchen..."
-    : "Search a place worldwide...";
-
-}
-
-
-function initLanguage(){
-
-  const saved=
-    localStorage.getItem(
-      "arworld_language"
-    );
-
-  setLanguage(
-    saved ||
-    detectLanguage()
+    }
   );
 
-}
+  state.peer.on("open",id=>{
+    state.peerId = id;
 
+    $("myId").textContent =
+      "Peer ID: " + id;
 
-/* =========================================================
-   GEO
-========================================================= */
+    $("inviteInput").value =
+      location.origin +
+      location.pathname +
+      "?ref=" + id;
 
-let userLat=null;
-let userLng=null;
-let gpsAccuracy=null;
-let heading=0;
+    $("remoteStatus").textContent =
+      "Hazır • Peer ID ilə qoşul";
 
-
-function distance(
-  lat1,
-  lng1,
-  lat2,
-  lng2
-){
-
-  const R=6371000;
-
-  const p1=
-    lat1*Math.PI/180;
-
-  const p2=
-    lat2*Math.PI/180;
-
-  const dp=
-    (lat2-lat1)*Math.PI/180;
-
-  const dl=
-    (lng2-lng1)*Math.PI/180;
-
-  const a=
-    Math.sin(dp/2)**2+
-    Math.cos(p1)*
-    Math.cos(p2)*
-    Math.sin(dl/2)**2;
-
-  return R*
-    2*
-    Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1-a)
+    toast(
+      "P2P ID hazırdır: " + id,
+      "success"
     );
 
-}
+    autoConnectFromURL();
+  });
 
 
-function getBearing(
-  lat1,
-  lng1,
-  lat2,
-  lng2
-){
-
-  const p1=
-    lat1*Math.PI/180;
-
-  const p2=
-    lat2*Math.PI/180;
-
-  const dl=
-    (lng2-lng1)*Math.PI/180;
-
-  const y=
-    Math.sin(dl)*
-    Math.cos(p2);
-
-  const x=
-    Math.cos(p1)*
-    Math.sin(p2)-
-    Math.sin(p1)*
-    Math.cos(p2)*
-    Math.cos(dl);
-
-  return (
-    Math.atan2(y,x)*
-    180/
-    Math.PI+
-    360
-  )%360;
-
-}
+  state.peer.on("connection",conn=>{
+    setupConnection(conn,false);
+  });
 
 
-function angleDiff(a,b){
+  state.peer.on("disconnected",()=>{
+    $("connectionPill").textContent =
+      "Signaling offline";
 
-  return (
-    (a-b+540)%360
-  )-180;
+    $("connectionPill").classList.remove("online");
 
+    $("remoteStatus").textContent =
+      "Signaling bağlantısı kəsildi";
+
+    setTimeout(()=>{
+      try{
+        state.peer.reconnect();
+      }catch(e){}
+    },2000);
+  });
+
+
+  state.peer.on("error",err=>{
+
+    console.error("Peer error:",err);
+
+    if(err.type === "unavailable-id"){
+
+      localStorage.removeItem(
+        "vault_peer_id"
+      );
+
+      toast(
+        "Peer ID artıq istifadə olunur. Yenisi yaradılır.",
+        "error"
+      );
+
+      setTimeout(()=>{
+        location.reload();
+      },1200);
+
+      return;
+    }
+
+    toast(
+      "P2P: " + (err.message || err.type),
+      "error"
+    );
+  });
 }
 
 
 /* =========================================================
-   GPS & COMPASS SYSTEM
-========================================================= */
+   CONNECTION
+   ========================================================= */
 
-function startGPS(){
+async function setupConnection(conn,outgoing){
 
-  if(!navigator.geolocation){
+  const peerId = conn.peer;
 
-    $("gpsStatus").innerHTML=
-      "GPS <b>n/a</b>";
+  let session = state.sessions.get(peerId);
 
-    return;
+  if(session && session.conn){
+    try{
+      session.conn.close();
+    }catch(e){}
+  }
+
+  session = await createCryptoSession();
+
+  session.conn = conn;
+  session.peerId = peerId;
+  session.outgoing = outgoing;
+  session.lastPing = 0;
+  session.latency = null;
+
+  state.sessions.set(
+    peerId,
+    session
+  );
+
+  addOrUpdateContact({
+    id:peerId,
+    name:"Secure Peer " + peerId.slice(-4),
+    status:"Connecting..."
+  });
+
+  if(outgoing){
+    state.currentPeer = peerId;
+    document.body.classList.add("chat-open");
+    renderChat();
   }
 
 
-  navigator.geolocation.watchPosition(
+  conn.on("open",async()=>{
 
-    position=>{
+    state.currentPeer = peerId;
 
-      const lat=
-        position.coords.latitude;
+    document.body.classList.add("chat-open");
 
-      const lng=
-        position.coords.longitude;
+    $("connectionPill").textContent =
+      "Connecting...";
 
-      const accuracy=
-        position.coords.accuracy ||
-        30;
+    $("connectionPill").classList.add("online");
+
+    $("remoteStatus").textContent =
+      "Secure handshake...";
+
+    renderChat();
+
+    await sendHandshake(session);
+
+  });
 
 
-      if(userLat===null){
+  conn.on("data",async packet=>{
 
-        userLat=lat;
-        userLng=lng;
+    try{
 
-      }else{
+      if(packet &&
+         packet.type === "crypto-hello"){
 
-        const move=
-          distance(
-            userLat,
-            userLng,
-            lat,
-            lng
+        await handleCryptoHello(
+          session,
+          packet
+        );
+
+        return;
+      }
+
+
+      if(packet &&
+         packet.type === "secure"){
+
+        const obj =
+          await decryptObject(
+            packet,
+            session
           );
 
-
-        if(
-          move>
-          Math.max(
-            100,
-            accuracy*5
-          )
-        ){
-
-          return;
-        }
-
-
-        let alpha=.05;
-
-        if(accuracy<=8){
-          alpha=.18;
-        }else if(accuracy<=20){
-          alpha=.10;
-        }
-
-
-        userLat +=
-          (lat-userLat)*alpha;
-
-        userLng +=
-          (lng-userLng)*alpha;
+        await handleSecureObject(
+          obj,
+          session
+        );
 
       }
 
-      gpsAccuracy=accuracy;
+    }catch(err){
 
-      $("gpsStatus").innerHTML=
-        `GPS <b>±${Math.round(accuracy)}m</b>`;
+      console.error(
+        "Secure packet rejected:",
+        err
+      );
 
-      updateMapUserLocation();
-      renderAR();
+      toast(
+        "Şifrəli paket doğrulanmadı.",
+        "error"
+      );
 
-    },
-
-    error=>{
-      $("gpsStatus").innerHTML=
-        "GPS <b>ERR</b>";
-    },
-
-    {
-      enableHighAccuracy:true,
-      maximumAge:1000,
-      timeout:15000
     }
 
-  );
+  });
+
+
+  conn.on("close",()=>{
+
+    session.ready = false;
+
+    if(state.currentPeer === peerId){
+
+      $("connectionPill").textContent =
+        "Disconnected";
+
+      $("connectionPill")
+        .classList
+        .remove("online");
+
+      $("remoteStatus").textContent =
+        "Əlaqə bağlandı";
+
+      $("securityState").textContent =
+        "• disconnected";
+
+    }
+
+    updateContactsUI();
+  });
+
+
+  conn.on("error",err=>{
+    console.error("Connection error",err);
+
+    if(state.currentPeer === peerId){
+      toast(
+        "P2P bağlantı xətası.",
+        "error"
+      );
+    }
+  });
 
 }
 
 
-function startCompass(){
-
-  const handler = event => {
-
-    let dir = null;
-
-    if(event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null){
-      dir = event.webkitCompassHeading;
-    } else if(event.alpha !== null){
-      dir = (360 - event.alpha) % 360;
-    }
-
-    if(dir !== null){
-      heading = dir;
-      $("compassStatus").querySelector("b").textContent = `${Math.round(heading)}°`;
-      renderAR();
-    }
-
-  };
-
-  if(window.DeviceOrientationEvent){
-    if(typeof DeviceOrientationEvent.requestPermission === "function"){
-      DeviceOrientationEvent.requestPermission().then(state => {
-        if(state === "granted"){
-          window.addEventListener("deviceorientation", handler, true);
-        }
-      }).catch(console.error);
-    } else {
-      window.addEventListener("deviceorientation", handler, true);
-    }
-  }
-
-}
-
-
-/* =========================================================
-   AR CAMERA STREAM
-========================================================= */
-
-async function startCamera(){
-
-  const video = $("camera");
+async function sendHandshake(session){
 
   try{
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { exact: "environment" },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 }
-      },
-      audio: false
+    session.conn.send({
+      type:"crypto-hello",
+      v:1,
+      publicKey:session.publicJwk
     });
 
-    video.srcObject = stream;
+  }catch(e){
 
-  } catch(e) {
+    toast(
+      "Kripto handshake göndərilmədi.",
+      "error"
+    );
+
+  }
+}
+
+
+async function handleCryptoHello(session,packet){
+
+  if(!packet.publicKey){
+    throw new Error("Missing public key");
+  }
+
+  if(!session.key){
+
+    await deriveSessionKey(
+      session,
+      packet.publicKey
+    );
+
+    await sendHandshake(session);
+
+    $("connectionPill").textContent =
+      "🔒 Secure";
+
+    $("securityState").textContent =
+      "• encrypted";
+
+    $("remoteStatus").textContent =
+      "🔒 E2E encrypted";
+
+    toast(
+      "E2E təhlükəsiz kanal quruldu.",
+      "success"
+    );
+
+    await sendSecure(
+      {
+        type:"profile",
+        profile:state.myProfile
+      },
+      session
+    );
+
+    await sendSecure(
+      {
+        type:"presence",
+        online:true
+      },
+      session
+    );
+
+  }
+
+}
+
+
+async function sendSecure(obj,session){
+
+  if(!session){
+    throw new Error("Session yoxdur");
+  }
+
+  if(!session.ready){
+
+    session.queue.push(obj);
+
+    return;
+  }
+
+  const packet =
+    await encryptObject(
+      obj,
+      session
+    );
+
+  session.conn.send(packet);
+}
+
+
+async function flushSessionQueue(session){
+
+  const queue =
+    [...session.queue];
+
+  session.queue.length = 0;
+
+  for(const item of queue){
 
     try{
-      const fallbackStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false
-      });
-      video.srcObject = fallbackStream;
-    } catch(err) {
-      toast("Kameraya giriş icazəsi verilə bilmədi.");
+      await sendSecure(
+        item,
+        session
+      );
+    }catch(e){
+      console.error(e);
     }
 
   }
@@ -3269,804 +2579,3332 @@ async function startCamera(){
 
 
 /* =========================================================
-   AR RENDER ENGINE
-========================================================= */
+   CONNECT
+   ========================================================= */
 
-let isSpreadMode = false;
+function connectToPeer(peerId){
 
-function renderAR(){
+  peerId = String(peerId || "")
+    .trim();
 
-  if(userLat === null || userLng === null) return;
+  if(!/^\d{8}$/.test(peerId)){
 
-  const container = $("arObjects");
-  const linesContainer = $("arLines");
+    toast(
+      "Peer ID 8 rəqəm olmalıdır.",
+      "error"
+    );
 
-  container.querySelectorAll(".arCard, .arEdge").forEach(el => el.remove());
-  linesContainer.innerHTML = "";
-
-  const fov = 60;
-  const screenWidth = window.innerWidth;
-  const screenHeight = window.innerHeight;
-
-  const nearby = objects.filter(obj => {
-    const dist = distance(userLat, userLng, obj.lat, obj.lng);
-    obj._dist = dist;
-    return dist <= (obj.radius || 3000);
-  }).sort((a,b) => a._dist - b._dist);
-
-  nearby.forEach((obj, idx) => {
-
-    const bearing = getBearing(userLat, userLng, obj.lat, obj.lng);
-    const diff = angleDiff(bearing, heading);
-
-    if(Math.abs(diff) < fov / 2){
-
-      const xPerc = 50 + (diff / (fov / 2)) * 50;
-      let yPerc = 45 + (idx % 3) * 12;
-
-      if(isSpreadMode){
-        yPerc = 25 + (idx * 16) % 50;
-      }
-
-      const card = document.createElement("div");
-      card.className = `arCard ${obj.size || 'normal'}`;
-      card.style.left = `${xPerc}%`;
-      card.style.top = `${yPerc}%`;
-
-      const scale = clamp(1 - (obj._dist / 1000) * 0.4, 0.65, 1);
-      card.style.setProperty("--scale", scale);
-
-      let mediaHtml = `<div class="arMedia">AW</div>`;
-      if(obj.media && obj.media.length > 0){
-        const m = obj.media[0];
-        if(m.type && m.type.startsWith("video")){
-          mediaHtml = `<div class="arMedia"><video src="${m.url}" autoplay muted loop></video></div>`;
-        } else {
-          mediaHtml = `<div class="arMedia"><img src="${m.url}" alt=""></div>`;
-        }
-      }
-
-      card.innerHTML = `
-        <div class="arCardGrid">
-          ${mediaHtml}
-          <div class="arInfo">
-            <div class="arName">${esc(obj.name)}</div>
-            <div class="arUser">${esc(obj.username || '@arworld')}</div>
-            <div class="arDescription">${esc(obj.bio || obj.article || '')}</div>
-            <div class="arBottom">
-              <div class="arDistance">${Math.round(obj._dist)}m</div>
-              <button class="arOpen" onclick="showDetail('${obj.id}')">AÇ</button>
-            </div>
-          </div>
-        </div>
-      `;
-
-      card.onclick = (e) => {
-        if(!e.target.classList.contains("arOpen")){
-          showDetail(obj.id);
-        }
-      };
-
-      container.appendChild(card);
-
-      const dot = document.createElement("div");
-      dot.className = "arDot";
-      dot.style.left = `${xPerc}%`;
-      dot.style.top = `${yPerc}%`;
-      linesContainer.appendChild(dot);
-
-    } else {
-
-      const edge = document.createElement("div");
-      edge.className = "arEdge";
-
-      if(diff < 0){
-        edge.style.left = "8px";
-      } else {
-        edge.style.right = "8px";
-      }
-
-      edge.style.top = `${30 + (idx * 40) % 50}%`;
-      edge.innerHTML = `
-        <strong>${diff < 0 ? '←' : '→'}</strong>
-        <div>${esc(obj.name)}</div>
-        <small>${Math.round(obj._dist)}m</small>
-      `;
-
-      edge.onclick = () => showDetail(obj.id);
-      container.appendChild(edge);
-
-    }
-
-  });
-
-}
-
-
-/* =========================================================
-   MAP (LEAFLET INTEGRATION)
-========================================================= */
-
-let map = null;
-let userMarker = null;
-let objectMarkers = [];
-let tempPickMarker = null;
-
-function initMap(){
-
-  if(map) return;
-
-  map = L.map('map', {
-    zoomControl: false,
-    attributionControl: false
-  }).setView([40.40926, 49.867092], 13);
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19
-  }).addTo(map);
-
-  map.on('click', e => {
-    const { lat, lng } = e.latlng;
-    
-    if(tempPickMarker){
-      map.removeLayer(tempPickMarker);
-    }
-
-    tempPickMarker = L.marker([lat, lng]).addTo(map);
-    
-    $("createLat").value = lat.toFixed(6);
-    $("createLng").value = lng.toFixed(6);
-
-    $("selectedPlaceBox").style.display = "block";
-    $("selectedPlaceTitle").textContent = "Seçilmiş Koordinat";
-    $("selectedPlaceAddress").textContent = `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
-    $("selectedPlaceCoordinates").textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-
-    toast("Koordinat seçildi! Yaradılış menyusuna keçə bilərsiniz.");
-  });
-
-}
-
-
-function updateMapUserLocation(){
-
-  if(!map || userLat === null || userLng === null) return;
-
-  if(!userMarker){
-
-    const customIcon = L.divIcon({
-      className: 'userMapMarker',
-      html: `<div style="width:14px;height:14px;border-radius:50%;background:#00d9ff;border:2px solid #fff;box-shadow:0 0 12px #00d9ff;"></div>`,
-      iconSize: [14, 14]
-    });
-
-    userMarker = L.marker([userLat, userLng], { icon: customIcon }).addTo(map);
-    map.setView([userLat, userLng], 15);
-
-  } else {
-
-    userMarker.setLatLng([userLat, userLng]);
-
-  }
-
-  renderMapObjects();
-
-}
-
-
-function renderMapObjects(){
-
-  if(!map) return;
-
-  objectMarkers.forEach(m => map.removeLayer(m));
-  objectMarkers = [];
-
-  objects.forEach(obj => {
-
-    const marker = L.marker([obj.lat, obj.lng]).addTo(map);
-    marker.bindPopup(`<b>${esc(obj.name)}</b><br>${esc(obj.bio || '')}`);
-    
-    marker.on('click', () => {
-      showDetail(obj.id);
-    });
-
-    objectMarkers.push(marker);
-
-  });
-
-}
-
-
-/* =========================================================
-   VIEWS & NAVIGATION
-========================================================= */
-
-function switchView(viewName){
-
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.navButton').forEach(b => b.classList.remove('active'));
-
-  const activeView = $(`${viewName}View`);
-  if(activeView){
-    activeView.classList.add('active');
-  }
-
-  const activeNav = document.querySelector(`.navButton[data-view="${viewName}"]`);
-  if(activeNav){
-    activeNav.classList.add('active');
-  }
-
-  if(viewName === 'map'){
-    setTimeout(() => {
-      initMap();
-      if(map) map.invalidateSize();
-    }, 100);
-  }
-
-  if(viewName === 'world'){
-    renderWorldList();
-  }
-
-  if(viewName === 'feed'){
-    renderFeedList();
-  }
-
-  if(viewName === 'profile'){
-    renderProfileView();
-  }
-
-}
-
-
-/* =========================================================
-   WORLD & FEED RENDERERS
-========================================================= */
-
-function renderWorldList(){
-
-  const list = $("worldList");
-  list.innerHTML = "";
-
-  if(objects.length === 0){
-    list.innerHTML = `<div style="text-align:center;color:#6e7a8e;padding:30px 0;">Yaxınlıqda heç bir obyekt tapılmadı.</div>`;
     return;
   }
 
-  objects.forEach(obj => {
+  if(peerId === state.peerId){
 
-    const dist = (userLat !== null && userLng !== null) 
-      ? Math.round(distance(userLat, userLng, obj.lat, obj.lng)) 
-      : '?';
+    toast(
+      "Öz cihazına qoşula bilməzsən.",
+      "error"
+    );
 
-    const card = document.createElement("div");
-    card.className = "worldCard";
-    card.onclick = () => showDetail(obj.id);
-
-    card.innerHTML = `
-      <div class="objectMark">${esc((obj.type || 'AW').substring(0,2).toUpperCase())}</div>
-      <div class="objectMain">
-        <div class="objectName">${esc(obj.name)}</div>
-        <div class="objectSub">${esc(obj.bio || obj.username || '')}</div>
-      </div>
-      <div class="objectDistance">${dist} m</div>
-    `;
-
-    list.appendChild(card);
-
-  });
-
-}
-
-
-function renderFeedList(){
-
-  const list = $("feedList");
-  list.innerHTML = "";
-
-  const feedItems = objects.filter(o => o.media && o.media.length > 0);
-
-  if(feedItems.length === 0){
-    list.innerHTML = `<div style="text-align:center;color:#6e7a8e;padding:30px 0;">Hələ heç bir media məzmunu yoxdur.</div>`;
     return;
   }
 
-  feedItems.forEach(obj => {
+  if(!state.peer){
 
-    const card = document.createElement("div");
-    card.className = "worldCard";
-    card.style.flexDirection = "column";
-    card.style.alignItems = "stretch";
-    card.onclick = () => showDetail(obj.id);
+    toast(
+      "P2P sistemi hələ hazır deyil.",
+      "error"
+    );
 
-    let mediaTag = `<img src="${obj.media[0].url}" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:8px;">`;
-    if(obj.media[0].type && obj.media[0].type.startsWith("video")){
-      mediaTag = `<video src="${obj.media[0].url}" controls style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:8px;"></video>`;
+    return;
+  }
+
+  const existing =
+    state.sessions.get(peerId);
+
+  if(existing &&
+     existing.conn &&
+     existing.conn.open){
+
+    state.currentPeer = peerId;
+
+    document.body.classList.add("chat-open");
+
+    renderChat();
+
+    return;
+  }
+
+  toast(
+    "P2P bağlantısı yaradılır..."
+  );
+
+  const conn =
+    state.peer.connect(
+      peerId,
+      {
+        reliable:true,
+        serialization:"json"
+      }
+    );
+
+  setupConnection(
+    conn,
+    true
+  );
+}
+
+
+/* =========================================================
+   URL AUTO CONNECT
+   ========================================================= */
+
+function autoConnectFromURL(){
+
+  const params =
+    new URLSearchParams(
+      location.search
+    );
+
+  const ref =
+    params.get("ref");
+
+  if(ref &&
+     /^\d{8}$/.test(ref) &&
+     ref !== state.peerId){
+
+    $("peerInput").value = ref;
+
+    setTimeout(()=>{
+      connectToPeer(ref);
+    },1000);
+
+  }
+}
+
+
+/* =========================================================
+   SECURE OBJECT HANDLER
+   ========================================================= */
+
+async function handleSecureObject(obj,session){
+
+  switch(obj.type){
+
+    case "profile":
+
+      handleRemoteProfile(
+        session.peerId,
+        obj.profile
+      );
+
+      break;
+
+
+    case "presence":
+
+      handlePresence(
+        session.peerId,
+        obj
+      );
+
+      break;
+
+
+    case "typing":
+
+      if(state.currentPeer === session.peerId){
+
+        $("typing").textContent =
+          obj.value
+            ? "yazır..."
+            : "";
+      }
+
+      break;
+
+
+    case "ping":
+
+      await sendSecure(
+        {
+          type:"pong",
+          id:obj.id,
+          t:obj.t
+        },
+        session
+      );
+
+      break;
+
+
+    case "pong":
+
+      if(obj.id === session.pingId){
+
+        session.latency =
+          Date.now() - obj.t;
+
+        updateChatStatus();
+      }
+
+      break;
+
+
+    case "message":
+
+      await receiveMessage(
+        obj.message,
+        session
+      );
+
+      break;
+
+
+    case "read":
+
+      markMessageRead(
+        obj.messageId
+      );
+
+      break;
+
+
+    case "delete":
+
+      await deleteRemoteMessage(
+        obj.messageId
+      );
+
+      break;
+
+
+    case "reaction":
+
+      updateReaction(
+        obj.messageId,
+        obj.reaction
+      );
+
+      break;
+
+
+    case "file":
+
+      await receiveFile(
+        obj,
+        session
+      );
+
+      break;
+
+  }
+
+}
+
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+function handleRemoteProfile(peerId,profile){
+
+  const contact =
+    state.contacts.get(peerId) || {
+      id:peerId
+    };
+
+  contact.name =
+    profile?.name ||
+    "Secure Peer " +
+    peerId.slice(-4);
+
+  contact.lang =
+    profile?.lang || "en";
+
+  contact.status =
+    "E2E encrypted";
+
+  state.contacts.set(
+    peerId,
+    contact
+  );
+
+  saveContact(contact);
+
+  updateContactsUI();
+  renderChat();
+}
+
+
+function handlePresence(peerId,obj){
+
+  const contact =
+    state.contacts.get(peerId) || {
+      id:peerId
+    };
+
+  contact.online =
+    !!obj.online;
+
+  state.contacts.set(
+    peerId,
+    contact
+  );
+
+  if(state.currentPeer === peerId){
+
+    $("remoteStatus").textContent =
+      obj.online
+        ? "● Online • E2E"
+        : "Offline";
+  }
+
+  updateContactsUI();
+}
+
+
+function addOrUpdateContact(contact){
+
+  const old =
+    state.contacts.get(contact.id);
+
+  const merged = {
+    ...(old || {}),
+    ...contact
+  };
+
+  state.contacts.set(
+    contact.id,
+    merged
+  );
+
+  saveContact(
+    merged
+  );
+
+  updateContactsUI();
+}
+
+
+function saveContact(contact){
+
+  if(!state.db) return;
+
+  dbPut(
+    "contacts",
+    contact
+  ).catch(()=>{});
+}
+
+
+/* =========================================================
+   CONTACT UI
+   ========================================================= */
+
+function updateContactsUI(){
+
+  const root =
+    $("contacts");
+
+  const search =
+    $("searchInput")
+      .value
+      .toLowerCase()
+      .trim();
+
+  root.innerHTML = "";
+
+  const contacts =
+    [...state.contacts.values()]
+      .filter(c=>
+        !search ||
+        (c.name || "")
+          .toLowerCase()
+          .includes(search) ||
+        c.id.includes(search)
+      )
+      .sort((a,b)=>
+        (b.lastTs || 0) -
+        (a.lastTs || 0)
+      );
+
+  if(!contacts.length){
+
+    const p =
+      document.createElement("div");
+
+    p.style.cssText =
+      "padding:25px;text-align:center;color:#647b90;font-size:12px";
+
+    p.textContent =
+      "Hələ kontakt yoxdur.";
+
+    root.appendChild(p);
+
+    return;
+  }
+
+
+  contacts.forEach(contact=>{
+
+    const item =
+      document.createElement("div");
+
+    item.className =
+      "contact" +
+      (state.currentPeer === contact.id
+        ? " active"
+        : "");
+
+    const avatar =
+      document.createElement("div");
+
+    avatar.className =
+      "avatar";
+
+    avatar.style.width = "42px";
+    avatar.style.height = "42px";
+
+    avatar.textContent =
+      (contact.name || "P")
+        .slice(0,1)
+        .toUpperCase();
+
+
+    const main =
+      document.createElement("div");
+
+    main.className =
+      "contact-main";
+
+    const name =
+      document.createElement("div");
+
+    name.className =
+      "contact-name";
+
+    name.textContent =
+      contact.name ||
+      "Secure Peer";
+
+
+    const preview =
+      document.createElement("div");
+
+    preview.className =
+      "contact-preview";
+
+    const session =
+      state.sessions.get(contact.id);
+
+    preview.textContent =
+      session?.ready
+        ? "🔒 E2E encrypted"
+        : "Tap to connect";
+
+
+    main.append(
+      name,
+      preview
+    );
+
+
+    const time =
+      document.createElement("div");
+
+    time.className =
+      "contact-time";
+
+    if(contact.online){
+      time.textContent = "●";
+      time.style.color =
+        "#20d68b";
     }
 
-    card.innerHTML = `
-      ${mediaTag}
-      <div class="objectName">${esc(obj.name)}</div>
-      <div class="objectSub">${esc(obj.bio || '')}</div>
-    `;
 
-    list.appendChild(card);
+    item.append(
+      avatar,
+      main,
+      time
+    );
 
-  });
+    item.addEventListener(
+      "click",
+      ()=>{
+        state.currentPeer =
+          contact.id;
 
-}
+        document.body
+          .classList
+          .add("chat-open");
 
+        const session =
+          state.sessions.get(
+            contact.id
+          );
 
-/* =========================================================
-   PROFILE RENDERER
-========================================================= */
+        if(!session ||
+           !session.conn ||
+           !session.conn.open){
 
-function renderProfileView(){
+          connectToPeer(
+            contact.id
+          );
 
-  $("profileName").textContent = profile.name || "ARWORLD";
-  $("profileUsername").textContent = profile.username || "@arworld";
-  $("profileBio").textContent = profile.bio || "Fiziki dünyaya rəqəmsal iz burax.";
+        }else{
 
-  if(profile.avatar){
-    $("profileAvatarImage").src = profile.avatar;
-    $("profileAvatarImage").style.display = "block";
-    $("avatarPlaceholder").style.display = "none";
-  } else {
-    $("profileAvatarImage").style.display = "none";
-    $("avatarPlaceholder").style.display = "block";
-  }
+          renderChat();
 
-  const myObjects = objects.filter(o => o.owner === profile.id || o.owner === "me");
-  $("profileObjectCount").textContent = myObjects.length;
-
-  const container = $("profileObjects");
-  container.innerHTML = "";
-
-  myObjects.forEach(obj => {
-
-    const card = document.createElement("div");
-    card.className = "worldCard";
-    card.onclick = () => showDetail(obj.id);
-
-    card.innerHTML = `
-      <div class="objectMark">AW</div>
-      <div class="objectMain">
-        <div class="objectName">${esc(obj.name)}</div>
-        <div class="objectSub">${esc(obj.bio || '')}</div>
-      </div>
-      <button class="actionButton danger" style="width:auto;min-height:30px;padding:0 10px;margin:0;" onclick="event.stopPropagation(); deleteObject('${obj.id}')">Sil</button>
-    `;
-
-    container.appendChild(card);
-
-  });
-
-}
-
-
-/* =========================================================
-   OBJECT DETAILS & MODALS
-========================================================= */
-
-function showDetail(id){
-
-  const obj = objects.find(o => o.id === id);
-  if(!obj) return;
-
-  const content = $("detailContent");
-
-  let mediaHtml = "";
-  if(obj.media && obj.media.length > 0){
-    mediaHtml = `<div class="detailMedia">`;
-    obj.media.forEach(m => {
-      if(m.type && m.type.startsWith("video")){
-        mediaHtml += `<video src="${m.url}" controls></video>`;
-      } else {
-        mediaHtml += `<img src="${m.url}" alt="">`;
+        }
       }
-    });
-    mediaHtml += `</div>`;
-  }
+    );
 
-  content.innerHTML = `
-    ${mediaHtml}
-    <div class="detailName">${esc(obj.name)}</div>
-    <div class="detailUser">${esc(obj.username || '@arworld')}</div>
-    <div class="detailText">${esc(obj.article || obj.bio || 'Hər hansı ətraflı məlumat yoxdur.')}</div>
-    <div class="detailInfo">
-      <b>Koordinat:</b> ${obj.lat.toFixed(5)}, ${obj.lng.toFixed(5)}<br>
-      <b>Kateqoriya:</b> ${esc(obj.type || 'Ümumi')}<br>
-      <b>Görünmə Radiusu:</b> ${obj.radius || 300}m
-      ${obj.phone ? `<br><b>Tel:</b> ${esc(obj.phone)}` : ''}
-      ${obj.whatsapp ? `<br><b>WhatsApp:</b> ${esc(obj.whatsapp)}` : ''}
-    </div>
-  `;
+    root.appendChild(item);
 
-  openModal("detailModal");
-
-}
-
-
-async function deleteObject(id){
-
-  if(!confirm("Bu obyekti silməyə əminsiniz?")) return;
-
-  objects = objects.filter(o => o.id !== id);
-
-  if(db){
-    const tx = db.transaction("objects", "readwrite");
-    tx.objectStore("objects").delete(id);
-  }
-
-  toast("Obyekt silindi.");
-  renderProfileView();
-  renderAR();
+  });
 
 }
 
 
 /* =========================================================
-   MEDIA UPLOADER HANDLING
-========================================================= */
+   CHAT RENDER
+   ========================================================= */
 
-let selectedMediaFiles = [];
+async function renderChat(){
 
-function setupMediaHandlers(){
+  if(!state.currentPeer){
 
-  const galleryInput = $("galleryInput");
-  const photoInput = $("photoInput");
-  const videoInput = $("videoInput");
+    $("remoteName").textContent =
+      "Yeni söhbət";
 
-  $("galleryButton").onclick = () => galleryInput.click();
-  $("photoButton").onclick = () => photoInput.click();
-  $("videoButton").onclick = () => videoInput.click();
+    $("remoteStatus").textContent =
+      "Peer ID ilə qoşul";
 
-  const handleFiles = (files) => {
+    return;
+  }
 
-    Array.from(files).forEach(file => {
+  const contact =
+    state.contacts.get(
+      state.currentPeer
+    );
 
-      const reader = new FileReader();
+  $("remoteName").textContent =
+    contact?.name ||
+    "Secure Peer " +
+    state.currentPeer.slice(-4);
 
-      reader.onload = e => {
-        selectedMediaFiles.push({
-          type: file.type,
-          url: e.target.result,
-          name: file.name
+  const session =
+    state.sessions.get(
+      state.currentPeer
+    );
+
+  if(session?.ready){
+
+    $("remoteStatus").textContent =
+      "🔒 E2E encrypted";
+
+  }else{
+
+    $("remoteStatus").textContent =
+      "Connecting...";
+
+  }
+
+  const all =
+    [...state.messages.values()]
+      .filter(m=>
+        m.chatId === state.currentPeer
+      )
+      .sort((a,b)=>a.ts-b.ts);
+
+  messagesEl.innerHTML = "";
+
+  if(!all.length){
+
+    messagesEl.appendChild(
+      emptyState
+    );
+
+    emptyState.style.display =
+      "block";
+
+    return;
+  }
+
+  emptyState.style.display =
+    "none";
+
+  let previousDate = "";
+
+  for(const msg of all){
+
+    const date =
+      new Date(msg.ts)
+        .toLocaleDateString(
+          undefined,
+          {
+            day:"numeric",
+            month:"short",
+            year:"numeric"
+          }
+        );
+
+    if(date !== previousDate){
+
+      const sep =
+        document.createElement("div");
+
+      sep.className =
+        "date-separator";
+
+      sep.textContent =
+        date;
+
+      messagesEl.appendChild(
+        sep
+      );
+
+      previousDate = date;
+    }
+
+    messagesEl.appendChild(
+      renderMessage(msg)
+    );
+
+  }
+
+  setTimeout(()=>{
+    messagesEl.scrollTop =
+      messagesEl.scrollHeight;
+  },20);
+
+}
+
+
+/* =========================================================
+   MESSAGE RENDER
+   ========================================================= */
+
+function renderMessage(msg){
+
+  const wrapper =
+    document.createElement("div");
+
+  wrapper.className =
+    "message " +
+    (msg.from === state.peerId
+      ? "me"
+      : "them");
+
+  wrapper.dataset.id =
+    msg.id;
+
+
+  const bubble =
+    document.createElement("div");
+
+  bubble.className =
+    "bubble";
+
+
+  if(msg.kind === "text"){
+
+    const original =
+      document.createElement("div");
+
+    original.className =
+      "original";
+
+    original.textContent =
+      msg.text || "";
+
+    bubble.appendChild(
+      original
+    );
+
+
+    if(msg.translation){
+
+      const trans =
+        document.createElement("div");
+
+      trans.className =
+        "translation";
+
+      const label =
+        document.createElement("div");
+
+      label.className =
+        "translation-label";
+
+      label.textContent =
+        "TRANSLATION";
+
+      trans.append(
+        label,
+        document.createTextNode(
+          msg.translation
+        )
+      );
+
+      bubble.appendChild(
+        trans
+      );
+    }
+
+  }
+
+
+  if(msg.kind === "image"){
+
+    const img =
+      document.createElement("img");
+
+    img.className =
+      "image-message";
+
+    img.alt =
+      "Encrypted image";
+
+    if(msg.data){
+
+      img.src =
+        msg.data;
+    }
+
+    img.addEventListener(
+      "click",
+      ()=>{
+        openImage(msg.data);
+      }
+    );
+
+    bubble.appendChild(
+      img
+    );
+
+  }
+
+
+  if(msg.kind === "audio"){
+
+    const audio =
+      document.createElement("audio");
+
+    audio.className =
+      "audio-player";
+
+    audio.controls = true;
+
+    audio.src =
+      msg.data;
+
+    bubble.appendChild(
+      audio
+    );
+
+  }
+
+
+  if(msg.kind === "file"){
+
+    const fileCard =
+      document.createElement("div");
+
+    fileCard.className =
+      "file-card";
+
+    const icon =
+      document.createElement("div");
+
+    icon.className =
+      "file-icon";
+
+    icon.textContent = "📎";
+
+    const info =
+      document.createElement("div");
+
+    const name =
+      document.createElement("div");
+
+    name.className =
+      "file-name";
+
+    name.textContent =
+      msg.fileName ||
+      "Encrypted file";
+
+    const size =
+      document.createElement("div");
+
+    size.className =
+      "file-size";
+
+    size.textContent =
+      formatBytes(
+        msg.fileSize || 0
+      );
+
+    info.append(
+      name,
+      size
+    );
+
+    fileCard.append(
+      icon,
+      info
+    );
+
+    fileCard.addEventListener(
+      "click",
+      ()=>{
+        downloadData(
+          msg.data,
+          msg.fileName,
+          msg.fileType
+        );
+      }
+    );
+
+    bubble.appendChild(
+      fileCard
+    );
+
+  }
+
+
+  const meta =
+    document.createElement("div");
+
+  meta.className =
+    "message-meta";
+
+  const time =
+    new Date(msg.ts)
+      .toLocaleTimeString(
+        [],
+        {
+          hour:"2-digit",
+          minute:"2-digit"
+        }
+      );
+
+  meta.appendChild(
+    document.createTextNode(
+      time
+    )
+  );
+
+
+  if(msg.from === state.peerId){
+
+    const check =
+      document.createElement("span");
+
+    check.className =
+      "check";
+
+    check.textContent =
+      msg.status === "read"
+        ? "✓✓"
+        : msg.status === "delivered"
+          ? "✓✓"
+          : "✓";
+
+    meta.appendChild(
+      check
+    );
+  }
+
+
+  bubble.appendChild(
+    meta
+  );
+
+
+  wrapper.appendChild(
+    bubble
+  );
+
+
+  const actions =
+    document.createElement("div");
+
+  actions.className =
+    "message-actions";
+
+
+  const reply =
+    document.createElement("button");
+
+  reply.textContent =
+    "Reply";
+
+  reply.onclick =
+    ()=>{
+      setReply(msg);
+    };
+
+
+  const copy =
+    document.createElement("button");
+
+  copy.textContent =
+    "Copy";
+
+  copy.onclick =
+    ()=>{
+      navigator.clipboard
+        ?.writeText(
+          msg.text || ""
+        );
+
+      toast(
+        "Kopyalandı.",
+        "success"
+      );
+    };
+
+
+  const del =
+    document.createElement("button");
+
+  del.textContent =
+    "Delete";
+
+  del.onclick =
+    ()=>{
+      deleteMessage(
+        msg.id
+      );
+    };
+
+
+  actions.append(
+    reply,
+    copy,
+    del
+  );
+
+  wrapper.appendChild(
+    actions
+  );
+
+
+  wrapper.addEventListener(
+    "contextmenu",
+    e=>{
+      e.preventDefault();
+      setReply(msg);
+    }
+  );
+
+
+  return wrapper;
+}
+
+
+/* =========================================================
+   SEND TEXT
+   ========================================================= */
+
+async function sendText(){
+
+  const text =
+    input.value.trim();
+
+  if(!text) return;
+
+  if(!state.currentPeer){
+
+    toast(
+      "Əvvəlcə P2P kontakt seç.",
+      "error"
+    );
+
+    return;
+  }
+
+  const session =
+    state.sessions.get(
+      state.currentPeer
+    );
+
+  if(!session?.ready){
+
+    toast(
+      "Təhlükəsiz kanal hələ hazır deyil.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const msg = {
+    id:crypto.randomUUID(),
+    chatId:state.currentPeer,
+    from:state.peerId,
+    to:state.currentPeer,
+    ts:Date.now(),
+    kind:"text",
+    text:text,
+    translation:"",
+    status:"sent",
+    replyTo:state.replyTo?.id || null
+  };
+
+
+  if(
+    state.settings.autoTranslate &&
+    !state.settings.privateMode
+  ){
+
+    const remote =
+      state.contacts.get(
+        state.currentPeer
+      );
+
+    const target =
+      remote?.lang ||
+      state.settings.targetLang;
+
+    try{
+
+      msg.translation =
+        await translateText(
+          text,
+          state.myProfile.lang,
+          target
+        );
+
+    }catch(e){
+
+      toast(
+        "Tərcümə alınmadı. Orijinal mətn saxlanıldı."
+      );
+
+    }
+
+  }
+
+
+  await saveMessage(
+    msg
+  );
+
+  await sendSecure(
+    {
+      type:"message",
+      message:msg
+    },
+    session
+  );
+
+
+  msg.status =
+    "delivered";
+
+  await saveMessage(
+    msg
+  );
+
+  input.value = "";
+
+  input.style.height =
+    "44px";
+
+  clearReply();
+
+  renderChat();
+
+  await sendSecure(
+    {
+      type:"typing",
+      value:false
+    },
+    session
+  );
+
+}
+
+
+/* =========================================================
+   RECEIVE MESSAGE
+   ========================================================= */
+
+async function receiveMessage(msg,session){
+
+  if(!msg ||
+     !msg.id ||
+     msg.chatId !== session.peerId){
+
+    return;
+  }
+
+
+  msg.status =
+    "delivered";
+
+
+  await saveMessage(
+    msg
+  );
+
+
+  addOrUpdateContact({
+    id:session.peerId,
+    name:
+      state.contacts.get(
+        session.peerId
+      )?.name ||
+      "Secure Peer",
+    lastTs:msg.ts
+  });
+
+
+  if(state.currentPeer === session.peerId){
+
+    renderChat();
+
+    await sendSecure(
+      {
+        type:"read",
+        messageId:msg.id
+      },
+      session
+    );
+
+  }else{
+
+    notifyIncoming(
+      msg
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SAVE MESSAGE
+   ========================================================= */
+
+async function saveMessage(msg){
+
+  state.messages.set(
+    msg.id,
+    msg
+  );
+
+  if(state.db){
+
+    try{
+      await dbPut(
+        "messages",
+        msg
+      );
+    }catch(e){
+      console.error(e);
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   DELETE
+   ========================================================= */
+
+async function deleteMessage(id){
+
+  const msg =
+    state.messages.get(id);
+
+  if(!msg) return;
+
+  state.messages.delete(id);
+
+  if(state.db){
+    await dbDelete(
+      "messages",
+      id
+    );
+  }
+
+  if(
+    msg.from === state.peerId &&
+    state.currentPeer
+  ){
+
+    const session =
+      state.sessions.get(
+        state.currentPeer
+      );
+
+    if(session?.ready){
+
+      await sendSecure(
+        {
+          type:"delete",
+          messageId:id
+        },
+        session
+      );
+
+    }
+
+  }
+
+  renderChat();
+}
+
+
+async function deleteRemoteMessage(id){
+
+  state.messages.delete(id);
+
+  if(state.db){
+
+    await dbDelete(
+      "messages",
+      id
+    );
+
+  }
+
+  renderChat();
+}
+
+
+function markMessageRead(id){
+
+  const msg =
+    state.messages.get(id);
+
+  if(!msg) return;
+
+  msg.status =
+    "read";
+
+  saveMessage(
+    msg
+  ).then(()=>{
+    renderChat();
+  });
+
+}
+
+
+/* =========================================================
+   REACTION
+   ========================================================= */
+
+async function updateReaction(id,reaction){
+
+  const msg =
+    state.messages.get(id);
+
+  if(!msg) return;
+
+  msg.reaction =
+    reaction;
+
+  await saveMessage(
+    msg
+  );
+
+  renderChat();
+}
+
+
+async function reactMessage(id,reaction){
+
+  const session =
+    state.sessions.get(
+      state.currentPeer
+    );
+
+  if(!session?.ready) return;
+
+  await sendSecure(
+    {
+      type:"reaction",
+      messageId:id,
+      reaction
+    },
+    session
+  );
+
+  updateReaction(
+    id,
+    reaction
+  );
+
+}
+
+
+/* =========================================================
+   TYPING
+   ========================================================= */
+
+input.addEventListener(
+  "input",
+  async ()=>{
+
+    input.style.height =
+      "44px";
+
+    input.style.height =
+      Math.min(
+        input.scrollHeight,
+        140
+      ) + "px";
+
+
+    const session =
+      state.sessions.get(
+        state.currentPeer
+      );
+
+    if(!session?.ready)
+      return;
+
+
+    await sendSecure(
+      {
+        type:"typing",
+        value:true
+      },
+      session
+    );
+
+
+    clearTimeout(
+      state.typingTimer
+    );
+
+    state.typingTimer =
+      setTimeout(async()=>{
+
+        const s =
+          state.sessions.get(
+            state.currentPeer
+          );
+
+        if(s?.ready){
+
+          await sendSecure(
+            {
+              type:"typing",
+              value:false
+            },
+            s
+          );
+
+        }
+
+      },900);
+
+  }
+);
+
+
+/* =========================================================
+   TRANSLATION
+   ========================================================= */
+
+async function translateText(
+  text,
+  source,
+  target
+){
+
+  if(!text) return "";
+
+  if(source === target)
+    return text;
+
+
+  /* Try browser local translation API if available. */
+
+  try{
+
+    if("Translator" in window){
+
+      const translator =
+        await window.Translator.create({
+          sourceLanguage:source,
+          targetLanguage:target
         });
-        renderMediaPreview();
-      };
 
-      reader.readAsDataURL(file);
+      const result =
+        await translator.translate(
+          text
+        );
 
-    });
+      return result;
+    }
 
-  };
+  }catch(e){
+    console.warn(
+      "Local translator unavailable",
+      e
+    );
+  }
 
-  galleryInput.onchange = e => handleFiles(e.target.files);
-  photoInput.onchange = e => handleFiles(e.target.files);
-  videoInput.onchange = e => handleFiles(e.target.files);
 
-}
+  if(state.settings.privateMode){
+
+    throw new Error(
+      "Private Mode cloud translation disabled"
+    );
+  }
 
 
-function renderMediaPreview(){
+  const url =
+    "https://api.mymemory.translated.net/get" +
+    "?q=" +
+    encodeURIComponent(text) +
+    "&langpair=" +
+    encodeURIComponent(
+      source + "|" + target
+    );
 
-  const list = $("selectedMedia");
-  list.innerHTML = "";
 
-  selectedMediaFiles.forEach((m, idx) => {
-    const chip = document.createElement("div");
-    chip.className = "mediaChip";
-    chip.textContent = `${m.name.substring(0, 10)}... ✕`;
-    chip.onclick = () => {
-      selectedMediaFiles.splice(idx, 1);
-      renderMediaPreview();
-    };
-    list.appendChild(chip);
-  });
+  const response =
+    await fetch(url);
 
+
+  if(!response.ok){
+    throw new Error(
+      "Translation HTTP error"
+    );
+  }
+
+
+  const data =
+    await response.json();
+
+
+  const translated =
+    data?.responseData?.translatedText;
+
+
+  if(!translated){
+    throw new Error(
+      "No translation"
+    );
+  }
+
+
+  return translated;
 }
 
 
 /* =========================================================
-   SEARCH SYSTEM
-========================================================= */
+   LANGUAGE DETECTION
+   ========================================================= */
 
-async function performSearch(query){
+function detectLanguage(text){
 
-  if(!query.trim()) return;
+  if(/[əığşçöüƏİĞŞÇÖÜ]/.test(text))
+    return "az";
 
-  const resultsBox = $("searchResults");
-  resultsBox.innerHTML = `<div class="searchResult">Axtarılır...</div>`;
-  resultsBox.classList.add("show");
+  if(/[а-яА-ЯёЁ]/.test(text))
+    return "ru";
 
-  try {
+  if(/[؀-ۿ]/.test(text))
+    return "ar";
 
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-    const data = await res.json();
+  if(/[\u4e00-\u9fff]/.test(text))
+    return "zh";
 
-    resultsBox.innerHTML = "";
+  if(/[\u3040-\u30ff]/.test(text))
+    return "ja";
 
-    if(data.length === 0){
-      resultsBox.innerHTML = `<div class="searchResult">Heç nə tapılmadı.</div>`;
-      return;
+  if(/[\uac00-\ud7af]/.test(text))
+    return "ko";
+
+  return state.myProfile.lang || "en";
+}
+
+
+/* =========================================================
+   FILES
+   ========================================================= */
+
+function formatBytes(bytes){
+
+  if(!bytes)
+    return "0 B";
+
+  const units =
+    ["B","KB","MB","GB"];
+
+  const i =
+    Math.floor(
+      Math.log(bytes) /
+      Math.log(1024)
+    );
+
+  return (
+    bytes /
+    Math.pow(1024,i)
+  ).toFixed(
+    i ? 1 : 0
+  ) +
+  " " +
+  units[i];
+}
+
+
+function fileToDataURL(file){
+
+  return new Promise(
+    (resolve,reject)=>{
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        ()=>resolve(
+          reader.result
+        );
+
+      reader.onerror =
+        ()=>reject(
+          reader.error
+        );
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
+}
+
+
+async function sendFiles(files){
+
+  if(!state.currentPeer){
+
+    toast(
+      "Əvvəlcə kontakt seç.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const session =
+    state.sessions.get(
+      state.currentPeer
+    );
+
+  if(!session?.ready){
+
+    toast(
+      "Secure kanal hazır deyil.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  for(const file of files){
+
+    if(file.size > MAX_FILE_SIZE){
+
+      toast(
+        file.name +
+        " — maksimum 15 MB.",
+        "error"
+      );
+
+      continue;
     }
 
-    data.forEach(item => {
-      const el = document.createElement("div");
-      el.className = "searchResult";
-      el.innerHTML = `
-        <div class="resultMark">📍</div>
-        <div class="resultMain">
-          <div class="resultTitle">${esc(item.display_name.split(',')[0])}</div>
-          <div class="resultSub">${esc(item.display_name)}</div>
-        </div>
-        <div class="resultAction">Keç</div>
-      `;
 
-      el.onclick = () => {
-        const lat = parseFloat(item.lat);
-        const lon = parseFloat(item.lon);
+    try{
 
-        if(map){
-          map.setView([lat, lon], 16);
-          switchView("map");
-        }
+      const data =
+        await fileToDataURL(
+          file
+        );
 
-        resultsBox.classList.remove("show");
-        $("searchWrap").classList.remove("show");
+
+      const id =
+        crypto.randomUUID();
+
+
+      const kind =
+        file.type.startsWith("image/")
+          ? "image"
+          : file.type.startsWith("audio/")
+            ? "audio"
+            : "file";
+
+
+      const msg = {
+        id,
+        chatId:state.currentPeer,
+        from:state.peerId,
+        to:state.currentPeer,
+        ts:Date.now(),
+        kind,
+        status:"sent",
+        fileName:file.name,
+        fileType:file.type,
+        fileSize:file.size,
+        data
       };
 
-      resultsBox.appendChild(el);
-    });
 
-  } catch(err) {
-    resultsBox.innerHTML = `<div class="searchResult">Axtarış xətası baş verdi.</div>`;
+      await saveMessage(
+        msg
+      );
+
+
+      /*
+        DataChannel itself is reliable, but the entire
+        file is encrypted as an application-level payload.
+        For very large files production version should use
+        encrypted chunk/ACK protocol.
+      */
+
+      await sendSecure(
+        {
+          type:"file",
+          id,
+          name:file.name,
+          mime:file.type,
+          size:file.size,
+          data
+        },
+        session
+      );
+
+
+      msg.status =
+        "delivered";
+
+      await saveMessage(
+        msg
+      );
+
+      renderChat();
+
+
+    }catch(e){
+
+      console.error(e);
+
+      toast(
+        "Fayl göndərilmədi.",
+        "error"
+      );
+
+    }
+
   }
 
 }
 
 
 /* =========================================================
-   EVENT BINDINGS & INIT
-========================================================= */
+   RECEIVE FILE
+   ========================================================= */
 
-function bindEvents(){
+async function receiveFile(obj,session){
 
-  // Navigation
-  document.querySelectorAll("[data-view]").forEach(btn => {
-    btn.onclick = () => switchView(btn.dataset.view);
-  });
+  if(!obj.data ||
+     obj.size > MAX_FILE_SIZE){
 
-  document.querySelectorAll("[data-back]").forEach(btn => {
-    btn.onclick = () => switchView(btn.dataset.back);
-  });
+    toast(
+      "Fayl qəbul edilmədi.",
+      "error"
+    );
 
-  document.querySelectorAll("[data-close]").forEach(btn => {
-    btn.onclick = () => closeModal(btn.dataset.close);
-  });
+    return;
+  }
 
-  // Top Bar Actions
-  $("searchToggle").onclick = () => {
-    $("searchWrap").classList.toggle("show");
-    $("searchResults").classList.remove("show");
+
+  const msg = {
+    id:obj.id ||
+      crypto.randomUUID(),
+
+    chatId:session.peerId,
+
+    from:session.peerId,
+
+    to:state.peerId,
+
+    ts:Date.now(),
+
+    kind:
+      obj.mime?.startsWith("image/")
+        ? "image"
+        : obj.mime?.startsWith("audio/")
+          ? "audio"
+          : "file",
+
+    status:"delivered",
+
+    fileName:obj.name,
+
+    fileType:obj.mime,
+
+    fileSize:obj.size,
+
+    data:obj.data
   };
 
-  $("searchButton").onclick = () => performSearch($("globalSearch").value);
-  $("globalSearch").onkeyup = e => { if(e.key === 'Enter') performSearch(e.target.value); };
 
-  $("languageButton").onclick = () => openModal("languageModal");
-  $("profileLanguageButton").onclick = () => openModal("languageModal");
+  await saveMessage(
+    msg
+  );
 
-  document.querySelectorAll("[data-language]").forEach(btn => {
-    btn.onclick = () => {
-      setLanguage(btn.dataset.language);
-      closeModal("languageModal");
-    };
-  });
 
-  $("refreshButton").onclick = () => {
-    toast("Məlumatlar yenilənir...");
-    renderAR();
-  };
+  if(state.currentPeer === session.peerId){
 
-  // AR Controls
-  $("spreadButton").onclick = () => {
-    isSpreadMode = !isSpreadMode;
-    toast(isSpreadMode ? "Yayılma rejimi aktivdir" : "Normal rejim");
-    renderAR();
-  };
+    renderChat();
 
-  $("placeButton").onclick = () => {
+  }else{
 
-    if(userLat !== null && userLng !== null){
-      $("createLat").value = userLat.toFixed(6);
-      $("createLng").value = userLng.toFixed(6);
-    }
+    notifyIncoming(
+      msg
+    );
 
-    openModal("createModal");
-  };
-
-  $("currentLocationButton").onclick = () => {
-    if(userLat !== null && userLng !== null){
-      $("createLat").value = userLat.toFixed(6);
-      $("createLng").value = userLng.toFixed(6);
-      toast("Hazırkı GPS nöqtəniz seçildi.");
-    } else {
-      toast("GPS koordinatı hələ alınmayıb.");
-    }
-  };
-
-  $("pickMapButton").onclick = () => {
-    closeModal("createModal");
-    switchView("map");
-    toast("Xəritədə istədiyiniz nöqtəyə toxunun.");
-  };
-
-  // Map Search
-  $("mapBack").onclick = () => switchView("ar");
-  $("mapSearchButton").onclick = () => performSearch($("mapSearch").value);
-
-  // Save Object
-  $("saveObjectButton").onclick = async () => {
-
-    const name = $("createName").value.trim();
-    const lat = parseFloat($("createLat").value);
-    const lng = parseFloat($("createLng").value);
-
-    if(!name || isNaN(lat) || isNaN(lng)){
-      toast("Zəhmət olmasa başlıq və koordinatları daxil edin.");
-      return;
-    }
-
-    if(!$("createConsent").checked){
-      toast("Zəhmət olmasa qaydaları təsdiq edin.");
-      return;
-    }
-
-    const newObj = {
-      id: "obj_" + Date.now(),
-      owner: "me",
-      name: name,
-      username: $("createUsername").value.trim() || profile.username,
-      bio: $("createBio").value.trim(),
-      article: $("createArticle").value.trim(),
-      type: $("createType").value,
-      mode: $("createMode").value,
-      phone: $("createPhone").value.trim(),
-      whatsapp: $("createWhatsapp").value.trim(),
-      social: $("createSocial").value.trim(),
-      radius: parseInt($("createRadius").value) || 300,
-      size: $("createSize").value,
-      lat: lat,
-      lng: lng,
-      media: [...selectedMediaFiles],
-      created: Date.now()
-    };
-
-    objects.push(newObj);
-    await dbPut("objects", newObj);
-
-    selectedMediaFiles = [];
-    renderMediaPreview();
-
-    closeModal("createModal");
-    toast("Obyekt məkana yerləşdirildi!");
-
-    renderAR();
-    renderMapObjects();
-
-  };
-
-  // Profile Edit
-  $("editProfileButton").onclick = () => {
-    $("profileEditName").value = profile.name || '';
-    $("profileEditUsername").value = profile.username || '';
-    $("profileEditBio").value = profile.bio || '';
-    $("profileEditArticle").value = profile.article || '';
-    $("profileEditPhone").value = profile.phone || '';
-    $("profileEditWhatsapp").value = profile.whatsapp || '';
-    $("profileEditSocial").value = profile.social || '';
-    openModal("profileModal");
-  };
-
-  $("saveProfileButton").onclick = async () => {
-
-    profile.name = $("profileEditName").value.trim() || profile.name;
-    profile.username = $("profileEditUsername").value.trim() || profile.username;
-    profile.bio = $("profileEditBio").value.trim();
-    profile.article = $("profileEditArticle").value.trim();
-    profile.phone = $("profileEditPhone").value.trim();
-    profile.whatsapp = $("profileEditWhatsapp").value.trim();
-    profile.social = $("profileEditSocial").value.trim();
-
-    await dbPut("profile", profile);
-
-    closeModal("profileModal");
-    toast("Profil yeniləndi.");
-    renderProfileView();
-
-  };
-
-  // Avatar Edit
-  $("avatarButton").onclick = () => $("avatarInput").click();
-  $("avatarInput").onchange = e => {
-    const file = e.target.files[0];
-    if(file){
-      const reader = new FileReader();
-      reader.onload = async el => {
-        profile.avatar = el.target.result;
-        await dbPut("profile", profile);
-        renderProfileView();
-        toast("Profil fotosu dəyişdirildi.");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  $("privacyButton").onclick = () => openModal("privacyModal");
+  }
 
 }
+
+
+/* =========================================================
+   DOWNLOAD
+   ========================================================= */
+
+function downloadData(
+  data,
+  name,
+  type
+){
+
+  const a =
+    document.createElement("a");
+
+  a.href = data;
+
+  a.download =
+    name ||
+    "vault-file";
+
+  a.click();
+
+}
+
+
+function openImage(src){
+
+  if(!src) return;
+
+  const overlay =
+    document.createElement("div");
+
+  overlay.className =
+    "overlay open";
+
+  overlay.innerHTML =
+    '<div style="max-width:95%;max-height:90%;display:flex;align-items:center;justify-content:center">' +
+    '<img src="' +
+    src +
+    '" style="max-width:100%;max-height:90dvh;border-radius:15px">' +
+    '</div>';
+
+  overlay.addEventListener(
+    "click",
+    ()=>overlay.remove()
+  );
+
+  document.body.appendChild(
+    overlay
+  );
+}
+
+
+/* =========================================================
+   REPLY
+   ========================================================= */
+
+function setReply(msg){
+
+  state.replyTo =
+    msg;
+
+  $("replyBox")
+    .classList
+    .add("open");
+
+  $("replyName").textContent =
+    msg.from === state.peerId
+      ? "Sən"
+      : (
+        state.contacts.get(
+          msg.from
+        )?.name ||
+        "Peer"
+      );
+
+  $("replyText").textContent =
+    msg.text ||
+    msg.fileName ||
+    "[media]";
+
+  input.focus();
+}
+
+
+function clearReply(){
+
+  state.replyTo =
+    null;
+
+  $("replyBox")
+    .classList
+    .remove("open");
+}
+
+
+/* =========================================================
+   PING
+   ========================================================= */
+
+async function pingCurrent(){
+
+  const session =
+    state.sessions.get(
+      state.currentPeer
+    );
+
+  if(!session?.ready)
+    return;
+
+  const id =
+    crypto.randomUUID();
+
+  session.pingId =
+    id;
+
+  session.pingT =
+    Date.now();
+
+  await sendSecure(
+    {
+      type:"ping",
+      id,
+      t:Date.now()
+    },
+    session
+  );
+
+}
+
+
+function updateChatStatus(){
+
+  const session =
+    state.sessions.get(
+      state.currentPeer
+    );
+
+  if(!session?.ready)
+    return;
+
+  $("remoteStatus").textContent =
+    "🔒 E2E encrypted" +
+    (
+      session.latency != null
+        ? " • " +
+          session.latency +
+          "ms"
+        : ""
+    );
+}
+
+
+/* =========================================================
+   SECURITY UI
+   ========================================================= */
+
+function updateSecurityUI(){
+
+  const session =
+    state.sessions.get(
+      state.currentPeer
+    );
+
+  $("fingerMine").textContent =
+    "";
+
+  $("myFingerprint").textContent =
+    "Hazırlandıqdan sonra görünəcək.";
+
+  const anySession =
+    session ||
+    [...state.sessions.values()][0];
+
+  if(anySession){
+
+    $("fingerMine").textContent =
+      anySession.fingerprint || "";
+
+    $("fingerRemote").textContent =
+      anySession.remoteFingerprint ||
+      "Qoşulma gözlənilir...";
+
+  }
+
+  if(session?.ready){
+
+    $("securityState").textContent =
+      "• E2E encrypted";
+
+    $("connectionPill").textContent =
+      "🔒 Secure";
+
+    $("connectionPill")
+      .classList
+      .add("secure");
+
+  }
+
+}
+
+
+/* =========================================================
+   NOTIFICATIONS
+   ========================================================= */
+
+async function notifyIncoming(msg){
+
+  try{
+
+    if(
+      Notification.permission ===
+      "granted"
+    ){
+
+      new Notification(
+        "VAULT CHAT",
+        {
+          body:
+            msg.kind === "text"
+              ? msg.text
+              : "Yeni fayl"
+        }
+      );
+
+    }
+
+  }catch(e){}
+
+  document.title =
+    "● VAULT CHAT";
+
+  setTimeout(()=>{
+    document.title =
+      "VAULT CHAT — Private P2P";
+  },4000);
+
+}
+
+
+/* =========================================================
+   CAMERA
+   ========================================================= */
+
+async function startCamera(){
+
+  try{
+
+    state.mediaStream =
+      await navigator.mediaDevices.getUserMedia({
+        video:{
+          facingMode:
+            state.facingMode
+        },
+        audio:false
+      });
+
+    $("cameraVideo").srcObject =
+      state.mediaStream;
+
+    openModal(
+      "cameraModal"
+    );
+
+  }catch(e){
+
+    toast(
+      "Kamera icazəsi alınmadı.",
+      "error"
+    );
+
+  }
+
+}
+
+
+function stopCamera(){
+
+  if(state.mediaStream){
+
+    state.mediaStream
+      .getTracks()
+      .forEach(
+        t=>t.stop()
+      );
+
+    state.mediaStream =
+      null;
+  }
+
+  $("cameraVideo").srcObject =
+    null;
+}
+
+
+$("cameraBtn").addEventListener(
+  "click",
+  startCamera
+);
+
+
+$("switchCamera").addEventListener(
+  "click",
+  async()=>{
+
+    stopCamera();
+
+    state.facingMode =
+      state.facingMode === "user"
+        ? "environment"
+        : "user";
+
+    await startCamera();
+
+  }
+);
+
+
+$("takePhoto").addEventListener(
+  "click",
+  async()=>{
+
+    const video =
+      $("cameraVideo");
+
+    if(!video.videoWidth){
+
+      toast(
+        "Kamera hələ hazır deyil.",
+        "error"
+      );
+
+      return;
+    }
+
+    const canvas =
+      document.createElement("canvas");
+
+    const max = 1400;
+
+    const ratio =
+      Math.min(
+        1,
+        max /
+        video.videoWidth
+      );
+
+    canvas.width =
+      video.videoWidth * ratio;
+
+    canvas.height =
+      video.videoHeight * ratio;
+
+    canvas
+      .getContext("2d")
+      .drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+    canvas.toBlob(
+      async blob=>{
+
+        if(!blob) return;
+
+        const file =
+          new File(
+            [blob],
+            "camera-" +
+            Date.now() +
+            ".jpg",
+            {
+              type:"image/jpeg"
+            }
+          );
+
+        await sendFiles([
+          file
+        ]);
+
+        closeModal(
+          "cameraModal"
+        );
+
+        stopCamera();
+
+      },
+      "image/jpeg",
+      .82
+    );
+
+  }
+);
+
+
+/* =========================================================
+   AUDIO
+   ========================================================= */
+
+$("micBtn").addEventListener(
+  "click",
+  ()=>{
+    openModal(
+      "audioModal"
+    );
+  }
+);
+
+
+$("recordStart").addEventListener(
+  "click",
+  async()=>{
+
+    try{
+
+      const stream =
+        await navigator.mediaDevices
+          .getUserMedia({
+            audio:true
+          });
+
+      const chunks = [];
+
+      const recorder =
+        new MediaRecorder(
+          stream
+        );
+
+      state.recording = {
+        recorder,
+        stream,
+        chunks,
+        started:Date.now()
+      };
+
+
+      recorder.ondataavailable =
+        e=>{
+
+          if(e.data.size)
+            chunks.push(
+              e.data
+            );
+
+        };
+
+
+      recorder.onstop =
+        async()=>{
+
+          const blob =
+            new Blob(
+              chunks,
+              {
+                type:
+                  recorder.mimeType ||
+                  "audio/webm"
+              }
+            );
+
+          stream
+            .getTracks()
+            .forEach(
+              t=>t.stop()
+            );
+
+
+          if(
+            Date.now() -
+            state.recording.started >
+            120000
+          ){
+
+            toast(
+              "Səs limiti 2 dəqiqədir.",
+              "error"
+            );
+
+            return;
+          }
+
+
+          const file =
+            new File(
+              [blob],
+              "voice-" +
+              Date.now() +
+              ".webm",
+              {
+                type:blob.type
+              }
+            );
+
+          await sendFiles([
+            file
+          ]);
+
+          $("recordState").textContent =
+            "Səs göndərildi.";
+
+        };
+
+
+      recorder.start();
+
+      $("recordState").textContent =
+        "🔴 Yazılır...";
+
+      $("recordStart").disabled =
+        true;
+
+    }catch(e){
+
+      toast(
+        "Mikrofon icazəsi alınmadı.",
+        "error"
+      );
+
+    }
+
+  }
+);
+
+
+$("recordStop").addEventListener(
+  "click",
+  ()=>{
+
+    if(
+      state.recording?.recorder?.state ===
+      "recording"
+    ){
+
+      state.recording
+        .recorder
+        .stop();
+
+      $("recordStart").disabled =
+        false;
+
+      $("recordState").textContent =
+        "Hazırlanır...";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   QR GENERATION
+   ========================================================= */
+
+function showMyQR(){
+
+  const box =
+    $("qrBox");
+
+  box.innerHTML = "";
+
+  const qr =
+    qrcode(
+      0,
+      "M"
+    );
+
+  const link =
+    location.origin +
+    location.pathname +
+    "?ref=" +
+    state.peerId;
+
+  qr.addData(
+    link
+  );
+
+  qr.make();
+
+  box.innerHTML =
+    qr.createImgTag(
+      5,
+      8
+    );
+
+  openModal(
+    "qrModal"
+  );
+}
+
+
+/* =========================================================
+   QR SCANNER
+   ========================================================= */
+
+async function startQRScanner(){
+
+  closeModal(
+    "qrModal"
+  );
+
+  openModal(
+    "scanModal"
+  );
+
+  if(state.scanner){
+
+    try{
+      await state.scanner.clear();
+    }catch(e){}
+
+  }
+
+  state.scanner =
+    new Html5Qrcode(
+      "reader"
+    );
+
+  try{
+
+    await state.scanner.start(
+      {
+        facingMode:"environment"
+      },
+      {
+        fps:10,
+        qrbox:{
+          width:250,
+          height:250
+        }
+      },
+      decoded=>{
+        handleQR(decoded);
+      },
+      ()=>{}
+    );
+
+  }catch(e){
+
+    toast(
+      "QR kamera açıla bilmədi.",
+      "error"
+    );
+
+  }
+
+}
+
+
+async function handleQR(decoded){
+
+  try{
+
+    if(state.scanner){
+
+      await state.scanner.stop();
+
+    }
+
+  }catch(e){}
+
+  closeModal(
+    "scanModal"
+  );
+
+
+  try{
+
+    const url =
+      new URL(
+        decoded
+      );
+
+    const ref =
+      url.searchParams.get(
+        "ref"
+      );
+
+    if(ref){
+
+      $("peerInput").value =
+        ref;
+
+      openModal(
+        "addModal"
+      );
+
+      connectToPeer(
+        ref
+      );
+
+      return;
+    }
+
+  }catch(e){}
+
+
+  if(/^\d{8}$/.test(decoded)){
+
+    $("peerInput").value =
+      decoded;
+
+    openModal(
+      "addModal"
+    );
+
+    connectToPeer(
+      decoded
+    );
+
+    return;
+  }
+
+
+  toast(
+    "Bu QR VAULT CHAT Peer ID deyil.",
+    "error"
+  );
+
+}
+
+
+/* =========================================================
+   EXPORT
+   ========================================================= */
+
+async function exportData(){
+
+  const messages =
+    await dbGetAll(
+      "messages"
+    );
+
+  const contacts =
+    await dbGetAll(
+      "contacts"
+    );
+
+  const data = {
+    version:APP_VERSION,
+    exportedAt:new Date().toISOString(),
+    messages,
+    contacts
+  };
+
+  const blob =
+    new Blob(
+      [
+        JSON.stringify(
+          data,
+          null,
+          2
+        )
+      ],
+      {
+        type:"application/json"
+      }
+    );
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+  const a =
+    document.createElement("a");
+
+  a.href = url;
+
+  a.download =
+    "vault-chat-backup-" +
+    Date.now() +
+    ".json";
+
+  a.click();
+
+  setTimeout(()=>{
+    URL.revokeObjectURL(url);
+  },1000);
+
+  toast(
+    "Backup yaradıldı.",
+    "success"
+  );
+
+}
+
+
+/* =========================================================
+   CLEAR DATA
+   ========================================================= */
+
+async function clearData(){
+
+  const ok =
+    confirm(
+      "Bütün yerli mesajlar və kontaktlar silinsin?"
+    );
+
+  if(!ok) return;
+
+  const tx =
+    state.db.transaction(
+      [
+        "messages",
+        "contacts",
+        "media"
+      ],
+      "readwrite"
+    );
+
+  tx.objectStore(
+    "messages"
+  ).clear();
+
+  tx.objectStore(
+    "contacts"
+  ).clear();
+
+  tx.objectStore(
+    "media"
+  ).clear();
+
+  tx.oncomplete = ()=>{
+
+    state.messages.clear();
+    state.contacts.clear();
+
+    updateContactsUI();
+    renderChat();
+
+    toast(
+      "Yerli məlumatlar silindi.",
+      "success"
+    );
+
+  };
+
+}
+
+
+/* =========================================================
+   NAME
+   ========================================================= */
+
+$("saveName").addEventListener(
+  "click",
+  async()=>{
+
+    const name =
+      $("nameInput")
+        .value
+        .trim();
+
+    if(!name){
+
+      toast(
+        "Ad boş ola bilməz.",
+        "error"
+      );
+
+      return;
+    }
+
+    state.myProfile.name =
+      name;
+
+    localStorage.setItem(
+      "vault_name",
+      name
+    );
+
+    $("myName").textContent =
+      name;
+
+
+    const session =
+      state.sessions.get(
+        state.currentPeer
+      );
+
+    if(session?.ready){
+
+      await sendSecure(
+        {
+          type:"profile",
+          profile:state.myProfile
+        },
+        session
+      );
+
+    }
+
+    toast(
+      "Profil yadda saxlanıldı.",
+      "success"
+    );
+
+  }
+);
+
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+$("privateToggle").checked =
+  state.settings.privateMode;
+
+$("translateToggle").checked =
+  state.settings.autoTranslate;
+
+$("nameInput").value =
+  state.myProfile.name;
+
+
+$("privateToggle").addEventListener(
+  "change",
+  ()=>{
+
+    state.settings.privateMode =
+      $("privateToggle").checked;
+
+    localStorage.setItem(
+      "vault_private",
+      state.settings.privateMode
+    );
+
+    $("privatePill").textContent =
+      state.settings.privateMode
+        ? "PRIVATE"
+        : "TRANSLATE";
+
+    toast(
+      state.settings.privateMode
+        ? "Private Mode aktivdir."
+        : "Cloud translation icazəsi açıldı."
+    );
+
+  }
+);
+
+
+$("translateToggle").addEventListener(
+  "change",
+  ()=>{
+
+    state.settings.autoTranslate =
+      $("translateToggle").checked;
+
+    localStorage.setItem(
+      "vault_translate",
+      state.settings.autoTranslate
+    );
+
+  }
+);
+
+
+/* =========================================================
+   LANGUAGE UI
+   ========================================================= */
+
+function populateLanguages(){
+
+  const my =
+    $("myLang");
+
+  const target =
+    $("targetLang");
+
+  my.innerHTML = "";
+  target.innerHTML = "";
+
+  Object.entries(LANGS)
+    .forEach(([code,name])=>{
+
+      const a =
+        document.createElement("option");
+
+      a.value = code;
+      a.textContent =
+        code.toUpperCase() +
+        " — " +
+        name;
+
+      my.appendChild(a);
+
+
+      const b =
+        a.cloneNode(true);
+
+      target.appendChild(
+        b
+      );
+
+    });
+
+
+  my.value =
+    LANGS[state.myProfile.lang]
+      ? state.myProfile.lang
+      : "en";
+
+  target.value =
+    LANGS[state.settings.targetLang]
+      ? state.settings.targetLang
+      : "en";
+}
+
+
+$("myLang").addEventListener(
+  "change",
+  ()=>{
+
+    state.myProfile.lang =
+      $("myLang").value;
+
+    localStorage.setItem(
+      "vault_lang",
+      state.myProfile.lang
+    );
+
+  }
+);
+
+
+$("targetLang").addEventListener(
+  "change",
+  ()=>{
+
+    state.settings.targetLang =
+      $("targetLang").value;
+
+    localStorage.setItem(
+      "vault_target",
+      state.settings.targetLang
+    );
+
+  }
+);
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+$("addBtn").addEventListener(
+  "click",
+  ()=>{
+    openModal(
+      "addModal"
+    );
+  }
+);
+
+
+$("emptyAdd").addEventListener(
+  "click",
+  ()=>{
+    openModal(
+      "addModal"
+    );
+  }
+);
+
+
+$("connectBtn").addEventListener(
+  "click",
+  ()=>{
+    connectToPeer(
+      $("peerInput").value
+    );
+  }
+);
+
+
+$("qrBtn").addEventListener(
+  "click",
+  showMyQR
+);
+
+
+$("scanQrBtn").addEventListener(
+  "click",
+  startQRScanner
+);
+
+
+$("settingsBtn").addEventListener(
+  "click",
+  ()=>{
+    updateSecurityUI();
+    openModal(
+      "settingsModal"
+    );
+  }
+);
+
+
+$("fingerBtn").addEventListener(
+  "click",
+  ()=>{
+    updateSecurityUI();
+    openModal(
+      "fingerModal"
+    );
+  }
+);
+
+
+$("chatInfoBtn").addEventListener(
+  "click",
+  ()=>{
+    openModal(
+      "infoModal"
+    );
+  }
+);
+
+
+$("backBtn").addEventListener(
+  "click",
+  ()=>{
+    document.body
+      .classList
+      .remove("chat-open");
+
+    state.currentPeer =
+      null;
+
+    updateContactsUI();
+  }
+);
+
+
+$("sendBtn").addEventListener(
+  "click",
+  sendText
+);
+
+
+input.addEventListener(
+  "keydown",
+  e=>{
+
+    if(
+      e.key === "Enter" &&
+      !e.shiftKey
+    ){
+
+      e.preventDefault();
+
+      sendText();
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   EMOJI
+   ========================================================= */
+
+const emojiPanel =
+  $("emojiPanel");
+
+document.querySelectorAll(
+  ".emoji"
+).forEach(btn=>{
+
+  btn.addEventListener(
+    "click",
+    ()=>{
+
+      const start =
+        input.selectionStart;
+
+      const end =
+        input.selectionEnd;
+
+      input.value =
+        input.value.slice(0,start) +
+        btn.textContent +
+        input.value.slice(end);
+
+      input.focus();
+
+      input.selectionStart =
+        input.selectionEnd =
+        start +
+        btn.textContent.length;
+
+    }
+  );
+
+});
+
+
+$("fileBtn").addEventListener(
+  "click",
+  ()=>{
+    $("fileInput").click();
+  }
+);
+
+
+$("fileInput").addEventListener(
+  "change",
+  async e=>{
+
+    await sendFiles(
+      [...e.target.files]
+    );
+
+    e.target.value = "";
+
+  }
+);
+
+
+/* =========================================================
+   DRAG DROP
+   ========================================================= */
+
+document.addEventListener(
+  "dragover",
+  e=>{
+    e.preventDefault();
+
+    $("dropZone")
+      .classList
+      .add("active");
+  }
+);
+
+
+document.addEventListener(
+  "dragleave",
+  e=>{
+
+    if(
+      e.clientX <= 0 ||
+      e.clientY <= 0 ||
+      e.clientX >= innerWidth ||
+      e.clientY >= innerHeight
+    ){
+
+      $("dropZone")
+        .classList
+        .remove("active");
+
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  "drop",
+  async e=>{
+
+    e.preventDefault();
+
+    $("dropZone")
+      .classList
+      .remove("active");
+
+    if(e.dataTransfer.files.length){
+
+      await sendFiles(
+        [...e.dataTransfer.files]
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+$("searchInput").addEventListener(
+  "input",
+  updateContactsUI
+);
+
+
+/* =========================================================
+   SHARE
+   ========================================================= */
+
+$("copyInvite").addEventListener(
+  "click",
+  async()=>{
+
+    try{
+
+      await navigator.clipboard.writeText(
+        $("inviteInput").value
+      );
+
+      toast(
+        "Dəvət linki kopyalandı.",
+        "success"
+      );
+
+    }catch(e){
+
+      toast(
+        "Clipboard icazəsi yoxdur.",
+        "error"
+      );
+
+    }
+
+  }
+);
+
+
+$("shareInvite").addEventListener(
+  "click",
+  async()=>{
+
+    const url =
+      $("inviteInput").value;
+
+    if(navigator.share){
+
+      try{
+
+        await navigator.share({
+          title:"VAULT CHAT",
+          text:"Private P2P Chat",
+          url
+        });
+
+      }catch(e){}
+
+    }else{
+
+      await navigator.clipboard.writeText(
+        url
+      );
+
+      toast(
+        "Link kopyalandı.",
+        "success"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   EXPORT/CLEAR
+   ========================================================= */
+
+$("exportBtn").addEventListener(
+  "click",
+  exportData
+);
+
+$("clearBtn").addEventListener(
+  "click",
+  clearData
+);
+
+
+/* =========================================================
+   QR AUTO FROM URL
+   ========================================================= */
+
+$("inviteInput").value =
+  location.origin +
+  location.pathname +
+  "?ref=" +
+  state.peerId;
+
+
+/* =========================================================
+   NOTIFICATION PERMISSION
+   ========================================================= */
+
+if(
+  "Notification" in window &&
+  Notification.permission ===
+  "default"
+){
+
+  setTimeout(()=>{
+    Notification.requestPermission()
+      .catch(()=>{});
+  },4000);
+
+}
+
+
+/* =========================================================
+   DATABASE LOAD
+   ========================================================= */
+
+async function loadLocalData(){
+
+  await openDB();
+
+
+  const messages =
+    await dbGetAll(
+      "messages"
+    );
+
+  messages.forEach(
+    msg=>{
+      state.messages.set(
+        msg.id,
+        msg
+      );
+    }
+  );
+
+
+  const contacts =
+    await dbGetAll(
+      "contacts"
+    );
+
+  contacts.forEach(
+    contact=>{
+      state.contacts.set(
+        contact.id,
+        contact
+      );
+    }
+  );
+
+
+  updateContactsUI();
+
+}
+
+
+/* =========================================================
+   INITIAL UI
+   ========================================================= */
+
+$("myName").textContent =
+  state.myProfile.name;
+
+$("privatePill").textContent =
+  state.settings.privateMode
+    ? "PRIVATE"
+    : "TRANSLATE";
+
+populateLanguages();
 
 
 /* =========================================================
    INITIALIZATION
-========================================================= */
+   ========================================================= */
 
-window.addEventListener("DOMContentLoaded", async () => {
+(async function boot(){
 
-  initLanguage();
-  setupMediaHandlers();
-  bindEvents();
+  if(
+    !window.crypto ||
+    !crypto.subtle
+  ){
 
-  try {
-    await openDB();
+    toast(
+      "Web Crypto dəstəklənmir. HTTPS istifadə et.",
+      "error"
+    );
 
-    const storedObjects = await dbGetAll("objects");
-    if(storedObjects && storedObjects.length > 0){
-      objects = storedObjects;
-    } else {
-      // Demo Data
-      objects = [
-        {
-          id: "demo_1",
-          owner: "system",
-          name: "ARWORLD Mərkəz",
-          username: "@arworld",
-          bio: "Spatial AR Texnologiyalar Mərkəzi",
-          article: "Bura rəqəmsal və fiziki aləmin birləşdiyi mərkəz nöqtəsidir.",
-          lat: 40.40926,
-          lng: 49.867092,
-          radius: 5000,
-          size: "large",
-          media: []
-        }
-      ];
-    }
-
-    const storedProfile = await dbGetAll("profile");
-    if(storedProfile && storedProfile.length > 0){
-      profile = storedProfile[0];
-    }
-
-  } catch(e) {
-    console.error("DB Error", e);
+    return;
   }
 
-  await startCamera();
-  startGPS();
-  startCompass();
 
-  setTimeout(() => {
-    const startup = $("startup");
-    if(startup){
-      startup.style.opacity = "0";
-      setTimeout(() => startup.remove(), 300);
+  try{
+
+    await loadLocalData();
+
+  }catch(e){
+
+    console.error(e);
+
+    toast(
+      "Yerli yaddaş açıla bilmədi.",
+      "error"
+    );
+
+  }
+
+
+  initPeer();
+
+})();
+
+
+/* =========================================================
+   PERIODIC PING
+   ========================================================= */
+
+setInterval(
+  pingCurrent,
+  15000
+);
+
+
+/* =========================================================
+   SECURITY STATE REFRESH
+   ========================================================= */
+
+setInterval(
+  updateSecurityUI,
+  3000
+);
+
+
+/* =========================================================
+   VISIBILITY / READ
+   ========================================================= */
+
+document.addEventListener(
+  "visibilitychange",
+  async()=>{
+
+    if(
+      document.visibilityState !==
+      "visible"
+    ) return;
+
+    if(!state.currentPeer)
+      return;
+
+    const session =
+      state.sessions.get(
+        state.currentPeer
+      );
+
+    if(!session?.ready)
+      return;
+
+    const unread =
+      [...state.messages.values()]
+        .filter(m=>
+          m.chatId ===
+            state.currentPeer &&
+          m.from !==
+            state.peerId &&
+          m.status !==
+            "read"
+        );
+
+    for(const msg of unread){
+
+      msg.status =
+        "read";
+
+      await saveMessage(
+        msg
+      );
+
+      await sendSecure(
+        {
+          type:"read",
+          messageId:msg.id
+        },
+        session
+      );
+
     }
-  }, 1000);
 
-});
+    renderChat();
+
+  }
+);
+
+
+/* =========================================================
+   ONLINE BEFORE UNLOAD
+   ========================================================= */
+
+window.addEventListener(
+  "beforeunload",
+  ()=>{
+
+    for(
+      const session of
+      state.sessions.values()
+    ){
+
+      try{
+
+        if(session.ready){
+
+          /*
+            The browser may terminate immediately.
+            This is best-effort only.
+          */
+
+          session.conn.send(
+            "disconnect"
+          );
+
+        }
+
+      }catch(e){}
+
+    }
+
+  }
+);
 
 </script>
 
 </body>
-</html>
+          </html>
