@@ -1,1765 +1,3476 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07080d">
-<title>VidoStudio V2</title>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#070a10">
+<title>ARWORLD — Spatial World</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-*{box-sizing:border-box}
-html,body{
- margin:0;
- width:100%;
- min-height:100%;
- background:#06070b;
- color:#f5f7fb;
- font-family:Inter,Arial,sans-serif
-}
-body{overflow-x:hidden}
+:root{--bg:#070a10;--panel:rgba(12,17,28,.92);--panel2:#101827;--line:#233149;--text:#f5f7fb;--muted:#9ba8bb;--cyan:#16d9ff;--blue:#5b7cff;--green:#2ee6a6;--red:#ff5d73;--shadow:0 18px 55px rgba(0,0,0,.45);--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,input,textarea,select{font:inherit}
-button{cursor:pointer}
+button{border:0;color:inherit;cursor:pointer}
+input,textarea,select{outline:none;color:var(--text);background:#0b1220;border:1px solid var(--line);border-radius:15px;padding:13px 14px;width:100%}
+textarea{min-height:90px;resize:vertical}
+select{appearance:none}
+.app{height:100%;position:relative;overflow:hidden}
+.view{position:absolute;inset:0;display:none;background:var(--bg)}
+.view.active{display:block}
+.top{height:76px;padding:calc(var(--safe-top) + 8px) 12px 8px;display:flex;align-items:end;gap:9px;position:absolute;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,rgba(5,8,14,.96),rgba(5,8,14,.15));pointer-events:none}
+.top>*{pointer-events:auto}
+.brand{font-weight:900;letter-spacing:.5px;white-space:nowrap}
+.brand b{color:var(--cyan)}
+.iconbtn,.ghost,.primary,.danger{min-height:44px;border-radius:14px;padding:10px 13px;background:#111a2a;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.iconbtn{width:44px;padding:0}
+.primary{background:linear-gradient(135deg,#13b9ef,#5b68ff);border:0;font-weight:800}
+.ghost:hover,.iconbtn:hover{background:#172237}
+.danger{background:rgba(255,93,115,.12);border-color:rgba(255,93,115,.35);color:#ff9aaa}
+.pill{border:1px solid var(--line);background:rgba(10,16,27,.82);padding:8px 11px;border-radius:999px;font-size:12px;color:#cbd5e1}
+.stack{display:flex;gap:8px;align-items:center}
+.bottom{position:absolute;left:0;right:0;bottom:0;height:78px;padding:8px 8px calc(8px + var(--safe-bottom));display:flex;z-index:200;background:rgba(7,10,16,.95);border-top:1px solid var(--line);backdrop-filter:blur(18px)}
+.nav{flex:1;background:none;color:#8491a5;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:12px}
+.nav.active{color:#fff;background:#111a29}
+.nav .ico{width:20px;height:20px;display:grid;place-items:center}
+.nav .ico svg{width:20px;height:20px}
+.screen{position:absolute;inset:0;padding-top:76px;padding-bottom:78px;overflow:auto}
+.scroll{padding:16px}
+.sectionTitle{font-size:18px;font-weight:900;margin:8px 0 12px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.empty{padding:30px 15px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}
+.row{display:flex;gap:10px;align-items:center}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px;box-shadow:var(--shadow)}
+.list{display:grid;gap:10px}
+.avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#162033;border:1px solid var(--line);display:grid;place-items:center;font-weight:900}
+.avatar.big{width:82px;height:82px}
+.tag{display:inline-flex;padding:5px 8px;border-radius:999px;background:#101b2d;border:1px solid #273651;color:#c9d5e7;font-size:11px}
+.mediaGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:10px}
+.mediaGrid img,.mediaGrid video{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;background:#05070b}
+.mediaHero{width:100%;max-height:390px;object-fit:cover;border-radius:16px;background:#05070b}
+.form{display:grid;gap:11px}
+.label{font-size:12px;color:#aab6c8;margin:3px 2px 0}
+.field{display:grid;gap:6px}
+.check{display:flex;gap:10px;align-items:flex-start;background:#0c1422;border:1px solid var(--line);padding:11px;border-radius:14px}
+.check input{width:20px;height:20px;padding:0;flex:0 0 auto}
+.modal{position:absolute;inset:0;z-index:500;background:rgba(0,0,0,.58);display:none;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.sheet{width:min(760px,100%);max-height:92%;overflow:auto;background:#0a101b;border:1px solid var(--line);border-radius:24px 24px 0 0;box-shadow:0 -25px 80px rgba(0,0,0,.55);padding:12px 14px calc(18px + var(--safe-bottom))}
+.sheetTop{display:flex;align-items:center;gap:9px;position:sticky;top:-12px;background:#0a101b;padding:4px 0 12px;z-index:2}
+.sheetTop h3{margin:0;font-size:18px;flex:1}
+.handle{width:42px;height:4px;background:#344158;border-radius:999px;margin:0 auto 10px}
+.toast{position:absolute;left:50%;bottom:92px;transform:translate(-50%,20px);opacity:0;z-index:900;background:#101a2b;border:1px solid #2b3c58;box-shadow:var(--shadow);padding:11px 15px;border-radius:14px;max-width:90%;text-align:center;transition:.18s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
 
-.app{
- width:min(1200px,100%);
- margin:auto;
- padding:14px
-}
+#arView{background:#020407}
+#camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#020407}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.46),rgba(0,0,0,.04) 28%,rgba(0,0,0,.05) 65%,rgba(0,0,0,.65));pointer-events:none}
+.arStatus{position:absolute;top:calc(76px + var(--safe-top));left:10px;right:10px;z-index:80;display:flex;gap:7px;overflow:hidden}
+.scanBar{position:absolute;left:10px;right:10px;top:calc(118px + var(--safe-top));z-index:80;display:flex;gap:7px}
+.scanBar input{background:rgba(8,12,20,.82);backdrop-filter:blur(15px);border-color:#2a3a52}
+.scanBar button{flex:0 0 auto}
+.arInfo{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);z-index:35;color:#d8e5f7;text-align:center;background:rgba(7,11,18,.56);border:1px solid rgba(60,83,112,.65);padding:10px 14px;border-radius:16px;backdrop-filter:blur(12px);pointer-events:none}
+.cross{position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);z-index:20;opacity:.6;pointer-events:none}
+.cross:before,.cross:after{content:"";position:absolute;background:#d8f8ff}
+.cross:before{left:12px;top:0;width:2px;height:26px}
+.cross:after{left:0;top:12px;width:26px;height:2px}
+.arObjects{position:absolute;inset:0;overflow:hidden;z-index:40;pointer-events:none}
+.arLine{position:absolute;height:1.5px;transform-origin:0 50%;background:linear-gradient(90deg,rgba(22,217,255,.7),rgba(91,124,255,.15));opacity:.5;pointer-events:none}
+.arDot{position:absolute;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 16px var(--cyan);pointer-events:none}
+.arCard{position:absolute;width:min(320px,76vw);transform:translate3d(-50%,-50%) scale(var(--s,1));transform-origin:center center;background:rgba(8,14,24,.86);border:1px solid rgba(34,217,255,.72);border-radius:18px;padding:10px;box-shadow:0 14px 40px rgba(0,0,0,.5),0 0 25px rgba(22,217,255,.08);backdrop-filter:blur(14px);pointer-events:auto;will-change:left,top,transform;touch-action:manipulation}
+.arCard.big{width:min(500px,91vw);border-width:2px}
+.arMedia{width:100%;height:100px;border-radius:12px;overflow:hidden;background:#060a11;margin-bottom:8px}
+.arMedia img,.arMedia video{width:100%;height:100%;object-fit:cover}
+.arCard.big .arMedia{height:170px}
+.arTitle{font-weight:900;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arType{font-size:10px;color:#72ddff;margin-top:2px}
+.arText{font-size:12px;color:#c4cfde;line-height:1.35;margin-top:5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.arMeta{font-size:10px;color:#8e9db2;margin-top:7px}
+.arOpen{margin-top:8px;width:100%;padding:8px;border-radius:10px;background:#111d30;border:1px solid #2a3b56;font-size:11px;font-weight:800}
+.edgeHint{position:absolute;z-index:45;transform:translate(-50%,-50%);background:rgba(7,12,20,.88);border:1px solid #31435e;border-radius:999px;padding:7px 10px;font-size:11px;pointer-events:auto;white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis}
+.arActions{position:absolute;left:10px;right:10px;bottom:calc(88px + var(--safe-bottom));z-index:90;display:flex;gap:8px}
+.arActions button{flex:1;background:rgba(8,13,21,.84);backdrop-filter:blur(14px);border:1px solid #2b3b53;border-radius:15px;padding:12px 8px;font-weight:800}
+.arActions .primary{border:0}
+.searchPanel{position:absolute;left:10px;right:10px;top:calc(166px + var(--safe-top));z-index:95;background:rgba(8,13,21,.96);border:1px solid #293a53;border-radius:18px;padding:10px;display:none;box-shadow:var(--shadow);max-height:55vh;overflow:auto}
+.searchPanel.show{display:block}
+.result{padding:11px;border-bottom:1px solid #1d2a3d}
+.result:last-child{border-bottom:0}
+.coords{font-family:ui-monospace,monospace;font-size:11px;color:#7edfff}
 
-header{
- display:flex;
- justify-content:space-between;
- align-items:center;
- padding:8px 2px 18px
-}
-
-.logo{
- display:flex;
- align-items:center;
- gap:10px;
- font-size:20px;
- font-weight:900
-}
-
-.logoIcon{
- width:40px;
- height:40px;
- border-radius:13px;
- display:grid;
- place-items:center;
- background:linear-gradient(135deg,#7c3aed,#06b6d4);
- box-shadow:0 8px 35px #0008
-}
-
-.status{
- font-size:12px;
- color:#8e98aa
-}
-
-.grid{
- display:grid;
- grid-template-columns:360px 1fr;
- gap:16px
-}
-
-.card{
- background:#0d1017;
- border:1px solid #1d2330;
- border-radius:22px;
- padding:16px;
- box-shadow:0 20px 70px #0005
-}
-
-h2{
- margin:0 0 14px;
- font-size:17px
-}
-
-label{
- display:block;
- margin:14px 0 7px;
- font-size:12px;
- color:#99a3b5
-}
-
-textarea{
- width:100%;
- min-height:230px;
- resize:vertical;
- background:#080a0f;
- color:#fff;
- border:1px solid #252c3a;
- border-radius:15px;
- padding:14px;
- outline:none;
- line-height:1.55
-}
-
-textarea:focus{
- border-color:#7547ff;
- box-shadow:0 0 0 3px #7547ff18
-}
-
-select{
- width:100%;
- background:#090c12;
- color:#fff;
- border:1px solid #252c3a;
- border-radius:13px;
- padding:12px;
- outline:none
-}
-
-.row{
- display:flex;
- gap:8px
-}
-
-.row>*{flex:1}
-
-.durationGrid{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:8px
-}
-
-.duration{
- padding:12px 8px;
- border-radius:12px;
- background:#0a0d13;
- border:1px solid #242b39;
- color:#aab3c4;
- font-size:12px;
- font-weight:800
-}
-
-.duration.active{
- background:#5f39db;
- border-color:#8b6cff;
- color:white;
- box-shadow:0 8px 25px #653dff35
-}
-
-.styleGrid{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:7px
-}
-
-.style{
- padding:10px;
- background:#0a0d13;
- border:1px solid #242b39;
- color:#aeb7c7;
- border-radius:11px;
- font-size:11px
-}
-
-.style.active{
- color:#fff;
- border-color:#7650ff;
- background:#18132d
-}
-
-.btn{
- width:100%;
- padding:13px 14px;
- border-radius:13px;
- border:1px solid #293142;
- background:#191e29;
- color:white;
- font-weight:800
-}
-
-.primary{
- background:linear-gradient(135deg,#7848ff,#542ed4);
- border:0;
- box-shadow:0 10px 30px #673cff35
-}
-
-.green{
- background:linear-gradient(135deg,#079b6c,#057955);
- border:0
-}
-
-.btn:disabled{
- opacity:.45;
- cursor:not-allowed
-}
-
-.upload{
- display:flex;
- align-items:center;
- justify-content:center;
- min-height:82px;
- border:1px dashed #394154;
- border-radius:14px;
- background:#090c12;
- color:#aab3c3;
- text-align:center;
- cursor:pointer
-}
-
-.upload strong{
- display:block;
- color:white;
- margin-bottom:4px
-}
-
-input[type=file]{display:none}
-
-.notice{
- margin-top:10px;
- padding:11px;
- border-radius:12px;
- background:#111621;
- color:#858fa2;
- font-size:11px;
- line-height:1.5
-}
-
-.preview{
- background:#000;
- border-radius:18px;
- overflow:hidden;
- position:relative;
- display:flex;
- align-items:center;
- justify-content:center;
- min-height:520px
-}
-
-canvas{
- display:block;
- max-width:100%;
- max-height:72vh;
- background:#000
-}
-
-.previewInfo{
- position:absolute;
- top:12px;
- left:12px;
- background:#000b;
- border:1px solid #ffffff15;
- backdrop-filter:blur(10px);
- padding:7px 10px;
- border-radius:9px;
- font-size:11px;
- color:#dce2ec
-}
-
-.badge{
- display:inline-block;
- padding:5px 8px;
- border-radius:99px;
- background:#171c27;
- color:#aab4c5;
- font-size:10px
-}
-
-.controls{
- display:flex;
- gap:8px;
- align-items:center;
- padding-top:11px
-}
-
-.smallBtn{
- width:44px;
- height:42px;
- padding:0
-}
-
-.timeline{
- margin-top:13px;
- padding:12px;
- background:#090c12;
- border:1px solid #1c2230;
- border-radius:15px
-}
-
-.track{
- display:flex;
- gap:5px;
- overflow-x:auto;
- padding-bottom:3px
-}
-
-.clip{
- flex:0 0 105px;
- height:65px;
- border-radius:9px;
- padding:8px;
- background:#111620;
- border:1px solid #252d3c;
- font-size:10px;
- color:#aab3c3;
- overflow:hidden
-}
-
-.clip.active{
- border-color:#7a50ff;
- box-shadow:inset 0 0 0 1px #7a50ff
-}
-
-.clipNum{
- color:#795cff;
- font-size:9px;
- margin-bottom:5px
-}
-
-.progress{
- margin-top:12px;
- height:8px;
- background:#181d27;
- border-radius:99px;
- overflow:hidden
-}
-
-.progress i{
- display:block;
- height:100%;
- width:0%;
- background:linear-gradient(90deg,#7548ff,#06c9d8)
-}
-
-.progressText{
- margin-top:6px;
- color:#8993a5;
- font-size:11px
-}
-
-.sceneList{
- margin-top:12px;
- display:grid;
- gap:6px;
- max-height:300px;
- overflow:auto
-}
-
-.scene{
- padding:10px;
- border-radius:11px;
- background:#0a0d13;
- border:1px solid #202735;
- color:#aab4c4;
- font-size:11px
-}
-
-.scene b{color:#fff}
-
-.empty{
- text-align:center;
- padding:30px;
- color:#687184;
- font-size:13px
-}
-
-@media(max-width:850px){
- .grid{grid-template-columns:1fr}
- .app{padding:9px}
- .preview{min-height:430px}
- textarea{min-height:190px}
+.mapWrap{position:absolute;inset:0}
+.map{position:absolute;inset:0}
+.mapTop{position:absolute;top:calc(76px + var(--safe-top));left:10px;right:10px;z-index:500;display:flex;gap:8px}
+.mapTop .searchInput{flex:1;background:rgba(8,13,21,.9);backdrop-filter:blur(14px)}
+.mapHint{position:absolute;bottom:calc(94px + var(--safe-bottom));left:12px;right:12px;z-index:500;background:rgba(8,13,21,.9);border:1px solid var(--line);padding:10px;border-radius:15px;text-align:center;font-size:12px}
+.mapCross{position:absolute;left:50%;top:50%;width:32px;height:32px;transform:translate(-50%,-50%);z-index:450;pointer-events:none}
+.mapCross:before,.mapCross:after{content:"";position:absolute;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.mapCross:before{left:15px;top:0;width:2px;height:32px}
+.mapCross:after{left:0;top:15px;width:32px;height:2px}
+.profileHead{display:flex;gap:14px;align-items:center}
+.profileBio{margin-top:12px;line-height:1.45;color:#cbd5e1}
+.fileBtn{display:flex;align-items:center;justify-content:center;border:1px dashed #33435c;border-radius:16px;padding:14px;color:#b7c4d7;background:#0c1422}
+.hidden{display:none!important}
+.spin{width:38px;height:38px;border:4px solid #283348;border-top-color:var(--cyan);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.boot{position:absolute;inset:0;z-index:1000;background:#070a10;display:grid;place-items:center;transition:.2s}
+.boot.hide{opacity:0;pointer-events:none}
+.bootBox{text-align:center}
+.bootLogo{font-size:30px;font-weight:1000;letter-spacing:1px}
+.bootLogo span{color:var(--cyan)}
+.bootText{margin-top:12px;color:#94a3b8;font-size:12px}
+.bootBar{margin:18px auto 0;width:160px;height:3px;background:#182337;border-radius:99px;overflow:hidden}
+.bootBar i{display:block;height:100%;width:45%;background:var(--cyan);animation:load 1s infinite}
+@keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+.leaflet-control-attribution{font-size:8px}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0b1220;color:#fff}
+.leaflet-popup-content{font-size:12px}
+@media(min-width:800px){
+.bottom{left:50%;right:auto;width:600px;transform:translateX(-50%);border-radius:20px 20px 0 0}
+.arActions{left:50%;right:auto;width:620px;transform:translateX(-50%)}
+.sheet{border-radius:24px;max-height:90%;margin-bottom:20px}
+.modal{align-items:center}
+.screen{max-width:1000px;margin:auto}
 }
 </style>
 </head>
 
 <body>
-
 <div class="app">
 
-<header>
- <div class="logo">
-  <div class="logoIcon">▶</div>
-  VidoStudio
- </div>
- <div class="status" id="status">Hazır</div>
-</header>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+<symbol id="i-scan" viewBox="0 0 24 24">
+<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+</symbol>
+<symbol id="i-map" viewBox="0 0 24 24">
+<path d="m4 6 5-2 6 2 5-2v14l-5 2-6-2-5 2V6Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+<path d="M9 4v14M15 6v14" fill="none" stroke="currentColor" stroke-width="1.7"/>
+</symbol>
+<symbol id="i-world" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+<path d="M3.8 12h16.4M12 3.5c2.1 2.3 3.1 5.1 3.1 8.5s-1 6.2-3.1 8.5c-2.1-2.3-3.1-5.1-3.1-8.5s1-6.2 3.1-8.5 3.1-6.2 3.1-8.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+</symbol>
+<symbol id="i-user" viewBox="0 0 24 24">
+<circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+<path d="M5.5 20c.7-3.4 2.8-5.2 6.5-5.2s5.8 1.8 6.5 5.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+</symbol>
+<symbol id="i-back" viewBox="0 0 24 24">
+<path d="m14.5 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</symbol>
+<symbol id="i-close" viewBox="0 0 24 24">
+<path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</symbol>
+<symbol id="i-search" viewBox="0 0 24 24">
+<circle cx="10.8" cy="10.8" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+<path d="m15.3 15.3 4.7 4.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+</symbol>
+<symbol id="i-locate" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+<path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+</symbol>
+<symbol id="i-plus" viewBox="0 0 24 24">
+<path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</symbol>
+<symbol id="i-edit" viewBox="0 0 24 24">
+<path d="m5 16.5-.8 3.3 3.3-.8L18.8 7.7a2.1 2.1 0 0 0-3-3L4.5 16Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+<path d="m14.8 6.8 2.4 2.4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+</symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24">
+<path d="M19 8.5A7.5 7.5 0 1 0 20 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+<path d="M19 4.5v4h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</symbol>
+</svg>
 
-<div class="grid">
-
-<section class="card">
-
-<h2>🎬 Ssenaridən video yarat</h2>
-
-<label>Ssenari / məqalə / hekayə</label>
-
-<textarea id="script" placeholder="Məsələn:
-
-Azərbaycan dünyanın ən gözəl təbiət ölkələrindən biridir.
-
-Qafqaz dağlarından Xəzər dənizinə qədər bu ölkədə müxtəlif təbiət mənzərələrinə rast gəlmək mümkündür.
-
-Şimal bölgəsində uca dağlar və yaşıl meşələr, qərbdə isə qədim kəndlər və çaylar yerləşir.
-
-Bu video Azərbaycanın təbiətini və gözəlliyini göstərir."></textarea>
-
-<label>Video müddəti</label>
-
-<div class="durationGrid">
-
-<button class="duration active" data-duration="30">
-30 saniyə
-</button>
-
-<button class="duration" data-duration="60">
-1 dəqiqə
-</button>
-
-<button class="duration" data-duration="180">
-3 dəqiqə
-</button>
-
-<button class="duration" data-duration="240">
-4 dəqiqə
-</button>
-
+<div id="boot" class="boot">
+<div class="bootBox">
+<div class="bootLogo">AR<span>WORLD</span></div>
+<div class="bootText" id="bootText">Hazırlanır…</div>
+<div class="bootBar"><i></i></div>
+</div>
 </div>
 
-<label>Video üslubu</label>
+<section id="arView" class="view active">
+<video id="camera" autoplay playsinline muted></video>
+<div class="shade"></div>
 
-<div class="styleGrid">
-
-<button class="style active" data-style="real">
-🎬 Realistik
-</button>
-
-<button class="style" data-style="cinematic">
-🎞 Kino
-</button>
-
-<button class="style" data-style="news">
-📰 Xəbər
-</button>
-
-<button class="style" data-style="travel">
-🌍 Səyahət
-</button>
-
-<button class="style" data-style="business">
-💼 Biznes
-</button>
-
-<button class="style" data-style="story">
-📖 Hekayə
-</button>
-
+<div class="arStatus">
+<span class="pill" id="gpsPill">GPS —</span>
+<span class="pill" id="compassPill">Kompas —</span>
+<span class="pill" id="countPill">0 obyekt</span>
 </div>
 
-<label>Format</label>
-
-<select id="format">
-
-<option value="portrait">
-9:16 — TikTok / Reels / Shorts
-</option>
-
-<option value="landscape">
-16:9 — YouTube
-</option>
-
-<option value="square">
-1:1 — Instagram
-</option>
-
-</select>
-
-<label>Səs dili</label>
-
-<select id="voice">
-
-<option value="az">Azərbaycan dili</option>
-<option value="tr">Türk dili</option>
-<option value="ru">Rus dili</option>
-<option value="en">İngilis dili</option>
-<option value="de">Alman dili</option>
-
-</select>
-
-<label>İstəyə bağlı şəkil</label>
-
-<label class="upload" for="imageInput">
-
-<div>
-<strong>📷 Şəkil əlavə et</strong>
-<span id="imageName">
-Qalereyadan şəkil seç
-</span>
+<div class="scanBar">
+<input id="arSearch" data-i18n-placeholder="searchPlaceholder" placeholder="Küçə, şəhər, koordinat və ya obyekt…">
+<button class="iconbtn" id="arSearchBtn" title="Axtar">
+<svg class="ico"><use href="#i-search"/></svg>
+</button>
+<button class="iconbtn" id="langBtn" title="Dil">A</button>
 </div>
 
-</label>
+<div id="searchPanel" class="searchPanel"></div>
 
-<input id="imageInput" type="file" accept="image/*">
-
-<div style="height:9px"></div>
-
-<button class="btn primary" id="createBtn">
-✦ VİDEONU YARAT
-</button>
-
-<div class="row" style="margin-top:8px">
-
-<button class="btn" id="previewBtn">
-▶ Önizləmə
-</button>
-
-<button class="btn green" id="downloadBtn" style="display:none">
-⬇ Yüklə
-</button>
-
+<div id="arInfo" class="arInfo">
+<b id="arInfoTitle">ARWORLD</b>
+<div class="small" id="arInfoText">Ətrafdakı məkan məlumatları axtarılır…</div>
 </div>
 
-<button class="btn" id="shareBtn" style="display:none;margin-top:8px">
-↗ Videonu paylaş
+<div class="cross"></div>
+<div id="arObjects" class="arObjects"></div>
+
+<div class="arActions">
+<button id="mapPickBtn">
+<svg class="ico"><use href="#i-map"/></svg>
+Xəritədən seç
 </button>
 
-<div class="notice">
+<button id="myPlaceBtn">
+<svg class="ico"><use href="#i-locate"/></svg>
+Mənim yerim
+</button>
 
-<strong style="color:#fff">Necə işləyir?</strong><br><br>
-
-Ssenari avtomatik səhnələrə bölünür. Hər səhnə üçün vizual təsvir hazırlanır, subtitr əlavə edilir və video ardıcıllığı yaradılır.
-
-<br><br>
-
-Bu demo versiyada video kliplər üçün yerli/remote video mənbə sistemi hazırlanıb. AI video generatoru əlavə etmək üçün API backend lazımdır.
-
+<button id="addBtn" class="primary">
+<svg class="ico"><use href="#i-plus"/></svg>
+Yerləşdir
+</button>
 </div>
-
 </section>
 
+<section id="mapView" class="view">
+<div class="mapWrap">
+<div id="map" class="map"></div>
 
-<section class="card">
+<div class="mapTop">
+<button class="iconbtn" id="mapBack">
+<svg class="ico"><use href="#i-back"/></svg>
+</button>
 
-<h2>
-Preview Studio
-<span class="badge" id="sceneCounter">0 səhnə</span>
-</h2>
+<input id="mapSearch" class="searchInput" data-i18n-placeholder="mapSearchPlaceholder" placeholder="Şəhər, küçə, məkan və ya koordinat">
 
-<div class="preview">
+<button class="iconbtn" id="mapSearchBtn">
+<svg class="ico"><use href="#i-search"/></svg>
+</button>
 
-<canvas id="canvas"></canvas>
-
-<div class="previewInfo" id="previewInfo">
-Video hazır deyil
+<button class="iconbtn" id="mapMyBtn">
+<svg class="ico"><use href="#i-locate"/></svg>
+</button>
 </div>
 
+<div class="mapCross"></div>
+
+<div class="mapHint" id="mapHint">
+Xəritədə istədiyiniz yerə toxunun — həmin nöqtə paylaşım üçün seçiləcək.
+</div>
+</div>
+</section>
+
+<section id="feedView" class="view">
+<div class="top">
+<button class="iconbtn" data-back>
+<svg class="ico"><use href="#i-back"/></svg>
+</button>
+<div class="brand">AR<span>WORLD</span></div>
+<div style="flex:1"></div>
+<button class="iconbtn" id="feedRefresh">
+<svg class="ico"><use href="#i-refresh"/></svg>
+</button>
 </div>
 
-<div class="controls">
+<div class="screen scroll">
+<div class="sectionTitle" data-i18n="worldTitle">Dünya</div>
+<div id="feedList" class="list"></div>
+</div>
+</section>
 
-<button class="btn smallBtn" id="backBtn">‹</button>
+<section id="profileView" class="view">
+<div class="top">
+<button class="iconbtn" data-back>
+<svg class="ico"><use href="#i-back"/></svg>
+</button>
 
-<button class="btn primary smallBtn" id="playBtn">▶</button>
-
-<button class="btn smallBtn" id="nextBtn">›</button>
-
+<div class="brand">AR<span>WORLD</span></div>
 <div style="flex:1"></div>
 
-<span class="badge" id="timeLabel">
-00:00
+<button class="iconbtn" id="editProfileBtn">
+<svg class="ico"><use href="#i-edit"/></svg>
+</button>
+</div>
+
+<div class="screen scroll">
+<div id="profileCard"></div>
+
+<div class="sectionTitle" data-i18n="myObjects">Mənim obyektlərim</div>
+<div id="myObjects" class="list"></div>
+</div>
+</section>
+
+<nav class="bottom">
+<button class="nav active" data-view="ar">
+<span class="ico"><svg><use href="#i-scan"/></svg></span>
+<span data-i18n="navScan">Skan</span>
+</button>
+
+<button class="nav" data-view="map">
+<span class="ico"><svg><use href="#i-map"/></svg></span>
+<span data-i18n="navMap">Xəritə</span>
+</button>
+
+<button class="nav" data-view="feed">
+<span class="ico"><svg><use href="#i-world"/></svg></span>
+<span data-i18n="navWorld">Dünya</span>
+</button>
+
+<button class="nav" data-view="profile">
+<span class="ico"><svg><use href="#i-user"/></svg></span>
+<span data-i18n="navProfile">Profil</span>
+</button>
+</nav>
+
+<div id="createModal" class="modal">
+<div class="sheet">
+<div class="handle"></div>
+
+<div class="sheetTop">
+<button class="iconbtn" data-close="createModal">
+<svg class="ico"><use href="#i-back"/></svg>
+</button>
+
+<h3 data-i18n="newPlace">Yeni spatial paylaşım</h3>
+
+<button class="iconbtn" data-close="createModal">
+<svg class="ico"><use href="#i-close"/></svg>
+</button>
+</div>
+
+<form id="createForm" class="form">
+
+<div class="field">
+<div class="label" data-i18n="type">Növ</div>
+<select id="fType">
+<option value="business">Biznes</option>
+<option value="service">Xidmət</option>
+<option value="car">Maşın</option>
+<option value="person">Profil</option>
+<option value="place">Məkan</option>
+<option value="tourism">Turizm</option>
+<option value="event">Tədbir</option>
+<option value="warning">Xəbərdarlıq</option>
+<option value="information">Məlumat</option>
+</select>
+</div>
+
+<div class="field">
+<div class="label" data-i18n="name">Başlıq / ad</div>
+<input id="fName" required placeholder="Məsələn: Kafe, Usta, Maşın, elan…">
+</div>
+
+<div class="grid2">
+<div class="field">
+<div class="label">@username</div>
+<input id="fUsername" placeholder="@ad">
+</div>
+
+<div class="field">
+<div class="label" data-i18n="radius">Görünmə radiusu</div>
+<select id="fRadius">
+<option value="50">50 m</option>
+<option value="100" selected>100 m</option>
+<option value="300">300 m</option>
+<option value="500">500 m</option>
+<option value="1000">1 km</option>
+<option value="5000">5 km</option>
+<option value="20000">20 km</option>
+</select>
+</div>
+</div>
+
+<div class="field">
+<div class="label" data-i18n="description">Qısa məlumat</div>
+<textarea id="fBio" placeholder="Bu məkanda nə var?"></textarea>
+</div>
+
+<div class="field">
+<div class="label" data-i18n="article">Ətraflı məlumat</div>
+<textarea id="fArticle" placeholder="İstəsəniz daha geniş məlumat yazın…"></textarea>
+</div>
+
+<div class="grid2">
+<div class="field">
+<div class="label">Telefon</div>
+<input id="fPhone" type="tel" placeholder="+994…">
+</div>
+
+<div class="field">
+<div class="label">WhatsApp</div>
+<input id="fWhatsApp" type="tel" placeholder="+994…">
+</div>
+</div>
+
+<div class="field">
+<div class="label">Link / sosial şəbəkə</div>
+<input id="fSocial" placeholder="https://…">
+</div>
+
+<div class="card">
+<div class="between">
+<b data-i18n="location">Məkan</b>
+<button type="button" class="ghost" id="openMapPicker">
+Xəritədən seç
+</button>
+</div>
+
+<div class="row" style="margin-top:10px">
+<button type="button" class="primary" id="useMyLocation" style="flex:1">
+<svg class="ico"><use href="#i-locate"/></svg>
+Mənim koordinatım
+</button>
+</div>
+
+<div class="coords" id="selectedCoords" style="margin-top:10px">
+Koordinat seçilməyib
+</div>
+</div>
+
+<div class="field">
+<div class="label" data-i18n="media">Foto / video</div>
+
+<label class="fileBtn">
+＋ Qalereyadan seç
+<input id="fMedia" class="hidden" type="file" accept="image/*,video/*" multiple>
+</label>
+
+<div class="grid2">
+<label class="fileBtn">
+Kamera
+<input id="fCamera" class="hidden" type="file" accept="image/*" capture="environment">
+</label>
+
+<button type="button" class="ghost" id="recordBtn">
+● Video çək
+</button>
+</div>
+
+<div id="mediaPreview" class="mediaGrid"></div>
+</div>
+
+<label class="check">
+<input id="fPublic" type="checkbox" checked>
+<span>Bu spatial obyekt yayıma açıq olsun.</span>
+</label>
+
+<label class="check">
+<input id="fConsent" type="checkbox" required>
+<span>Məlumatı yerləşdirməyə hüququm olduğunu təsdiqləyirəm.</span>
+</label>
+
+<button class="primary" type="submit" style="width:100%;padding:15px" data-i18n="publish">
+İndi yerləşdir
+</button>
+
+</form>
+</div>
+</div>
+
+<div id="detailModal" class="modal">
+<div class="sheet">
+<div class="handle"></div>
+
+<div class="sheetTop">
+<button class="iconbtn" data-close="detailModal">
+<svg class="ico"><use href="#i-back"/></svg>
+</button>
+
+<h3 id="detailTitle">Spatial obyekt</h3>
+
+<button class="iconbtn" data-close="detailModal">
+<svg class="ico"><use href="#i-close"/></svg>
+</button>
+</div>
+
+<div id="detailBody"></div>
+</div>
+</div>
+
+<div id="profileEditModal" class="modal">
+<div class="sheet">
+<div class="handle"></div>
+
+<div class="sheetTop">
+<button class="iconbtn" data-close="profileEditModal">
+<svg class="ico"><use href="#i-back"/></svg>
+</button>
+
+<h3>Profil</h3>
+
+<button class="iconbtn" data-close="profileEditModal">
+<svg class="ico"><use href="#i-close"/></svg>
+</button>
+</div>
+
+<form id="profileForm" class="form">
+
+<div style="display:grid;place-items:center;gap:8px">
+<img id="avatarPreview" class="avatar big" alt="">
+
+<label class="fileBtn" style="width:100%">
+Profil şəkli seç
+<input id="avatarInput" class="hidden" type="file" accept="image/*">
+</label>
+</div>
+
+<div class="field">
+<div class="label">Ad</div>
+<input id="pName">
+</div>
+
+<div class="field">
+<div class="label">@username</div>
+<input id="pUsername">
+</div>
+
+<div class="field">
+<div class="label">Bio</div>
+<textarea id="pBio"></textarea>
+</div>
+
+<div class="field">
+<div class="label">Telefon</div>
+<input id="pPhone" type="tel">
+</div>
+
+<div class="field">
+<div class="label">WhatsApp</div>
+<input id="pWhatsapp" type="tel">
+</div>
+
+<div class="field">
+<div class="label">Sosial / sayt</div>
+<input id="pSocial">
+</div>
+
+<div class="field">
+<div class="label">Dil</div>
+<select id="langSelect">
+<option value="az">Azərbaycan</option>
+<option value="en">English</option>
+<option value="ru">Русский</option>
+<option value="tr">Türkçe</option>
+<option value="de">Deutsch</option>
+</select>
+</div>
+
+<button class="primary" type="submit" style="padding:15px">
+Yadda saxla
+</button>
+
+</form>
+</div>
+</div>
+
+<div id="languageModal" class="modal">
+<div class="sheet">
+<div class="handle"></div>
+
+<div class="sheetTop">
+<button class="iconbtn" data-close="languageModal">
+<svg class="ico"><use href="#i-back"/></svg>
+</button>
+
+<h3>Dil / Language</h3>
+
+<button class="iconbtn" data-close="languageModal">
+<svg class="ico"><use href="#i-close"/></svg>
+</button>
+</div>
+
+<div class="list" id="languageList"></div>
+</div>
+</div>
+
+<div id="privacyModal" class="modal">
+<div class="sheet">
+<div class="handle"></div>
+
+<div class="sheetTop">
+<button class="iconbtn" data-close="privacyModal">
+<svg class="ico"><use href="#i-back"/></svg>
+</button>
+
+<h3>ARWORLD</h3>
+
+<button class="iconbtn" data-close="privacyModal">
+<svg class="ico"><use href="#i-close"/></svg>
+</button>
+</div>
+
+<div class="card">
+<p>Bu GitHub Pages demo versiyasıdır. Spatial obyektlər və profil məlumatları bu brauzerdə saxlanılır. GPS yalnız icazənizlə istifadə olunur.</p>
+<p>Real ictimai xidmət üçün server, hesab sistemi, moderasiya, Privacy Policy, Terms, müəllif hüquqları, məlumat silmə və şikayət mexanizmləri ayrıca qurulmalıdır.</p>
+</div>
+</div>
+</div>
+
+<div id="recordModal" class="modal">
+<div class="sheet">
+<div class="handle"></div>
+
+<div class="sheetTop">
+<button class="iconbtn" data-close="recordModal">
+<svg class="ico"><use href="#i-back"/></svg>
+</button>
+
+<h3>Video çək</h3>
+
+<button class="iconbtn" data-close="recordModal">
+<svg class="ico"><use href="#i-close"/></svg>
+</button>
+</div>
+
+<video id="recordPreview" class="mediaHero" autoplay muted playsinline></video>
+
+<div class="row" style="margin-top:10px">
+<button class="primary" id="startRecord" style="flex:1">● Başla</button>
+<button class="ghost" id="stopRecord" style="flex:1">■ Bitir</button>
+</div>
+
+<div class="small muted" id="recordState" style="margin-top:8px">Hazır</div>
+</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+(() => {
+'use strict';
+
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+
+const I18N={
+az:{
+navScan:'Skan',
+navMap:'Xəritə',
+navWorld:'Dünya',
+navProfile:'Profil',
+worldTitle:'Dünya',
+myObjects:'Mənim obyektlərim',
+newPlace:'Yeni spatial paylaşım',
+type:'Növ',
+name:'Başlıq / ad',
+radius:'Görünmə radiusu',
+description:'Qısa məlumat',
+article:'Ətraflı məlumat',
+location:'Məkan',
+media:'Foto / video',
+publish:'İndi yerləşdir',
+searchPlaceholder:'Küçə, şəhər, koordinat və ya obyekt…',
+mapSearchPlaceholder:'Şəhər, küçə, məkan və ya koordinat'
+},
+en:{
+navScan:'Scan',
+navMap:'Map',
+navWorld:'World',
+navProfile:'Profile',
+worldTitle:'World',
+myObjects:'My objects',
+newPlace:'New spatial post',
+type:'Type',
+name:'Title / name',
+radius:'Visibility radius',
+description:'Description',
+article:'Details',
+location:'Location',
+media:'Photo / video',
+publish:'Publish now',
+searchPlaceholder:'Street, city, coordinates or place…',
+mapSearchPlaceholder:'City, street, place or coordinates'
+},
+ru:{
+navScan:'Скан',
+navMap:'Карта',
+navWorld:'Мир',
+navProfile:'Профиль',
+worldTitle:'Мир',
+myObjects:'Мои объекты',
+newPlace:'Новая spatial публикация',
+type:'Тип',
+name:'Название',
+radius:'Радиус видимости',
+description:'Описание',
+article:'Подробности',
+location:'Место',
+media:'Фото / видео',
+publish:'Опубликовать',
+searchPlaceholder:'Улица, город, координаты или объект…',
+mapSearchPlaceholder:'Город, улица, место или координаты'
+},
+tr:{
+navScan:'Tarama',
+navMap:'Harita',
+navWorld:'Dünya',
+navProfile:'Profil',
+worldTitle:'Dünya',
+myObjects:'Objelerim',
+newPlace:'Yeni spatial paylaşım',
+type:'Tür',
+name:'Başlık / ad',
+radius:'Görünürlük yarıçapı',
+description:'Açıklama',
+article:'Detaylar',
+location:'Konum',
+media:'Fotoğraf / video',
+publish:'Şimdi paylaş',
+searchPlaceholder:'Sokak, şehir, koordinat veya yer…',
+mapSearchPlaceholder:'Şehir, sokak, yer veya koordinat'
+},
+de:{
+navScan:'Scan',
+navMap:'Karte',
+navWorld:'Welt',
+navProfile:'Profil',
+worldTitle:'Welt',
+myObjects:'Meine Objekte',
+newPlace:'Neuer Spatial-Post',
+type:'Typ',
+name:'Titel / Name',
+radius:'Sichtbarkeitsradius',
+description:'Beschreibung',
+article:'Details',
+location:'Ort',
+media:'Foto / Video',
+publish:'Jetzt veröffentlichen',
+searchPlaceholder:'Straße, Stadt, Koordinaten oder Ort…',
+mapSearchPlaceholder:'Stadt, Straße, Ort oder Koordinaten'
+}
+};
+
+let lang=(localStorage.getItem('arworld_lang')||navigator.language||'az').slice(0,2).toLowerCase();
+
+if(!I18N[lang])lang='en';
+
+let db=null;
+let objects=[];
+let map=null;
+let mapLayer=null;
+let mapSelectedMarker=null;
+
+let userLat=null;
+let userLng=null;
+let userAccuracy=null;
+let heading=0;
+
+let cameraStream=null;
+
+let selectedFiles=[];
+
+let draft={
+lat:null,
+lng:null,
+address:''
+};
+
+let profile={
+id:'me',
+name:'ARWORLD istifadəçisi',
+username:'@arworld',
+bio:'Fiziki dünyaya rəqəmsal iz burax.',
+phone:'',
+whatsapp:'',
+social:'',
+avatar:null
+};
+
+const anchorState=new Map();
+const layoutState=new Map();
+const mediaURLs=new Map();
+
+let watchId=null;
+let recStream=null;
+let recorder=null;
+let recordChunks=[];
+
+const DBNAME='ARWORLD_FAST_10';
+
+function toast(t){
+const el=$('#toast');
+el.textContent=t;
+el.classList.add('show');
+clearTimeout(toast.t);
+toast.t=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+function esc(v=''){
+return String(v).replace(/[&<>"']/g,c=>({
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+'"':'&quot;',
+"'":'&#39;'
+}[c]));
+}
+
+function uid(){
+return 'o_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9);
+}
+
+function fmtCoord(a,b){
+return `${Number(a).toFixed(6)}, ${Number(b).toFixed(6)}`;
+}
+
+function dist(a,b,c,d){
+const R=6371000;
+const p=Math.PI/180;
+const x=(c-a)*p;
+const y=(d-b)*p;
+
+const q=
+Math.sin(x/2)**2+
+Math.cos(a*p)*Math.cos(c*p)*Math.sin(y/2)**2;
+
+return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));
+}
+
+function bearing(a,b,c,d){
+const p=Math.PI/180;
+
+const y=
+Math.sin((d-b)*p)*Math.cos(c*p);
+
+const x=
+Math.cos(a*p)*Math.sin(c*p)-
+Math.sin(a*p)*Math.cos(c*p)*Math.cos((d-b)*p);
+
+return (Math.atan2(y,x)*180/Math.PI+360)%360;
+}
+
+function adiff(a,b){
+return ((a-b+540)%360)-180;
+}
+
+function hash(s){
+let h=2166136261;
+
+for(let i=0;i<s.length;i++){
+h^=s.charCodeAt(i);
+h=Math.imul(h,16777619);
+}
+
+return h>>>0;
+}
+
+function typeName(t){
+return ({
+business:'Biznes',
+service:'Xidmət',
+car:'Maşın',
+person:'Profil',
+place:'Məkan',
+tourism:'Turizm',
+event:'Tədbir',
+warning:'Xəbərdarlıq',
+information:'Məlumat'
+})[t]||t;
+}
+
+function applyLang(){
+const d=I18N[lang];
+
+document.documentElement.lang=lang;
+
+$$('[data-i18n]').forEach(e=>{
+if(d[e.dataset.i18n])
+e.textContent=d[e.dataset.i18n];
+});
+
+$$('[data-i18n-placeholder]').forEach(e=>{
+if(d[e.dataset.i18nPlaceholder])
+e.placeholder=d[e.dataset.i18nPlaceholder];
+});
+
+localStorage.setItem('arworld_lang',lang);
+}
+
+function openModal(id){
+$('#'+id).classList.add('show');
+}
+
+function closeModal(id){
+$('#'+id)?.classList.remove('show');
+}
+
+function initDB(){
+return new Promise((resolve,reject)=>{
+const r=indexedDB.open(DBNAME,1);
+
+r.onupgradeneeded=()=>{
+const d=r.result;
+
+if(!d.objectStoreNames.contains('objects'))
+d.createObjectStore('objects',{keyPath:'id'});
+
+if(!d.objectStoreNames.contains('profile'))
+d.createObjectStore('profile',{keyPath:'id'});
+};
+
+r.onsuccess=()=>{
+db=r.result;
+resolve();
+};
+
+r.onerror=()=>reject(r.error);
+});
+}
+
+function tx(store,mode='readonly'){
+return db.transaction(store,mode).objectStore(store);
+}
+
+function getAll(){
+return new Promise((res,rej)=>{
+const r=tx('objects').getAll();
+
+r.onsuccess=()=>res(r.result||[]);
+r.onerror=()=>rej(r.error);
+});
+}
+
+function put(store,val){
+return new Promise((res,rej)=>{
+const r=tx(store,'readwrite').put(val);
+
+r.onsuccess=()=>res();
+r.onerror=()=>rej(r.error);
+});
+}
+
+function del(store,id){
+return new Promise((res,rej)=>{
+const r=tx(store,'readwrite').delete(id);
+
+r.onsuccess=()=>res();
+r.onerror=()=>rej(r.error);
+});
+}
+
+async function loadData(){
+objects=await getAll();
+
+const p=await new Promise(res=>{
+const r=tx('profile').get('me');
+
+r.onsuccess=()=>res(r.result||null);
+r.onerror=()=>res(null);
+});
+
+if(p)
+profile=p;
+}
+
+function fileToData(file){
+return new Promise((res,rej)=>{
+const r=new FileReader();
+
+r.onload=()=>res(r.result);
+r.onerror=rej;
+
+r.readAsDataURL(file);
+});
+}
+
+function objectMediaURL(m){
+if(!m)return null;
+
+const key=m.id;
+
+if(mediaURLs.has(key))
+return mediaURLs.get(key);
+
+const u=
+typeof m.data==='string'
+?m.data
+:URL.createObjectURL(m.blob);
+
+mediaURLs.set(key,u);
+
+return u;
+}
+
+function selectDraft(lat,lng,address=''){
+lat=Number(lat);
+lng=Number(lng);
+
+if(
+!Number.isFinite(lat)||
+!Number.isFinite(lng)||
+Math.abs(lat)>90||
+Math.abs(lng)>180
+)
+return false;
+
+draft={
+lat,
+lng,
+address:address||''
+};
+
+$('#selectedCoords').textContent=
+`${fmtCoord(lat,lng)}${address?' · '+address:''}`;
+
+if(map){
+
+map.setView(
+[lat,lng],
+Math.max(map.getZoom(),16)
+);
+
+if(mapSelectedMarker)
+map.removeLayer(mapSelectedMarker);
+
+mapSelectedMarker=
+L.marker([lat,lng])
+.addTo(map)
+.bindPopup('Paylaşım nöqtəsi')
+.openPopup();
+}
+
+return true;
+}
+
+function parseCoords(q){
+const s=q.trim().replace(/[;]/g,',');
+
+const m=
+s.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+
+if(!m)
+return null;
+
+const a=Number(m[1]);
+const b=Number(m[2]);
+
+if(Math.abs(a)<=90&&Math.abs(b)<=180)
+return[a,b];
+
+if(Math.abs(b)<=90&&Math.abs(a)<=180)
+return[b,a];
+
+return null;
+}
+
+async function geocode(q){
+
+const c=parseCoords(q);
+
+if(c)
+return[
+{
+lat:c[0],
+lon:c[1],
+display_name:fmtCoord(c[0],c[1]),
+type:'coordinates'
+}
+];
+
+const url=
+'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&addressdetails=1&q='+
+encodeURIComponent(q);
+
+const r=
+await fetch(
+url,
+{
+headers:{
+'Accept':'application/json'
+}
+}
+);
+
+if(!r.ok)
+throw Error('Geocoder');
+
+return await r.json();
+}
+
+async function reverse(lat,lng){
+
+try{
+
+const u=
+`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+
+const r=await fetch(u);
+
+if(!r.ok)
+return '';
+
+const j=await r.json();
+
+return j.display_name||'';
+
+}catch(e){
+
+return '';
+
+}
+}
+
+function renderSearchResults(results,host){
+
+host.innerHTML=
+results.length
+?
+results.map((r,i)=>`
+<button
+class="result"
+data-result="${i}"
+style="display:block;width:100%;text-align:left;background:none;color:inherit">
+
+<b>${esc(r.display_name||fmtCoord(r.lat,r.lon))}</b>
+
+<div class="coords">
+${Number(r.lat).toFixed(6)}, ${Number(r.lon).toFixed(6)}
+</div>
+
+</button>
+`).join('')
+:
+`<div class="empty">Nəticə tapılmadı.</div>`;
+
+host._results=results;
+}
+
+async function runSearch(q,target='ar'){
+
+if(!q.trim())
+return;
+
+const host=
+target==='ar'
+?$('#searchPanel')
+:$('#mapSearchResults');
+
+if(target==='ar'){
+$('#searchPanel').classList.add('show');
+host.innerHTML='<div class="small muted">Axtarılır…</div>';
+}else if(!host){
+return;
+}
+
+try{
+
+const results=await geocode(q);
+
+renderSearchResults(results,host);
+
+host.onclick=e=>{
+
+const b=e.target.closest('[data-result]');
+
+if(!b)
+return;
+
+const r=
+host._results[
+Number(b.dataset.result)
+];
+
+const lat=Number(r.lat);
+const lng=Number(r.lon);
+
+selectDraft(
+lat,
+lng,
+r.display_name||''
+);
+
+if(target==='ar'){
+
+$('#searchPanel').classList.remove('show');
+
+openCreate();
+
+}else{
+
+if(map){
+
+map.setView(
+[lat,lng],
+17
+);
+
+if(mapSelectedMarker)
+map.removeLayer(mapSelectedMarker);
+
+mapSelectedMarker=
+L.marker([lat,lng])
+.addTo(map)
+.bindPopup('Paylaşım nöqtəsi')
+.openPopup();
+
+}
+
+toast('Məkan seçildi');
+
+openCreate();
+
+}
+
+};
+
+}catch(e){
+
+host.innerHTML=
+`
+<div class="empty">
+Axtarış xidməti hazırda cavab vermir.
+<br><br>
+Koordinatı bu formada da yaza bilərsiniz:
+<br>
+<span class="coords">40.4093, 49.8671</span>
+</div>
+`;
+
+}
+}
+
+function startGPS(){
+
+if(!navigator.geolocation){
+toast('Bu telefonda GPS yoxdur');
+return;
+}
+
+if(watchId)
+return;
+
+watchId=
+navigator.geolocation.watchPosition(
+
+p=>{
+
+const a=p.coords;
+
+const lat=a.latitude;
+const lng=a.longitude;
+
+if(userLat===null){
+
+userLat=lat;
+userLng=lng;
+
+}else{
+
+const alpha=
+a.accuracy<=8
+?.3
+:a.accuracy<=20
+?.14
+:.07;
+
+userLat+=(lat-userLat)*alpha;
+userLng+=(lng-userLng)*alpha;
+
+}
+
+userAccuracy=a.accuracy;
+
+$('#gpsPill').textContent=
+`GPS ±${Math.round(a.accuracy||0)}m`;
+
+updateAR();
+
+},
+
+e=>{
+
+$('#gpsPill').textContent=
+'GPS icazə lazımdır';
+
+},
+
+{
+enableHighAccuracy:true,
+maximumAge:1000,
+timeout:10000
+}
+);
+}
+
+function startCompass(){
+
+const handler=e=>{
+
+let h=null;
+
+if(typeof e.webkitCompassHeading==='number')
+h=e.webkitCompassHeading;
+
+else if(typeof e.alpha==='number')
+h=(360-e.alpha)%360;
+
+if(Number.isFinite(h)){
+
+const d=adiff(h,heading);
+
+heading=(heading+d*.16+360)%360;
+
+$('#compassPill').textContent=
+`Kompas ${Math.round(heading)}°`;
+
+updateAR();
+
+}
+
+};
+
+window.addEventListener(
+'deviceorientationabsolute',
+handler,
+true
+);
+
+window.addEventListener(
+'deviceorientation',
+handler,
+true
+);
+}
+
+async function startCamera(){
+
+if(cameraStream)
+return;
+
+try{
+
+cameraStream=
+await navigator.mediaDevices.getUserMedia({
+
+video:{
+facingMode:{ideal:'environment'},
+width:{ideal:1280},
+height:{ideal:720}
+},
+
+audio:false
+
+});
+
+$('#camera').srcObject=cameraStream;
+
+$('#arInfo').style.display='none';
+
+}catch(e){
+
+$('#arInfoTitle').textContent=
+'Kamera icazəsi';
+
+$('#arInfoText').textContent=
+'Skan üçün kamera icazəsini verin. İcazəsiz də xəritə və paylaşım işləyir.';
+
+}
+}
+
+function stopCamera(){
+
+if(cameraStream){
+
+cameraStream
+.getTracks()
+.forEach(t=>t.stop());
+
+cameraStream=null;
+
+}
+}
+
+function initMap(){
+
+if(map)
+return;
+
+map=
+L.map(
+'map',
+{
+zoomControl:true,
+preferCanvas:true
+}
+)
+.setView(
+[
+userLat??40.4093,
+userLng??49.8671
+],
+13
+);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19,
+attribution:'© OpenStreetMap'
+}
+).addTo(map);
+
+map.on('click',async e=>{
+
+const address=
+await reverse(
+e.latlng.lat,
+e.latlng.lng
+);
+
+selectDraft(
+e.latlng.lat,
+e.latlng.lng,
+address
+);
+
+toast('Nöqtə seçildi');
+
+openCreate();
+
+});
+
+mapLayer=L.layerGroup().addTo(map);
+
+renderMapObjects();
+
+setTimeout(
+()=>map.invalidateSize(),
+50
+);
+}
+
+function renderMapObjects(){
+
+if(!mapLayer)
+return;
+
+mapLayer.clearLayers();
+
+objects
+.filter(o=>o.public!==false)
+.forEach(o=>{
+
+const marker=
+L.marker(
+[o.lat,o.lng]
+)
+.addTo(mapLayer);
+
+marker.bindPopup(
+`
+<b>${esc(o.name)}</b>
+<br>
+${esc(o.bio||'')}
+<br>
+<span class="coords">
+${fmtCoord(o.lat,o.lng)}
+</span>
+<br>
+
+<button
+onclick="window.__openObject('${o.id}')"
+style="margin-top:7px">
+
+Bax
+
+</button>
+`
+);
+
+});
+
+if(userLat!=null){
+
+L.circleMarker(
+[userLat,userLng],
+{
+radius:7,
+color:'#16d9ff',
+fillColor:'#16d9ff',
+fillOpacity:.9
+}
+).addTo(mapLayer);
+
+}
+}
+
+window.__openObject=id=>{
+
+const o=
+objects.find(x=>x.id===id);
+
+if(o)
+openDetail(o);
+
+};
+
+function switchView(v){
+
+$$('.view')
+.forEach(x=>x.classList.remove('active'));
+
+const id=
+v==='ar'
+?'arView'
+:v==='map'
+?'mapView'
+:v==='feed'
+?'feedView'
+:'profileView';
+
+$('#'+id).classList.add('active');
+
+$$('.nav')
+.forEach(n=>
+n.classList.toggle(
+'active',
+n.dataset.view===v
+)
+);
+
+if(v==='ar'){
+
+startGPS();
+startCamera();
+updateAR();
+
+}
+
+if(v==='map'){
+
+initMap();
+renderMapObjects();
+
+}
+
+if(v==='feed')
+renderFeed();
+
+if(v==='profile')
+renderProfile();
+
+history.pushState(
+{view:v},
+'',
+location.pathname+location.search
+);
+
+}
+
+function makeCard(o){
+
+const d=
+document.createElement('div');
+
+d.className='arCard';
+
+d.dataset.id=o.id;
+
+d.innerHTML=`
+<div class="arMedia"></div>
+<div class="arTitle"></div>
+<div class="arType"></div>
+<div class="arText"></div>
+<div class="arMeta"></div>
+<button class="arOpen">
+Aç / ətraflı bax
+</button>
+`;
+
+d.querySelector('.arOpen')
+.onclick=()=>openDetail(o);
+
+return d;
+}
+
+function targetPoint(o,w,h,d,b){
+
+const diff=
+adiff(b,heading);
+
+const fov=82;
+
+const x=
+w/2+
+(diff/fov)*(w*.84);
+
+const y=
+h*.43+
+Math.min(
+1,
+d/Math.max(o.radius||100,1)
+)*h*.19;
+
+return{
+x,
+y,
+d,
+diff
+};
+
+}
+
+function rectFor(x,y,w,h,cw,ch){
+
+return{
+x1:x-cw/2,
+y1:y-ch/2,
+x2:x+cw/2,
+y2:y+ch/2
+};
+
+}
+
+function overlap(a,b,pad=8){
+
+return !(
+a.x2+pad<b.x1||
+a.x1-pad>b.x2||
+a.y2+pad<b.y1||
+a.y1-pad>b.y2
+);
+
+}
+
+function clamp(v,a,b){
+return Math.max(a,Math.min(b,v));
+}
+
+function candidates(
+target,
+seed,
+w,
+h,
+cw,
+ch
+){
+
+const arr=[
+{
+x:target.x,
+y:target.y
+}
+];
+
+const ang=[
+0,
+30,
+60,
+90,
+120,
+150,
+180,
+210,
+240,
+270,
+300,
+330
+];
+
+const radii=[
+55,
+90,
+130,
+175,
+225
+];
+
+for(let r=0;r<radii.length;r++){
+
+for(let a=0;a<ang.length;a++){
+
+const rr=radii[r];
+
+const aa=
+ang[
+(a+seed)%ang.length
+]
+*Math.PI/180;
+
+arr.push({
+x:target.x+Math.cos(aa)*rr,
+y:target.y+Math.sin(aa)*rr
+});
+
+}
+
+}
+
+arr.push({
+x:target.x+(seed%5-2)*80,
+y:target.y+((seed>>3)%5-2)*65
+});
+
+return arr.map(p=>({
+
+x:clamp(
+p.x,
+cw/2+10,
+w-cw/2-10
+),
+
+y:clamp(
+p.y,
+ch/2+70,
+h-ch/2-92
+)
+
+}));
+
+}
+
+function layoutCards(items,w,h){
+
+const placed=[];
+
+items.sort(
+(a,b)=>a.d-b.d
+);
+
+for(let idx=0;idx<items.length;idx++){
+
+const it=items[idx];
+
+const el=it.el;
+
+const cw=
+Math.min(
+el.offsetWidth||300,
+w-20
+);
+
+const ch=
+Math.min(
+el.offsetHeight||150,
+h-160
+);
+
+const target=it.target;
+
+const seed=
+hash(it.o.id)%1000;
+
+const cs=
+candidates(
+target,
+seed,
+w,
+h,
+cw,
+ch
+);
+
+let best=null;
+
+for(let ci=0;ci<cs.length;ci++){
+
+const c=cs[ci];
+
+const r=
+rectFor(
+c.x,
+c.y,
+cw,
+ch
+);
+
+let score=
+Math.hypot(
+c.x-target.x,
+c.y-target.y
+);
+
+let hit=0;
+
+for(const p of placed){
+
+if(
+overlap(
+r,
+p.rect,
+6
+)
+)
+hit+=1;
+
+}
+
+score+=hit*900;
+
+if(
+c.x<cw/2+11||
+c.x>w-cw/2-11||
+c.y<ch/2+65||
+c.y>h-ch/2-90
+)
+score+=1200;
+
+if(
+!best||
+score<best.score
+)
+best={
+...c,
+score,
+ci,
+rect:r
+};
+
+}
+
+const st=
+layoutState.get(it.o.id)||
+{
+x:best.x,
+y:best.y,
+ci:best.ci
+};
+
+const move=.16;
+
+st.x+=(best.x-st.x)*move;
+st.y+=(best.y-st.y)*move;
+st.ci=best.ci;
+
+layoutState.set(
+it.o.id,
+st
+);
+
+placed.push({
+rect:rectFor(
+st.x,
+st.y,
+cw,
+ch
+),
+o:it.o
+});
+
+it.pos=st;
+it.cw=cw;
+it.ch=ch;
+
+}
+
+}
+
+function setLine(
+id,
+x1,
+y1,
+x2,
+y2
+){
+
+let l=
+document.querySelector(
+'#line_'+CSS.escape(id)
+);
+
+if(!l){
+
+l=
+document.createElement('div');
+
+l.className='arLine';
+
+l.id='line_'+id;
+
+$('#arObjects').appendChild(l);
+
+}
+
+const dx=x2-x1;
+const dy=y2-y1;
+
+const len=
+Math.hypot(dx,dy);
+
+l.style.left=x1+'px';
+l.style.top=y1+'px';
+l.style.width=len+'px';
+
+l.style.transform=
+`rotate(${Math.atan2(dy,dx)}rad)`;
+
+l.style.opacity=
+len<35?'0':'.5';
+
+}
+
+function updateAR(){
+
+const box=$('#arObjects');
+
+if(!box)
+return;
+
+const w=box.clientWidth;
+const h=box.clientHeight;
+
+if(!w||!h)
+return;
+
+if(userLat==null){
+
+$('#arInfo').style.display='block';
+
+$('#arInfoTitle').textContent=
+'GPS gözlənilir';
+
+$('#arInfoText').textContent=
+'Məkanları görmək üçün GPS icazəsi verin və ya Xəritədən seçin.';
+
+return;
+
+}
+
+$('#arInfo').style.display='none';
+
+const q=
+$('#arSearch')
+.value
+.trim()
+.toLowerCase();
+
+const candidatesList=
+objects
+.filter(o=>
+o.public!==false&&
+o.lat!=null&&
+o.lng!=null&&
+(
+!q||
+`${o.name} ${o.username||''} ${o.bio||''} ${o.article||''} ${o.type||''}`
+.toLowerCase()
+.includes(q)
+)
+)
+.map(o=>{
+
+const d=
+dist(
+userLat,
+userLng,
+o.lat,
+o.lng
+);
+
+const b=
+bearing(
+userLat,
+userLng,
+o.lat,
+o.lng
+);
+
+return{o,d,b};
+
+})
+.filter(
+x=>x.d<=Number(x.o.radius||100)
+);
+
+const onscreen=
+candidatesList.filter(
+x=>
+Math.abs(
+adiff(x.b,heading)
+)<=88
+);
+
+const edge=
+candidatesList
+.filter(
+x=>
+Math.abs(
+adiff(x.b,heading)
+)>88
+)
+.sort(
+(a,b)=>a.d-b.d
+)
+.slice(0,6);
+
+const items=[];
+const keep=new Set();
+
+onscreen.forEach(x=>{
+
+let el=
+box.querySelector(
+`[data-id="${CSS.escape(x.o.id)}"]`
+);
+
+if(!el){
+
+el=makeCard(x.o);
+
+box.appendChild(el);
+
+}
+
+keep.add(x.o.id);
+
+el.classList.toggle(
+'big',
+x.o.size==='building'
+);
+
+const media=
+el.querySelector('.arMedia');
+
+if(x.o.media?.length){
+
+const m=x.o.media[0];
+
+const u=
+objectMediaURL(m);
+
+if(u){
+
+media.innerHTML=
+m.type?.startsWith('video')
+?
+`<video src="${u}" muted playsinline autoplay loop></video>`
+:
+`<img src="${u}" alt="">`;
+
+}
+
+}else{
+
+media.innerHTML=
+`
+<div style="
+height:100%;
+display:grid;
+place-items:center;
+color:#4f617b
+">
+AR
+</div>
+`;
+
+}
+
+el.querySelector('.arTitle')
+.textContent=x.o.name;
+
+el.querySelector('.arType')
+.textContent=typeName(x.o.type);
+
+el.querySelector('.arText')
+.textContent=
+x.o.bio||
+x.o.article||
+'Spatial məlumat';
+
+el.querySelector('.arMeta')
+.textContent=
+`${Math.round(x.d)} m · ${Math.round(x.b)}° · ${fmtCoord(x.o.lat,x.o.lng)}`;
+
+el.style.zIndex=
+String(
+10000-
+Math.min(
+9000,
+Math.round(x.d*5)
+)
+);
+
+el.style.setProperty(
+'--s',
+String(
+clamp(
+1.08-
+x.d/Math.max(x.o.radius,100)*.12,
+.88,
+1.08
+)
+)
+);
+
+items.push({
+...x,
+el,
+target:
+targetPoint(
+x.o,
+w,
+h,
+x.d,
+x.b
+)
+});
+
+});
+
+layoutCards(
+items,
+w,
+h
+);
+
+items.forEach(it=>{
+
+it.el.style.left=
+it.pos.x+'px';
+
+it.el.style.top=
+it.pos.y+'px';
+
+const t=it.target;
+
+setLine(
+it.o.id,
+t.x,
+t.y,
+it.pos.x,
+it.pos.y
+);
+
+let dot=
+document.querySelector(
+'#dot_'+CSS.escape(it.o.id)
+);
+
+if(!dot){
+
+dot=
+document.createElement('div');
+
+dot.className='arDot';
+
+dot.id='dot_'+it.o.id;
+
+box.appendChild(dot);
+
+}
+
+dot.style.left=t.x+'px';
+dot.style.top=t.y+'px';
+
+});
+
+box.querySelectorAll('.arCard')
+.forEach(el=>{
+
+if(!keep.has(el.dataset.id))
+el.remove();
+
+});
+
+box.querySelectorAll('.arLine,.arDot')
+.forEach(el=>{
+
+const id=
+el.id.replace(
+/^(line_|dot_)/,
+''
+);
+
+if(!keep.has(id))
+el.remove();
+
+});
+
+box.querySelectorAll('.edgeHint')
+.forEach(e=>e.remove());
+
+edge.forEach(x=>{
+
+const d=
+document.createElement('button');
+
+d.className='edgeHint';
+
+const diff=
+adiff(x.b,heading);
+
+const ang=
+diff*Math.PI/180;
+
+const px=
+clamp(
+w/2+
+Math.sin(ang)*((w/2)-55),
+65,
+w-65
+);
+
+const py=
+clamp(
+h/2-
+Math.cos(ang)*((h/2)-120),
+90,
+h-120
+);
+
+d.style.left=px+'px';
+d.style.top=py+'px';
+
+d.textContent=
+`${Math.abs(Math.round(diff))}° · ${Math.round(x.d)}m · ${x.o.name}`;
+
+d.onclick=()=>openDetail(x.o);
+
+box.appendChild(d);
+
+});
+
+$('#countPill').textContent=
+`${onscreen.length} obyekt`;
+
+$('#arInfoText').textContent=
+onscreen.length
+?
+`${onscreen.length} spatial obyekt · toxunaraq açın`
+:
+'Bu istiqamətdə məlumat yoxdur';
+
+}
+
+function renderFeed(){
+
+const host=$('#feedList');
+
+if(!objects.length){
+
+host.innerHTML=
+`
+<div class="empty">
+Hələ paylaşım yoxdur.
+İstənilən dünya nöqtəsini xəritədən seçib ilk məlumatı yerləşdirin.
+</div>
+`;
+
+return;
+}
+
+host.innerHTML=
+objects
+.slice()
+.sort(
+(a,b)=>b.createdAt-a.createdAt
+)
+.map(o=>{
+
+const m=o.media?.[0];
+
+const u=
+m
+?
+objectMediaURL(m)
+:null;
+
+return `
+<div class="card">
+
+<div class="between">
+
+<div class="row">
+
+<img
+class="avatar"
+src="${profile.avatar||''}"
+onerror="this.style.display='none'"
+>
+
+<div>
+<b>${esc(o.name)}</b>
+<div class="small muted">
+${esc(o.username||'')} · ${esc(typeName(o.type))}
+</div>
+</div>
+
+</div>
+
+<span class="tag">
+${esc(typeName(o.type))}
 </span>
 
 </div>
 
-<div class="timeline">
+${
+u
+?
+`
+<div class="mediaGrid">
 
-<div style="font-size:10px;color:#7e8799;margin-bottom:8px">
-TIMELINE
-</div>
-
-<div class="track" id="timeline"></div>
-
-<div class="progress">
-<i id="progressBar"></i>
-</div>
-
-<div class="progressText" id="progressText">
-Hazırdır
-</div>
-
-</div>
-
-<div class="sceneList" id="sceneList">
-
-<div class="empty">
-Ssenarini yaz və videonu yarat.
-</div>
+<${
+m.type?.startsWith('video')
+?'video controls'
+:'img'
+}
+src="${u}"
+${m.type?.startsWith('video')?'playsinline':''}>
+</${
+m.type?.startsWith('video')
+?'video'
+:'img'
+}>
 
 </div>
+`
+:''
+}
 
-</section>
+<div style="margin-top:9px">
+${esc(o.bio||'')}
+</div>
+
+<div class="coords" style="margin-top:7px">
+${fmtCoord(o.lat,o.lng)}
+</div>
+
+<button
+class="ghost"
+style="width:100%;margin-top:10px"
+onclick="window.__openObject('${o.id}')">
+
+Aç / xəritədə bax
+
+</button>
 
 </div>
+`;
+
+})
+.join('');
+
+}
+
+function renderProfile(){
+
+const av=
+profile.avatar
+?
+`<img class="avatar big" src="${profile.avatar}" alt="">`
+:
+`<div class="avatar big">${esc((profile.name||'A')[0])}</div>`;
+
+$('#profileCard').innerHTML=
+`
+<div class="card">
+
+<div class="profileHead">
+
+${av}
+
+<div>
+
+<h2 style="margin:0">
+${esc(profile.name)}
+</h2>
+
+<div class="muted">
+${esc(profile.username)}
 </div>
 
+</div>
 
-<script>
+</div>
 
-const $=id=>document.getElementById(id);
+<div class="profileBio">
+${esc(profile.bio||'')}
+</div>
 
-const canvas=$("canvas");
-const ctx=canvas.getContext("2d");
+<div class="row" style="margin-top:12px">
 
-let scenes=[];
-let currentScene=0;
-let playing=false;
-let raf=0;
-let selectedDuration=30;
-let selectedStyle="real";
-let imageObject=null;
-let renderedBlob=null;
-let recorder=null;
-let chunks=[];
+<button
+class="primary"
+onclick="document.querySelector('#profileEditModal').classList.add('show')"
+style="flex:1">
 
-const formats={
- portrait:[720,1280],
- landscape:[1280,720],
- square:[1080,1080]
-};
+Profili dəyiş
 
-function status(t){
- $("status").textContent=t;
-}
+</button>
 
-function escapeHTML(s){
- return String(s).replace(/[&<>"']/g,m=>({
- "&":"&amp;",
- "<":"&lt;",
- ">":"&gt;",
- '"':"&quot;",
- "'":"&#039;"
- }[m]));
-}
+<button
+class="ghost"
+onclick="document.querySelector('#privacyModal').classList.add('show')">
 
+Məxfilik
 
-/* =========================
-   TEXT ENGINE
-========================= */
+</button>
 
-function splitSentences(text){
+</div>
 
- text=text.replace(/\r/g,"").trim();
+</div>
+`;
 
- if(!text)return [];
-
- const paragraphs=text
- .split(/\n+/)
- .map(x=>x.trim())
- .filter(Boolean);
-
- let result=[];
-
- paragraphs.forEach(p=>{
-
-  const sentences=
-   p.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [p];
-
-  sentences.forEach(sentence=>{
-
-   sentence=sentence.trim();
-
-   if(sentence.length<=135){
-    result.push(sentence);
-    return;
-   }
-
-   const words=sentence.split(/\s+/);
-   let buf="";
-
-   words.forEach(word=>{
-
-    if((buf+" "+word).trim().length>115){
-
-     if(buf)result.push(buf.trim());
-
-     buf=word;
-
-    }else{
-
-     buf+=(buf?" ":"")+word;
-
-    }
-
-   });
-
-   if(buf)result.push(buf.trim());
-
-  });
-
- });
-
- return result;
-}
-
-
-/* =========================
-   SCENE GENERATOR
-========================= */
-
-function createScenes(){
-
- const text=$("script").value.trim();
-
- if(!text){
-  scenes=[];
-  updateUI();
-  return;
- }
-
- const sentences=splitSentences(text);
-
- if(!sentences.length)return;
-
- const target=selectedDuration;
-
- const average=selectedDuration<=30 ? 5 :
-               selectedDuration<=60 ? 7 :
-               selectedDuration<=180 ? 8 :
-               9;
-
- let wanted=Math.ceil(target/average);
-
- wanted=Math.max(4,Math.min(30,wanted));
-
- let selected=[];
-
- for(let i=0;i<wanted;i++){
-
-  const index=Math.floor(
-   i*sentences.length/wanted
-  );
-
-  if(sentences[index]){
-   selected.push(sentences[index]);
-  }
-
- }
-
- if(selected.length===0)
-  selected=sentences;
-
- const duration=target/selected.length;
-
- scenes=selected.map((text,i)=>({
-
-  text:text,
-
-  duration:duration,
-
-  title:getTitle(i),
-
-  visual:getVisualPrompt(text)
-
- }));
-
- currentScene=0;
-
- updateUI();
-
-}
-
-
-function getTitle(i){
-
- if(i===0)return "Hekayə başlayır";
-
- const titles=[
-  "Əsas məqam",
-  "Maraqlı fakt",
-  "Hadisələrin davamı",
-  "Gözəl mənzərə",
-  "Əsas fikir",
-  "Nəticə",
-  "Son söz"
- ];
-
- return titles[(i-1)%titles.length];
-}
-
-
-/* =========================
-   VISUAL PROMPT ENGINE
-========================= */
-
-function getVisualPrompt(text){
-
- let t=text.toLowerCase();
-
- let subject="realistic cinematic scene";
-
- if(
-  /dağ|meşə|təbiət|çay|dəniz|kənd|göl/.test(t)
- )
- subject="real nature landscape, mountains, forest, river and cinematic aerial shot";
-
- else if(
-  /şəhər|bina|küçə|bakı|paytaxt/.test(t)
- )
- subject="real modern city street, architecture, people and cinematic camera";
-
- else if(
-  /insan|ailə|uşaq|kişi|qadın/.test(t)
- )
- subject="real people in a natural environment, cinematic documentary footage";
-
- else if(
-  /biznes|şirkət|iş|pul|mağaza/.test(t)
- )
- subject="real business environment, office, workers and modern commercial scene";
-
- else if(
-  /tarix|qədim|müharibə|keçmiş/.test(t)
- )
- subject="cinematic historical documentary scene";
-
- return subject+"; "+text;
-}
-
-
-/* =========================
-   UI
-========================= */
-
-function updateUI(){
-
- $("sceneCounter").textContent=
-  scenes.length+" səhnə";
-
- renderTimeline();
- renderSceneList();
- drawScene(0);
-
-}
-
-
-function renderTimeline(){
-
- const el=$("timeline");
-
- el.innerHTML="";
-
- scenes.forEach((s,i)=>{
-
-  const div=document.createElement("div");
-
-  div.className=
-   "clip"+(i===currentScene?" active":"");
-
-  div.innerHTML=
-   '<div class="clipNum">SCENE '+(i+1)+'</div>'+
-   escapeHTML(s.text.slice(0,55));
-
-  div.onclick=()=>{
-
-   currentScene=i;
-   drawScene(0);
-   renderTimeline();
-
-  };
-
-  el.appendChild(div);
-
- });
-
-}
-
-
-function renderSceneList(){
-
- const el=$("sceneList");
-
- if(!scenes.length){
-
-  el.innerHTML=
-   '<div class="empty">Ssenari daxil edilməyib.</div>';
-
-  return;
- }
-
- el.innerHTML=scenes.map((s,i)=>
-
-  '<div class="scene">'+
-  '<b>'+String(i+1).padStart(2,"0")+
-  '</b> · '+escapeHTML(s.text)+
-  '<br><span style="color:#667184;font-size:9px">'+
-  escapeHTML(s.visual)+
-  '</span>'+
-  '</div>'
-
- ).join("");
-
-}
-
-
-/* =========================
-   CANVAS
-========================= */
-
-function resizeCanvas(){
-
- const f=$("format").value;
-
- const size=formats[f];
-
- canvas.width=size[0];
- canvas.height=size[1];
-
-}
-
-
-function drawBackground(progress){
-
- const w=canvas.width;
- const h=canvas.height;
-
- const g=ctx.createLinearGradient(
-  0,0,w,h
- );
-
- if(selectedStyle==="cinematic"){
-
-  g.addColorStop(0,"#1b1028");
-  g.addColorStop(1,"#030307");
-
- }else if(selectedStyle==="news"){
-
-  g.addColorStop(0,"#101827");
-  g.addColorStop(1,"#030508");
-
- }else if(selectedStyle==="travel"){
-
-  g.addColorStop(0,"#063b4a");
-  g.addColorStop(1,"#021014");
-
- }else{
-
-  g.addColorStop(0,"#11172a");
-  g.addColorStop(1,"#030407");
-
- }
-
- ctx.fillStyle=g;
- ctx.fillRect(0,0,w,h);
-
-}
-
-
-/* =========================
-   IMAGE
-========================= */
-
-function drawImage(progress){
-
- if(!imageObject)return;
-
- const w=canvas.width;
- const h=canvas.height;
-
- const iw=imageObject.width;
- const ih=imageObject.height;
-
- const scale=
-  Math.max(w/iw,h/ih)*
-  (1+progress*.08);
-
- const dw=iw*scale;
- const dh=ih*scale;
-
- const x=(w-dw)/2-progress*20;
- const y=(h-dh)/2-progress*15;
-
- ctx.save();
-
- ctx.globalAlpha=.82;
-
- ctx.drawImage(
-  imageObject,
-  x,y,dw,dh
- );
-
- ctx.restore();
-
- const overlay=
-  ctx.createLinearGradient(
-   0,0,0,h
-  );
-
- overlay.addColorStop(0,"#0002");
- overlay.addColorStop(.5,"#0004");
- overlay.addColorStop(1,"#000e");
-
- ctx.fillStyle=overlay;
- ctx.fillRect(0,0,w,h);
-
-}
-
-
-/* =========================
-   SUBTITLE
-========================= */
-
-function wrapText(text,maxWidth,font){
-
- ctx.font=font;
-
- const words=text.split(/\s+/);
- const lines=[];
-
- let line="";
-
- words.forEach(word=>{
-
-  const test=(line+" "+word).trim();
-
-  if(ctx.measureText(test).width>maxWidth){
-
-   if(line)lines.push(line);
-
-   line=word;
-
-  }else{
-
-   line=test;
-
-  }
-
- });
-
- if(line)lines.push(line);
-
- return lines;
-}
-
-
-function drawSubtitle(text){
-
- const w=canvas.width;
- const h=canvas.height;
-
- const fontSize=Math.max(
-  23,
-  Math.round(w*.032)
- );
-
- const font=
-  "800 "+fontSize+"px Arial";
-
- const lines=
-  wrapText(
-   text,
-   w*.78,
-   font
-  );
-
- const lineH=fontSize*1.35;
-
- const boxH=
-  lines.length*lineH+38;
-
- const y=h*.70;
-
- ctx.fillStyle="#000b";
-
- roundRect(
-  w*.06,
-  y,
-  w*.88,
-  boxH,
-  18
- );
-
- ctx.fill();
-
- ctx.fillStyle="#fff";
- ctx.font=font;
- ctx.textAlign="center";
-
- lines.forEach((line,i)=>{
-
-  ctx.fillText(
-   line,
-   w/2,
-   y+28+fontSize+i*lineH
-  );
-
- });
-
-}
-
-
-/* =========================
-   DRAW SCENE
-========================= */
-
-function drawScene(progress=0){
-
- resizeCanvas();
-
- ctx.clearRect(
-  0,0,
-  canvas.width,
-  canvas.height
- );
-
- drawBackground(progress);
-
- drawImage(progress);
-
- const scene=scenes[currentScene];
-
- if(!scene){
-
-  ctx.fillStyle="#fff";
-  ctx.font="800 38px Arial";
-  ctx.textAlign="center";
-
-  ctx.fillText(
-   "VidoStudio",
-   canvas.width/2,
-   canvas.height/2
-  );
-
-  $("previewInfo").textContent=
-   "Video hazır deyil";
-
-  return;
-
- }
-
- const w=canvas.width;
- const h=canvas.height;
-
- const glow=
-  ctx.createRadialGradient(
-   w*.82,h*.15,10,
-   w*.82,h*.15,w*.65
-  );
-
- glow.addColorStop(0,"#7048ff35");
- glow.addColorStop(1,"transparent");
-
- ctx.fillStyle=glow;
- ctx.fillRect(0,0,w,h);
-
- ctx.textAlign="left";
-
- ctx.fillStyle="#fff";
-
- ctx.font=
-  "900 "+Math.round(w*.045)+"px Arial";
-
- ctx.fillText(
-  scene.title,
-  w*.08,
-  h*.18
- );
-
- drawSubtitle(scene.text);
-
- $("previewInfo").textContent=
-  "Səhnə "+(currentScene+1)+
-  " / "+scenes.length;
-
- $("timeLabel").textContent=
-  formatTime(
-   getStart(currentScene)+
-   progress*scene.duration
-  );
-
-}
-
-
-function roundRect(x,y,w,h,r){
-
- ctx.beginPath();
-
- ctx.moveTo(x+r,y);
-
- ctx.arcTo(
-  x+w,y,
-  x+w,y+h,
-  r
- );
-
- ctx.arcTo(
-  x+w,y+h,
-  x,y+h,
-  r
- );
-
- ctx.arcTo(
-  x,y+h,
-  x,y,
-  r
- );
-
- ctx.arcTo(
-  x,y,
-  x+w,y,
-  r
- );
-
- ctx.closePath();
-
-}
-
-
-/* =========================
-   TIME
-========================= */
-
-function getStart(index){
-
- let t=0;
-
- for(let i=0;i<index;i++)
-  t+=scenes[i].duration;
-
- return t;
-}
-
-
-function totalDuration(){
-
- return scenes.reduce(
-  (a,b)=>a+b.duration,
-  0
- );
-
-}
-
-
-function formatTime(seconds){
-
- seconds=Math.floor(seconds);
-
- const m=Math.floor(seconds/60);
- const s=seconds%60;
-
- return String(m).padStart(2,"0")+
- ":"+
- String(s).padStart(2,"0");
-
-}
-
-
-/* =========================
-   PREVIEW
-========================= */
-
-function stopPreview(){
-
- playing=false;
-
- cancelAnimationFrame(raf);
-
- $("playBtn").textContent="▶";
-
-}
-
-
-function startPreview(){
-
- if(!scenes.length){
-
-  createScenes();
-
-  if(!scenes.length)return;
-
- }
-
- stopPreview();
-
- playing=true;
-
- $("playBtn").textContent="❚❚";
-
- let start=performance.now();
-
- function loop(now){
-
-  if(!playing)return;
-
-  const elapsed=
-   (now-start)/1000;
-
-  const scene=scenes[currentScene];
-
-  let p=elapsed/scene.duration;
-
-  if(p>=1){
-
-   if(currentScene<
-      scenes.length-1){
-
-    currentScene++;
-
-    start=now;
-
-    renderTimeline();
-
-    p=0;
-
-   }else{
-
-    stopPreview();
-
-    drawScene(1);
-
-    return;
-
-   }
-
-  }
-
-  drawScene(p);
-
-  raf=
-   requestAnimationFrame(loop);
-
- }
-
- raf=
-  requestAnimationFrame(loop);
-
-}
-
-
-/* =========================
-   VIDEO RENDER
-========================= */
-
-async function renderVideo(){
-
- if(!scenes.length)
-  createScenes();
-
- if(!scenes.length){
-
-  status("Ssenari yazın");
-
-  return;
-
- }
-
- stopPreview();
-
- if(!canvas.captureStream ||
-    !window.MediaRecorder){
-
-  status("Brauzer video renderi dəstəkləmir");
-
-  return;
-
- }
-
- const stream=
-  canvas.captureStream(30);
-
- let mime="video/webm;codecs=vp9";
-
- if(!MediaRecorder.isTypeSupported(mime))
-  mime="video/webm;codecs=vp8";
-
- if(!MediaRecorder.isTypeSupported(mime))
-  mime="video/webm";
-
- chunks=[];
-
- recorder=
-  new MediaRecorder(
-   stream,
-   {
-    mimeType:mime,
-    videoBitsPerSecond:7000000
-   }
-  );
-
- recorder.ondataavailable=e=>{
-
-  if(e.data.size)
-   chunks.push(e.data);
-
- };
-
- const stopped=
-  new Promise(resolve=>{
-
-   recorder.onstop=resolve;
-
-  });
-
- recorder.start(500);
-
- const total=totalDuration();
-
- status("Video hazırlanır...");
-
- for(let i=0;i<scenes.length;i++){
-
-  currentScene=i;
-
-  renderTimeline();
-
-  const begin=performance.now();
-
-  const duration=
-   scenes[i].duration;
-
-  while(
-   performance.now()-begin<
-   duration*1000
-  ){
-
-   const p=
-    Math.min(
-     1,
-     (performance.now()-begin)/
-     (duration*1000)
-    );
-
-   drawScene(p);
-
-   const elapsed=
-    getStart(i)+p*duration;
-
-   const percent=
-    Math.round(
-     elapsed/total*100
-    );
-
-   $("progressBar").style.width=
-    percent+"%";
-
-   $("progressText").textContent=
-    "Render "+percent+
-    "% · "+
-    formatTime(elapsed)+
-    " / "+
-    formatTime(total);
-
-   await new Promise(
-    requestAnimationFrame
-   );
-
-  }
-
- }
-
- drawScene(1);
-
- recorder.stop();
-
- await stopped;
-
- renderedBlob=
-  new Blob(
-   chunks,
-   {type:mime}
-  );
-
- $("progressBar").style.width="100%";
-
- $("progressText").textContent=
-  "Video hazırdır · "+
-  formatTime(total);
-
- $("downloadBtn").style.display="block";
- $("shareBtn").style.display="block";
-
- status("Video hazırdır");
-
-}
-
-
-/* =========================
-   DOWNLOAD
-========================= */
-
-function downloadVideo(){
-
- if(!renderedBlob)return;
-
- const url=
-  URL.createObjectURL(
-   renderedBlob
-  );
-
- const a=
-  document.createElement("a");
-
- a.href=url;
-
- a.download=
-  "VidoStudio-"+Date.now()+".webm";
-
- document.body.appendChild(a);
-
- a.click();
-
- a.remove();
-
- setTimeout(
-  ()=>URL.revokeObjectURL(url),
-  5000
- );
-
-}
-
-
-/* =========================
-   SHARE
-========================= */
-
-async function shareVideo(){
-
- if(!renderedBlob)return;
-
- const file=
-  new File(
-   [renderedBlob],
-   "VidoStudio-video.webm",
-   {
-    type:renderedBlob.type
-   }
-  );
-
- if(
-  navigator.share &&
-  (!navigator.canShare ||
-   navigator.canShare({
-    files:[file]
-   }))
- ){
-
-  try{
-
-   await navigator.share({
-    title:"VidoStudio",
-    text:"VidoStudio ilə hazırlanmış video",
-    files:[file]
-   });
-
-  }catch(e){}
-
- }else{
-
-  downloadVideo();
-
- }
-
-}
-
-
-/* =========================
-   IMAGE UPLOAD
-========================= */
-
-$("imageInput").onchange=e=>{
-
- const file=e.target.files[0];
-
- if(!file)return;
-
- $("imageName").textContent=
-  file.name;
-
- const reader=
-  new FileReader();
-
- reader.onload=ev=>{
-
-  const img=new Image();
-
-  img.onload=()=>{
-
-   imageObject=img;
-
-   drawScene(0);
-
-  };
-
-  img.src=ev.target.result;
-
- };
-
- reader.readAsDataURL(file);
-
-};
-
-
-/* =========================
-   DURATION BUTTONS
-========================= */
-
-document
-.querySelectorAll(".duration")
-.forEach(btn=>{
-
- btn.onclick=()=>{
-
-  document
-   .querySelectorAll(".duration")
-   .forEach(x=>
-    x.classList.remove("active")
-   );
-
-  btn.classList.add("active");
-
-  selectedDuration=
-   Number(btn.dataset.duration);
-
-  createScenes();
-
- };
-
-});
-
-
-/* =========================
-   STYLE BUTTONS
-========================= */
-
-document
-.querySelectorAll(".style")
-.forEach(btn=>{
-
- btn.onclick=()=>{
-
-  document
-   .querySelectorAll(".style")
-   .forEach(x=>
-    x.classList.remove("active")
-   );
-
-  btn.classList.add("active");
-
-  selectedStyle=
-   btn.dataset.style;
-
-  drawScene(0);
-
- };
-
-});
-
-
-/* =========================
-   BUTTONS
-========================= */
-
-$("createBtn").onclick=async()=>{
-
- createScenes();
-
- if(!scenes.length){
-
-  status("Əvvəlcə ssenari yazın");
-
-  return;
-
- }
-
- await renderVideo();
-
-};
-
-
-$("previewBtn").onclick=()=>{
-
- if(playing)
-  stopPreview();
- else
-  startPreview();
-
-};
-
-
-$("playBtn").onclick=()=>{
-
- if(playing)
-  stopPreview();
- else
-  startPreview();
-
-};
-
-
-$("nextBtn").onclick=()=>{
-
- if(!scenes.length)return;
-
- currentScene=
-  Math.min(
-   scenes.length-1,
-   currentScene+1
-  );
-
- drawScene(0);
- renderTimeline();
-
-};
-
-
-$("backBtn").onclick=()=>{
-
- if(!scenes.length)return;
-
- currentScene=
-  Math.max(
-   0,
-   currentScene-1
-  );
-
- drawScene(0);
- renderTimeline();
-
-};
-
-
-$("downloadBtn").onclick=
- downloadVideo;
-
-$("shareBtn").onclick=
- shareVideo;
-
-
-$("format").onchange=()=>{
- drawScene(0);
-};
-
-
-/* =========================
-   LIVE SCRIPT
-========================= */
-
-$("script").addEventListener(
- "input",
- ()=>{
-
-  clearTimeout(
-   window.__timer
-  );
-
-  window.__timer=
-   setTimeout(
-    createScenes,
-    500
-   );
-
- }
+const own=
+objects.filter(
+o=>o.authorId==='me'
 );
 
+$('#myObjects').innerHTML=
+own.length
+?
+own.map(o=>`
+<div class="card">
 
-/* =========================
-   START
-========================= */
+<div class="between">
 
-resizeCanvas();
-drawScene(0);
+<b>${esc(o.name)}</b>
 
+<button
+class="danger"
+onclick="window.__deleteObject('${o.id}')">
+
+Sil
+
+</button>
+
+</div>
+
+<div class="small muted" style="margin-top:5px">
+${esc(typeName(o.type))}
+</div>
+
+<div class="coords" style="margin-top:7px">
+${fmtCoord(o.lat,o.lng)}
+</div>
+
+</div>
+`).join('')
+:
+`
+<div class="empty">
+Sizin spatial obyektiniz yoxdur.
+</div>
+`;
+
+}
+
+window.__deleteObject=
+async id=>{
+
+if(!confirm('Bu spatial obyekti silmək istəyirsiniz?'))
+return;
+
+await del('objects',id);
+
+objects=
+objects.filter(
+x=>x.id!==id
+);
+
+renderProfile();
+renderFeed();
+renderMapObjects();
+updateAR();
+
+toast('Silindi');
+
+};
+
+function openCreate(){
+
+fillCreate();
+
+openModal(
+'createModal'
+);
+
+}
+
+function fillCreate(){
+
+if(
+draft.lat==null&&
+userLat!=null
+){
+
+draft.lat=userLat;
+draft.lng=userLng;
+
+}
+
+$('#selectedCoords').textContent=
+draft.lat!=null
+?
+`${fmtCoord(draft.lat,draft.lng)}${draft.address?' · '+draft.address:''}`
+:
+'Koordinat seçilməyib';
+
+$('#fUsername').value=
+profile.username;
+
+$('#fPhone').value=
+profile.phone||'';
+
+$('#fWhatsApp').value=
+profile.whatsapp||'';
+
+$('#mediaPreview').innerHTML='';
+
+selectedFiles=[];
+
+}
+
+function previewFiles(files){
+
+if(files.length)
+selectedFiles=[
+...selectedFiles,
+...files
+];
+
+$('#mediaPreview').innerHTML=
+selectedFiles.map((f,i)=>{
+
+const u=
+URL.createObjectURL(f);
+
+return `
+<div style="position:relative">
+
+<${
+f.type.startsWith('video')
+?'video controls'
+:'img'
+}
+src="${u}"
+style="
+width:100%;
+aspect-ratio:1;
+object-fit:cover;
+border-radius:12px
+">
+
+</${
+f.type.startsWith('video')
+?'video'
+:'img'
+}>
+
+<button
+type="button"
+onclick="window.__removeSelected(${i})"
+style="
+position:absolute;
+right:4px;
+top:4px;
+width:28px;
+height:28px;
+border-radius:50%;
+background:#000b
+">
+
+×
+</button>
+
+</div>
+`;
+
+})
+.join('');
+
+}
+
+window.__removeSelected=i=>{
+
+selectedFiles.splice(i,1);
+
+previewFiles([]);
+
+};
+
+async function placeObject(e){
+
+e.preventDefault();
+
+const name=
+$('#fName')
+.value
+.trim();
+
+if(!name)
+return toast('Başlıq yazın');
+
+if(draft.lat==null){
+
+if(userLat!=null){
+
+draft.lat=userLat;
+draft.lng=userLng;
+
+}else{
+
+return toast(
+'Xəritədən və ya öz koordinatınızdan məkan seçin'
+);
+
+}
+
+}
+
+if(!$('#fConsent').checked)
+return toast(
+'İcazə təsdiqini işarələyin'
+);
+
+const media=[];
+
+for(const f of selectedFiles){
+
+try{
+
+media.push({
+id:uid(),
+name:f.name,
+type:f.type,
+size:f.size,
+data:await fileToData(f)
+});
+
+}catch(e){}
+
+}
+
+const o={
+id:uid(),
+type:$('#fType').value,
+name,
+username:
+$('#fUsername').value.trim()||
+profile.username,
+
+bio:
+$('#fBio').value.trim(),
+
+article:
+$('#fArticle').value.trim(),
+
+phone:
+$('#fPhone').value.trim(),
+
+whatsapp:
+$('#fWhatsApp').value.trim(),
+
+social:
+$('#fSocial').value.trim(),
+
+lat:draft.lat,
+lng:draft.lng,
+address:draft.address,
+
+radius:
+Number($('#fRadius').value),
+
+size:'normal',
+
+public:
+$('#fPublic').checked,
+
+authorId:'me',
+author:profile.name,
+
+media,
+
+createdAt:Date.now()
+};
+
+await put(
+'objects',
+o
+);
+
+objects.push(o);
+
+closeModal(
+'createModal'
+);
+
+selectedFiles=[];
+
+draft={
+lat:null,
+lng:null,
+address:''
+};
+
+renderFeed();
+renderProfile();
+renderMapObjects();
+updateAR();
+
+toast(
+'Paylaşım dərhal yerləşdirildi'
+);
+
+}
+
+function openDetail(o){
+
+const media=
+(o.media||[])
+.map(m=>{
+
+const u=
+objectMediaURL(m);
+
+return m.type?.startsWith('video')
+?
+`
+<video
+class="mediaHero"
+src="${u}"
+controls
+playsinline>
+</video>
+`
+:
+`
+<img
+class="mediaHero"
+src="${u}"
+alt="">
+`;
+
+})
+.join('');
+
+const distText=
+userLat!=null
+?
+`${Math.round(dist(userLat,userLng,o.lat,o.lng))} m uzaqda`
+:
+'Koordinat: '+fmtCoord(o.lat,o.lng);
+
+$('#detailTitle').textContent=
+o.name;
+
+$('#detailBody').innerHTML=
+`
+${media?`<div style="display:grid;gap:8px">${media}</div>`:''}
+
+<div class="card" style="margin-top:12px">
+
+<div class="row">
+
+<div class="avatar">
+${esc((o.name||'A')[0])}
+</div>
+
+<div>
+
+<b>${esc(o.name)}</b>
+
+<div class="small muted">
+${esc(o.username||'')} · ${esc(typeName(o.type))}
+</div>
+
+</div>
+
+</div>
+
+<p style="line-height:1.5">
+${esc(o.bio||'')}
+</p>
+
+${
+o.article
+?
+`
+<p style="line-height:1.55;color:#cbd5e1">
+${esc(o.article)}
+</p>
+`
+:''
+}
+
+<div class="coords">
+${fmtCoord(o.lat,o.lng)}
+</div>
+
+<div class="small muted" style="margin-top:6px">
+${esc(o.address||'')} · ${distText}
+</div>
+
+<div class="row" style="margin-top:12px">
+
+<button
+class="primary"
+onclick="window.__focusObject('${o.id}')"
+style="flex:1">
+
+Xəritədə göstər
+
+</button>
+
+${
+o.social
+?
+`
+<button
+class="ghost"
+onclick="window.open('${esc(o.social)}','_blank','noopener')">
+
+Link
+
+</button>
+`
+:''
+}
+
+</div>
+
+</div>
+`;
+
+openModal(
+'detailModal'
+);
+
+}
+
+window.__focusObject=id=>{
+
+const o=
+objects.find(
+x=>x.id===id
+);
+
+if(!o)
+return;
+
+closeModal(
+'detailModal'
+);
+
+selectDraft(
+o.lat,
+o.lng,
+o.address||''
+);
+
+switchView(
+'map'
+);
+
+};
+
+function fillProfileForm(){
+
+const p=profile;
+
+$('#pName').value=
+p.name||'';
+
+$('#pUsername').value=
+p.username||'';
+
+$('#pBio').value=
+p.bio||'';
+
+$('#pPhone').value=
+p.phone||'';
+
+$('#pWhatsapp').value=
+p.whatsapp||'';
+
+$('#pSocial').value=
+p.social||'';
+
+$('#langSelect').value=
+lang;
+
+$('#avatarPreview').src=
+p.avatar||'';
+
+$('#avatarPreview').style.display=
+p.avatar
+?
+'block'
+:
+'none';
+
+}
+
+async function saveProfile(e){
+
+e.preventDefault();
+
+profile={
+...profile,
+
+name:
+$('#pName').value.trim()||
+'ARWORLD istifadəçisi',
+
+username:
+$('#pUsername').value.trim()||
+'@arworld',
+
+bio:
+$('#pBio').value.trim(),
+
+phone:
+$('#pPhone').value.trim(),
+
+whatsapp:
+$('#pWhatsapp').value.trim(),
+
+social:
+$('#pSocial').value.trim()
+};
+
+await put(
+'profile',
+profile
+);
+
+lang=
+$('#langSelect').value;
+
+applyLang();
+
+renderProfile();
+
+closeModal(
+'profileEditModal'
+);
+
+toast(
+'Profil yadda saxlanıldı'
+);
+
+}
+
+function openLang(){
+
+const names={
+az:'Azərbaycan',
+en:'English',
+ru:'Русский',
+tr:'Türkçe',
+de:'Deutsch'
+};
+
+$('#languageList').innerHTML=
+Object.entries(names)
+.map(([k,v])=>`
+<button
+class="ghost"
+data-lang="${k}"
+style="
+width:100%;
+justify-content:space-between
+">
+
+<span>${v}</span>
+
+<span>
+${k===lang?'✓':''}
+</span>
+
+</button>
+`)
+.join('');
+
+openModal(
+'languageModal'
+);
+
+}
+
+function initEvents(){
+
+applyLang();
+
+$$('[data-view]')
+.forEach(b=>
+b.onclick=()=>
+switchView(b.dataset.view)
+);
+
+$$('[data-close]')
+.forEach(b=>
+b.onclick=()=>
+closeModal(b.dataset.close)
+);
+
+$('#addBtn').onclick=
+openCreate;
+
+$('#myPlaceBtn').onclick=()=>{
+
+if(userLat==null){
+
+startGPS();
+
+toast(
+'GPS gözlənilir…'
+);
+
+return;
+
+}
+
+selectDraft(
+userLat,
+userLng,
+'Mənim yerim'
+);
+
+openCreate();
+
+};
+
+$('#mapPickBtn').onclick=
+()=>switchView('map');
+
+$('#openMapPicker').onclick=()=>{
+
+closeModal(
+'createModal'
+);
+
+switchView(
+'map'
+);
+
+};
+
+$('#useMyLocation').onclick=()=>{
+
+if(userLat==null){
+
+startGPS();
+
+toast(
+'GPS gözlənilir…'
+);
+
+return;
+
+}
+
+selectDraft(
+userLat,
+userLng,
+'Mənim yerim'
+);
+
+toast(
+'Öz koordinatınız seçildi'
+);
+
+};
+
+$('#mapBack').onclick=
+()=>switchView('ar');
+
+$('#mapMyBtn').onclick=()=>{
+
+if(userLat!=null){
+
+map.setView(
+[userLat,userLng],
+17
+);
+
+selectDraft(
+userLat,
+userLng,
+'Mənim yerim'
+);
+
+}else{
+
+startGPS();
+
+toast(
+'GPS gözlənilir…'
+);
+
+}
+
+};
+
+$('#arSearchBtn').onclick=
+()=>
+runSearch(
+$('#arSearch').value,
+'ar'
+);
+
+$('#arSearch')
+.addEventListener(
+'keydown',
+e=>{
+if(e.key==='Enter')
+runSearch(
+e.target.value,
+'ar'
+);
+}
+);
+
+$('#mapSearchBtn').onclick=()=>{
+
+if(!$('#mapSearchResults')){
+
+const d=
+document.createElement('div');
+
+d.id='mapSearchResults';
+d.className=
+'searchPanel show';
+
+d.style.top='130px';
+d.style.maxHeight='45vh';
+
+$('#mapView').appendChild(d);
+
+}
+
+runSearch(
+$('#mapSearch').value,
+'map'
+);
+
+};
+
+$('#mapSearch')
+.addEventListener(
+'keydown',
+e=>{
+if(e.key==='Enter')
+$('#mapSearchBtn').click();
+}
+);
+
+$('#langBtn').onclick=
+openLang;
+
+$('#languageList').onclick=e=>{
+
+const b=
+e.target.closest(
+'[data-lang]'
+);
+
+if(!b)
+return;
+
+lang=b.dataset.lang;
+
+applyLang();
+
+closeModal(
+'languageModal'
+);
+
+toast(
+'Dil dəyişdirildi'
+);
+
+};
+
+$('#fMedia').onchange=e=>
+previewFiles(
+[...e.target.files]
+);
+
+$('#fCamera').onchange=e=>
+previewFiles(
+[...e.target.files]
+);
+
+$('#createForm').onsubmit=
+placeObject;
+
+$('#editProfileBtn').onclick=()=>{
+
+fillProfileForm();
+
+openModal(
+'profileEditModal'
+);
+
+};
+
+$('#profileForm').onsubmit=
+saveProfile;
+
+$('#avatarInput').onchange=
+async e=>{
+
+const f=e.target.files[0];
+
+if(!f)
+return;
+
+profile.avatar=
+await fileToData(f);
+
+$('#avatarPreview').src=
+profile.avatar;
+
+$('#avatarPreview').style.display=
+'block';
+
+};
+
+$('#feedRefresh').onclick=()=>{
+
+renderFeed();
+renderMapObjects();
+updateAR();
+
+toast(
+'Yeniləndi'
+);
+
+};
+
+$('#recordBtn').onclick=
+openRecorder;
+
+$('#startRecord').onclick=
+startRecording;
+
+$('#stopRecord').onclick=
+stopRecording;
+
+}
+
+async function openRecorder(){
+
+if(!navigator.mediaDevices?.getUserMedia)
+return toast(
+'Kamera mövcud deyil'
+);
+
+try{
+
+recStream=
+await navigator.mediaDevices.getUserMedia({
+
+video:{
+facingMode:{ideal:'environment'},
+width:{ideal:1280},
+height:{ideal:720}
+},
+
+audio:true
+
+});
+
+$('#recordPreview').srcObject=
+recStream;
+
+openModal(
+'recordModal'
+);
+
+}catch(e){
+
+toast(
+'Kamera/mikrofon icazəsi lazımdır'
+);
+
+}
+
+}
+
+function startRecording(){
+
+if(!recStream)
+return;
+
+recordChunks=[];
+
+const mime=[
+'video/webm;codecs=vp9,opus',
+'video/webm;codecs=vp8,opus',
+'video/webm'
+]
+.find(x=>MediaRecorder.isTypeSupported(x));
+
+recorder=
+new MediaRecorder(
+recStream,
+mime
+?
+{mimeType:mime}
+:
+undefined
+);
+
+recorder.ondataavailable=
+e=>{
+if(e.data.size)
+recordChunks.push(e.data);
+};
+
+recorder.onstop=()=>{
+
+const blob=
+new Blob(
+recordChunks,
+{
+type:
+recorder.mimeType||
+'video/webm'
+}
+);
+
+const f=
+new File(
+[blob],
+`arworld_${Date.now()}.webm`,
+{
+type:blob.type
+}
+);
+
+selectedFiles.push(f);
+
+previewFiles([]);
+
+toast(
+'Video əlavə olundu'
+);
+
+};
+
+recorder.start(250);
+
+$('#recordState').textContent=
+'Yazılır…';
+
+toast(
+'Video yazılır'
+);
+
+}
+
+function stopRecording(){
+
+if(
+recorder&&
+recorder.state!=='inactive'
+)
+recorder.stop();
+
+if(recStream){
+
+recStream
+.getTracks()
+.forEach(t=>t.stop());
+
+recStream=null;
+
+}
+
+closeModal(
+'recordModal'
+);
+
+}
+
+function boot(){
+
+const b=$('#boot');
+
+setTimeout(
+()=>b.classList.add('hide'),
+280
+);
+
+setTimeout(
+()=>$('#boot').remove(),
+550
+);
+
+}
+
+window.addEventListener(
+'resize',
+()=>{
+
+if(map)
+map.invalidateSize();
+
+updateAR();
+
+}
+);
+
+window.addEventListener(
+'popstate',
+()=>switchView('ar')
+);
+
+document.addEventListener(
+'visibilitychange',
+()=>{
+
+if(!document.hidden)
+updateAR();
+
+}
+);
+
+(async()=>{
+
+initEvents();
+
+$('#bootText').textContent=
+'Sürətli başlanğıc…';
+
+try{
+
+await initDB();
+await loadData();
+
+}catch(e){
+
+toast(
+'Yaddaş açılmadı'
+);
+
+}
+
+renderFeed();
+renderProfile();
+
+boot();
+
+startGPS();
+
+setTimeout(
+startCamera,
+120
+);
+
+startCompass();
+
+setTimeout(
+()=>updateAR(),
+180
+);
+
+})();
+
+})();
 </script>
 
 </body>
-  </html>
+ </html>
