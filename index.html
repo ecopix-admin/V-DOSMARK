@@ -1,5910 +1,1459 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07111f">
-<meta name="description" content="Private universal P2P encrypted translation chat">
-
-<title>VAULT CHAT — Private P2P</title>
-
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
-
-<style>
-:root{
-  --bg:#06101d;
-  --panel:#0b1726;
-  --panel2:#101f31;
-  --panel3:#15283d;
-  --line:rgba(255,255,255,.08);
-  --text:#eef6ff;
-  --muted:#91a6ba;
-  --blue:#1687ff;
-  --blue2:#42a5ff;
-  --green:#20d68b;
-  --red:#ff5571;
-  --yellow:#ffc857;
-  --bubble:#10283f;
-  --bubble2:#087df0;
-  --shadow:0 18px 60px rgba(0,0,0,.38);
-}
-
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
-
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Inter,Roboto,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-}
-
-button,input,textarea,select{
-  font:inherit;
-}
-
-button{
-  border:0;
-  cursor:pointer;
-}
-
-.app{
-  width:100%;
-  height:100dvh;
-  display:flex;
-  overflow:hidden;
-  background:
-    radial-gradient(circle at 20% 0%,rgba(22,135,255,.10),transparent 35%),
-    radial-gradient(circle at 100% 100%,rgba(32,214,139,.06),transparent 30%),
-    var(--bg);
-}
-
-/* SIDEBAR */
-
-.sidebar{
-  width:360px;
-  min-width:360px;
-  height:100%;
-  border-right:1px solid var(--line);
-  background:rgba(7,17,29,.94);
-  display:flex;
-  flex-direction:column;
-  z-index:5;
-}
-
-.brand{
-  height:74px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:0 18px;
-  border-bottom:1px solid var(--line);
-}
-
-.logo{
-  width:42px;
-  height:42px;
-  border-radius:14px;
-  background:linear-gradient(145deg,#1592ff,#0754bb);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 8px 30px rgba(0,120,255,.25);
-  font-size:21px;
-  font-weight:900;
-}
-
-.brand-title{
-  font-weight:900;
-  font-size:17px;
-  letter-spacing:.4px;
-}
-
-.brand-sub{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:2px;
-}
-
-.profile-card{
-  margin:14px;
-  padding:13px;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
-}
-
-.profile-row{
-  display:flex;
-  align-items:center;
-  gap:11px;
-}
-
-.avatar{
-  width:44px;
-  height:44px;
-  border-radius:15px;
-  background:linear-gradient(145deg,#194a72,#0b2945);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:800;
-  overflow:hidden;
-  flex-shrink:0;
-}
-
-.avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.profile-name{
-  font-weight:800;
-}
-
-.profile-status{
-  font-size:11px;
-  color:var(--green);
-  margin-top:3px;
-}
-
-.id-mini{
-  margin-top:10px;
-  padding:8px 10px;
-  border-radius:10px;
-  background:#07111d;
-  color:#87b8df;
-  font-family:monospace;
-  font-size:11px;
-  word-break:break-all;
-}
-
-.search{
-  margin:0 14px 12px;
-  position:relative;
-}
-
-.search input{
-  width:100%;
-  height:45px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:#091522;
-  color:var(--text);
-  outline:none;
-  padding:0 14px 0 40px;
-}
-
-.search input:focus{
-  border-color:rgba(22,135,255,.55);
-}
-
-.search-icon{
-  position:absolute;
-  left:14px;
-  top:13px;
-  color:var(--muted);
-}
-
-.contacts{
-  flex:1;
-  overflow:auto;
-  padding:0 10px 10px;
-}
-
-.contact{
-  display:flex;
-  align-items:center;
-  gap:11px;
-  padding:11px;
-  border-radius:15px;
-  margin-bottom:4px;
-  transition:.18s;
-}
-
-.contact:hover{
-  background:rgba(255,255,255,.04);
-}
-
-.contact.active{
-  background:linear-gradient(90deg,rgba(22,135,255,.17),rgba(22,135,255,.05));
-}
-
-.contact-main{
-  min-width:0;
-  flex:1;
-}
-
-.contact-name{
-  font-size:14px;
-  font-weight:750;
-}
-
-.contact-preview{
-  color:var(--muted);
-  font-size:12px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  margin-top:3px;
-}
-
-.contact-time{
-  color:#6e8499;
-  font-size:10px;
-}
-
-.sidebar-bottom{
-  padding:12px;
-  border-top:1px solid var(--line);
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:7px;
-}
-
-.side-btn{
-  min-height:44px;
-  border-radius:13px;
-  background:#0d1d2d;
-  color:#a9bdd0;
-  border:1px solid var(--line);
-}
-
-/* CHAT */
-
-.chat{
-  flex:1;
-  min-width:0;
-  height:100%;
-  display:flex;
-  flex-direction:column;
-}
-
-.chat-header{
-  height:74px;
-  min-height:74px;
-  border-bottom:1px solid var(--line);
-  background:rgba(8,18,30,.84);
-  backdrop-filter:blur(18px);
-  display:flex;
-  align-items:center;
-  padding:0 18px;
-  gap:12px;
-  z-index:3;
-}
-
-.back-btn{
-  display:none;
-  width:42px;
-  height:42px;
-  border-radius:13px;
-  background:#102237;
-  color:white;
-}
-
-.chat-user{
-  flex:1;
-  min-width:0;
-}
-
-.chat-user-name{
-  font-weight:850;
-}
-
-.chat-user-status{
-  color:var(--muted);
-  font-size:11px;
-  margin-top:3px;
-}
-
-.header-actions{
-  display:flex;
-  gap:7px;
-}
-
-.icon-btn{
-  width:42px;
-  height:42px;
-  border-radius:13px;
-  background:#0d1d2d;
-  color:#bfd1e2;
-  border:1px solid var(--line);
-  font-size:17px;
-}
-
-.security-bar{
-  min-height:32px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
-  padding:5px 12px;
-  background:rgba(32,214,139,.055);
-  border-bottom:1px solid rgba(32,214,139,.08);
-  color:#75dcae;
-  font-size:10px;
-  text-align:center;
-}
-
-.messages{
-  flex:1;
-  overflow:auto;
-  padding:20px clamp(12px,5vw,70px);
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-
-.empty{
-  margin:auto;
-  max-width:480px;
-  text-align:center;
-  color:var(--muted);
-}
-
-.empty-logo{
-  width:74px;
-  height:74px;
-  margin:0 auto 18px;
-  border-radius:25px;
-  background:linear-gradient(145deg,#138aff,#064da9);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px;
-  box-shadow:0 20px 70px rgba(0,120,255,.22);
-}
-
-.empty h2{
-  color:white;
-  margin:0 0 8px;
-}
-
-.empty p{
-  line-height:1.6;
-  font-size:13px;
-}
-
-.message{
-  max-width:min(720px,84%);
-  display:flex;
-  flex-direction:column;
-}
-
-.message.me{
-  align-self:flex-end;
-  align-items:flex-end;
-}
-
-.message.them{
-  align-self:flex-start;
-  align-items:flex-start;
-}
-
-.bubble{
-  position:relative;
-  padding:10px 12px 7px;
-  border-radius:17px;
-  background:var(--bubble);
-  border:1px solid rgba(255,255,255,.055);
-  box-shadow:0 6px 18px rgba(0,0,0,.12);
-  word-wrap:break-word;
-}
-
-.me .bubble{
-  background:linear-gradient(145deg,#0c7de9,#0968c6);
-  border-bottom-right-radius:5px;
-}
-
-.them .bubble{
-  border-bottom-left-radius:5px;
-}
-
-.original{
-  white-space:pre-wrap;
-  line-height:1.45;
-  font-size:14px;
-}
-
-.translation{
-  margin-top:7px;
-  padding-top:7px;
-  border-top:1px solid rgba(255,255,255,.12);
-  color:#aee1ff;
-  white-space:pre-wrap;
-  line-height:1.42;
-  font-size:13px;
-}
-
-.translation-label{
-  font-size:9px;
-  color:#78b8e5;
-  text-transform:uppercase;
-  letter-spacing:.5px;
-  margin-bottom:3px;
-}
-
-.message-meta{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  color:#7890a4;
-  font-size:9px;
-  margin:3px 5px 5px;
-}
-
-.me .message-meta{
-  color:#77b8e9;
-}
-
-.check{
-  color:#6ee6bc;
-  font-weight:bold;
-}
-
-.date-separator{
-  align-self:center;
-  margin:13px 0;
-  padding:5px 10px;
-  background:#0d1b2a;
-  border:1px solid var(--line);
-  border-radius:20px;
-  color:#70869a;
-  font-size:10px;
-}
-
-.typing{
-  min-height:23px;
-  padding:0 16px 5px;
-  color:#7190a7;
-  font-size:11px;
-}
-
-.composer{
-  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
-  background:rgba(7,17,29,.92);
-  border-top:1px solid var(--line);
-}
-
-.composer-row{
-  max-width:1000px;
-  margin:auto;
-  display:flex;
-  gap:7px;
-  align-items:flex-end;
-}
-
-.compose-tools{
-  display:flex;
-  gap:5px;
-}
-
-.tool{
-  width:42px;
-  height:42px;
-  border-radius:13px;
-  background:#0d1d2d;
-  color:#abc1d4;
-  border:1px solid var(--line);
-  flex-shrink:0;
-}
-
-.text-wrap{
-  flex:1;
-  position:relative;
-}
-
-textarea{
-  width:100%;
-  min-height:44px;
-  max-height:140px;
-  resize:none;
-  border:1px solid var(--line);
-  border-radius:15px;
-  outline:none;
-  background:#0b1827;
-  color:white;
-  padding:12px 45px 11px 13px;
-  line-height:1.4;
-}
-
-textarea:focus{
-  border-color:rgba(22,135,255,.6);
-}
-
-.send{
-  width:44px;
-  height:44px;
-  border-radius:14px;
-  background:linear-gradient(145deg,#168cff,#0764c8);
-  color:white;
-  font-size:17px;
-  box-shadow:0 7px 24px rgba(0,110,255,.24);
-}
-
-.emoji-panel{
-  display:none;
-  padding:10px;
-  margin-bottom:7px;
-  border:1px solid var(--line);
-  border-radius:15px;
-  background:#0c1b2a;
-  grid-template-columns:repeat(8,1fr);
-  gap:5px;
-}
-
-.emoji-panel.open{
-  display:grid;
-}
-
-.emoji{
-  height:35px;
-  background:transparent;
-  border-radius:8px;
-  font-size:21px;
-}
-
-/* MODAL */
-
-.overlay{
-  position:fixed;
-  inset:0;
-  z-index:50;
-  background:rgba(0,0,0,.68);
-  backdrop-filter:blur(12px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:15px;
-}
-
-.overlay.open{
-  display:flex;
-}
-
-.modal{
-  width:min(560px,100%);
-  max-height:min(90dvh,760px);
-  overflow:auto;
-  border:1px solid var(--line);
-  border-radius:23px;
-  background:#0a1725;
-  box-shadow:var(--shadow);
-}
-
-.modal-head{
-  display:flex;
-  align-items:center;
-  padding:17px;
-  border-bottom:1px solid var(--line);
-}
-
-.modal-title{
-  flex:1;
-  font-weight:850;
-}
-
-.close{
-  width:38px;
-  height:38px;
-  border-radius:11px;
-  background:#132438;
-  color:#c9d8e6;
-}
-
-.modal-body{
-  padding:17px;
-}
-
-.setting{
-  padding:14px 0;
-  border-bottom:1px solid var(--line);
-}
-
-.setting:last-child{
-  border-bottom:0;
-}
-
-.setting-title{
-  font-weight:750;
-  font-size:13px;
-}
-
-.setting-desc{
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.5;
-  margin-top:4px;
-}
-
-.toggle-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:15px;
-}
-
-.switch{
-  position:relative;
-  width:48px;
-  height:28px;
-  flex-shrink:0;
-}
-
-.switch input{
-  opacity:0;
-  width:0;
-  height:0;
-}
-
-.slider{
-  position:absolute;
-  inset:0;
-  border-radius:20px;
-  background:#203245;
-  transition:.2s;
-}
-
-.slider:before{
-  content:"";
-  position:absolute;
-  width:20px;
-  height:20px;
-  left:4px;
-  top:4px;
-  border-radius:50%;
-  background:#9eb2c4;
-  transition:.2s;
-}
-
-.switch input:checked+.slider{
-  background:#087ce8;
-}
-
-.switch input:checked+.slider:before{
-  transform:translateX(20px);
-  background:white;
-}
-
-.input{
-  width:100%;
-  height:45px;
-  margin-top:8px;
-  padding:0 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#07131f;
-  color:white;
-  outline:none;
-}
-
-.select{
-  width:100%;
-  height:44px;
-  margin-top:8px;
-  padding:0 10px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#07131f;
-  color:white;
-}
-
-.primary{
-  width:100%;
-  min-height:45px;
-  border-radius:13px;
-  background:linear-gradient(145deg,#168cff,#0764c8);
-  color:white;
-  font-weight:750;
-  margin-top:10px;
-}
-
-.secondary{
-  width:100%;
-  min-height:44px;
-  border-radius:13px;
-  background:#102235;
-  color:#c3d4e4;
-  border:1px solid var(--line);
-  margin-top:8px;
-}
-
-.danger{
-  background:rgba(255,85,113,.10);
-  border-color:rgba(255,85,113,.2);
-  color:#ff8297;
-}
-
-.fingerprint{
-  padding:13px;
-  margin-top:9px;
-  border-radius:13px;
-  background:#040c14;
-  border:1px solid rgba(32,214,139,.18);
-  font-family:monospace;
-  font-size:11px;
-  line-height:1.7;
-  word-break:break-all;
-  color:#6fe3b2;
-}
-
-.warning{
-  padding:11px;
-  border-radius:12px;
-  background:rgba(255,200,87,.07);
-  border:1px solid rgba(255,200,87,.15);
-  color:#e6c574;
-  font-size:11px;
-  line-height:1.5;
-  margin-top:9px;
-}
-
-.success{
-  padding:11px;
-  border-radius:12px;
-  background:rgba(32,214,139,.07);
-  border:1px solid rgba(32,214,139,.14);
-  color:#70dcae;
-  font-size:11px;
-  line-height:1.5;
-}
-
-#qrBox{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
-  background:white;
-  border-radius:16px;
-  margin:10px auto;
-  width:max-content;
-}
-
-#qrBox img,#qrBox table{
-  max-width:260px;
-}
-
-#reader{
-  width:100%;
-  overflow:hidden;
-  border-radius:15px;
-}
-
-.toast-area{
-  position:fixed;
-  top:15px;
-  right:15px;
-  z-index:100;
-  width:min(360px,calc(100% - 30px));
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  pointer-events:none;
-}
-
-.toast{
-  padding:12px 14px;
-  border-radius:14px;
-  background:#112337;
-  border:1px solid var(--line);
-  box-shadow:0 12px 40px rgba(0,0,0,.3);
-  color:#e9f5ff;
-  font-size:12px;
-  animation:toastIn .22s ease;
-}
-
-.toast.error{
-  border-color:rgba(255,85,113,.3);
-}
-
-.toast.success{
-  border-color:rgba(32,214,139,.3);
-}
-
-@keyframes toastIn{
-  from{transform:translateY(-10px);opacity:0}
-  to{transform:translateY(0);opacity:1}
-}
-
-.connection-pill{
-  padding:5px 9px;
-  border-radius:20px;
-  background:#112335;
-  font-size:10px;
-  color:#9eb2c4;
-  white-space:nowrap;
-}
-
-.connection-pill.online{
-  color:#65dfad;
-  background:rgba(32,214,139,.08);
-}
-
-.connection-pill.secure{
-  color:#62dca8;
-}
-
-.private-pill{
-  padding:5px 9px;
-  border-radius:20px;
-  background:rgba(32,214,139,.07);
-  color:#68dbaa;
-  font-size:9px;
-  font-weight:800;
-}
-
-.file-card{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:210px;
-}
-
-.file-icon{
-  width:40px;
-  height:40px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(255,255,255,.08);
-}
-
-.file-name{
-  font-size:12px;
-  font-weight:700;
-  word-break:break-all;
-}
-
-.file-size{
-  color:#9fc1dd;
-  font-size:10px;
-  margin-top:2px;
-}
-
-.image-message{
-  max-width:260px;
-  max-height:320px;
-  display:block;
-  border-radius:12px;
-  cursor:pointer;
-}
-
-.audio-player{
-  width:230px;
-}
-
-.reply-box{
-  display:none;
-  margin-bottom:7px;
-  padding:8px 11px;
-  border-left:3px solid var(--blue);
-  background:#0c1b2a;
-  border-radius:9px;
-}
-
-.reply-box.open{
-  display:block;
-}
-
-.reply-name{
-  color:#59aaff;
-  font-size:10px;
-  font-weight:800;
-}
-
-.reply-text{
-  color:#90a5b8;
-  font-size:11px;
-  margin-top:2px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.message-actions{
-  display:none;
-  gap:4px;
-  margin-top:3px;
-}
-
-.message:hover .message-actions{
-  display:flex;
-}
-
-.message-actions button{
-  font-size:10px;
-  padding:4px 7px;
-  border-radius:7px;
-  background:#0b1826;
-  color:#8fa6ba;
-}
-
-.drop-zone{
-  position:fixed;
-  inset:0;
-  z-index:40;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(5,14,25,.85);
-  backdrop-filter:blur(10px);
-}
-
-.drop-zone.active{
-  display:flex;
-}
-
-.drop-box{
-  width:min(420px,90%);
-  padding:40px;
-  text-align:center;
-  border:2px dashed #1687ff;
-  border-radius:25px;
-  color:#7bbcff;
-}
-
-.camera-video{
-  width:100%;
-  max-height:55dvh;
-  object-fit:cover;
-  background:#000;
-  border-radius:15px;
-}
-
-.camera-controls{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
-
-.camera-controls button{
-  flex:1;
-  min-height:45px;
-  border-radius:12px;
-  background:#12263b;
-  color:white;
-}
-
-@media(max-width:800px){
-  .sidebar{
-    position:absolute;
-    inset:0;
-    width:100%;
-    min-width:0;
-    transform:translateX(0);
-    transition:.25s;
-  }
-
-  .chat{
-    width:100%;
-  }
-
-  body.chat-open .sidebar{
-    transform:translateX(-100%);
-  }
-
-  .back-btn{
-    display:block;
-  }
-
-  .message{
-    max-width:90%;
-  }
-
-  .header-actions .desktop-only{
-    display:none;
-  }
-}
-
-@media(max-width:500px){
-  .brand{
-    height:66px;
-  }
-
-  .chat-header{
-    height:66px;
-    min-height:66px;
-    padding:0 9px;
-  }
-
-  .security-bar{
-    font-size:9px;
-  }
-
-  .messages{
-    padding:13px 9px;
-  }
-
-  .compose-tools .optional{
-    display:none;
-  }
-
-  .composer{
-    padding-left:8px;
-    padding-right:8px;
-  }
-
-  .header-actions{
-    gap:3px;
-  }
-
-  .icon-btn{
-    width:38px;
-    height:38px;
-  }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ARWORLD - Spatial AR & Hyper-Local Social Ecosystem</title>
+
+    <!-- 1. External Production Libraries (CDN) -->
+    <!-- Leaflet CSS & JS for Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- A-Frame & AR.js for Spatial WebAR -->
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+
+    <style>
+        /* ==========================================================================
+           091 - MOBILE-FIRST GLASSMORPHISM UI / UX & DESIGN SYSTEM
+           ========================================================================== */
+        :root {
+            --bg-primary: #0a0f1d;
+            --bg-glass: rgba(15, 23, 42, 0.75);
+            --bg-glass-card: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-color: #06b6d4;
+            --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --accent-danger: #ef4444;
+            --accent-success: #10b981;
+            --border-glass: rgba(255, 255, 255, 0.12);
+            --radius-main: 18px;
+            --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .light-theme {
+            --bg-primary: #f1f5f9;
+            --bg-glass: rgba(255, 255, 255, 0.82);
+            --bg-glass-card: rgba(255, 255, 255, 0.9);
+            --text-main: #0f172a;
+            --text-sub: #475569;
+            --border-glass: rgba(0, 0, 0, 0.08);
+            --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+        }
+
+        /* Fullscreen View Containers */
+        .view-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 70px);
+            display: none;
+            z-index: 1;
+        }
+
+        .view-container.active {
+            display: block;
+        }
+
+        #map-view { z-index: 2; }
+        #ar-view { z-index: 3; background: transparent; }
+        #feed-view { z-index: 2; overflow-y: auto; padding: 16px; padding-bottom: 90px; }
+        #notifications-view { z-index: 2; overflow-y: auto; padding: 16px; padding-bottom: 90px; }
+        #profile-view { z-index: 2; overflow-y: auto; padding: 16px; padding-bottom: 90px; }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Dynamic Glass UI Overlay Elements */
+        .glass-panel {
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-main);
+            box-shadow: var(--shadow-glass);
+        }
+
+        /* Top Bar Controls */
+        .top-nav {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 100;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 8px 14px;
+            gap: 8px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .icon-btn {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            font-size: 16px;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+        }
+
+        /* Scanning Radius Controls */
+        .radius-selector {
+            position: absolute;
+            top: 64px;
+            left: 12px;
+            right: 12px;
+            z-index: 99;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+
+        .radius-chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-sub);
+            cursor: pointer;
+        }
+
+        .radius-chip.active {
+            background: var(--accent-gradient);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-radius: 24px 24px 0 0;
+            border-top: 1px solid var(--border-glass);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-sub);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .nav-item.active {
+            color: #06b6d4;
+            transform: translateY(-2px);
+        }
+
+        .add-btn-wrapper {
+            position: relative;
+            top: -16px;
+        }
+
+        .add-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+            border: 3px solid var(--bg-primary);
+        }
+
+        /* Post Creation & Action Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-height: 90vh;
+            border-radius: 28px 28px 0 0;
+            padding: 24px;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            background: var(--bg-glass-card);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            outline: none;
+            font-size: 14px;
+        }
+
+        textarea.form-control {
+            resize: none;
+            height: 80px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            background: var(--accent-gradient);
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        /* Media Upload & Camera Preview Options */
+        .media-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .media-option-card {
+            border: 1px dashed var(--border-glass);
+            background: var(--bg-glass-card);
+            border-radius: 12px;
+            padding: 16px 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .media-option-card i {
+            font-size: 20px;
+            margin-bottom: 6px;
+            display: block;
+            color: var(--accent-color);
+        }
+
+        #media-preview-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+
+        .preview-item {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            object-fit: cover;
+            position: relative;
+        }
+
+        /* Legal Disclaimer Checkbox Frame */
+        .disclaimer-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--text-sub);
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .disclaimer-box input[type="checkbox"] {
+            margin-top: 2px;
+            accent-color: var(--accent-color);
+        }
+
+        /* Feed & Profile Card Styles */
+        .post-card {
+            margin-bottom: 16px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .post-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .category-badge {
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .cat-business { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .cat-service { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .cat-realestate { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .cat-auto { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .cat-social { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+
+        .media-carousel {
+            width: 100%;
+            height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .media-carousel img, .media-carousel video, .media-carousel iframe {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-glass);
+            font-size: 13px;
+        }
+
+        .reaction-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .reaction-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: var(--text-sub);
+        }
+
+        .reaction-btn.active {
+            color: var(--accent-color);
+        }
+
+        /* 031 - 040 AR Overlay HUD Elements */
+        #ar-hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .ar-card-2d {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            pointer-events: auto;
+            transition: all 0.1s ease-out;
+            max-width: 200px;
+            padding: 10px;
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .ar-card-2d.locked {
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        /* Live Camera Overlay Screen for Snapshot/Video Capture */
+        #camera-capture-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 3000;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #camera-capture-screen video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .shutter-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid white;
+            background: transparent;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .shutter-btn::after {
+            content: '';
+            position: absolute;
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .shutter-btn.recording::after {
+            background: var(--accent-danger);
+            border-radius: 8px;
+        }
+
+        /* Onboarding Tooltip Window */
+        .onboarding-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .onboarding-card {
+            max-width: 360px;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .onboarding-card i {
+            font-size: 48px;
+            color: var(--accent-color);
+            margin-bottom: 16px;
+        }
+    </style>
 </head>
+<body class="dark-theme">
 
-<body>
-
-<div class="app">
-
-  <aside class="sidebar">
-
-    <div class="brand">
-      <div class="logo">V</div>
-      <div>
-        <div class="brand-title">VAULT CHAT</div>
-        <div class="brand-sub">Private P2P Translation</div>
-      </div>
-    </div>
-
-    <div class="profile-card">
-      <div class="profile-row">
-        <div class="avatar" id="myAvatar">V</div>
-        <div>
-          <div class="profile-name" id="myName">Anonymous</div>
-          <div class="profile-status">● Ready</div>
+    <!-- TOP NAVIGATION BAR -->
+    <div class="top-nav">
+        <div class="search-box glass-panel">
+            <i class="fa-solid fa-magnifying-glass" style="color: var(--text-sub);"></i>
+            <input type="text" id="global-search" placeholder="Axtarış (ünvan, xidmət, istifadəçi)..." oninput="app.filterPosts()">
         </div>
-      </div>
-
-      <div class="id-mini" id="myId">Generating secure ID...</div>
+        <button class="icon-btn" onclick="app.toggleTheme()"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
+        <button class="icon-btn" onclick="app.cycleLanguage()"><span id="lang-code" style="font-size: 11px; font-weight: bold;">AZ</span></button>
     </div>
 
-    <div class="search">
-      <span class="search-icon">⌕</span>
-      <input id="searchInput" placeholder="Kontakt axtar...">
+    <!-- SCANNING RADIUS SELECTOR -->
+    <div class="radius-selector">
+        <div class="radius-chip active" onclick="app.setRadius(10, this)">10m</div>
+        <div class="radius-chip" onclick="app.setRadius(50, this)">50m</div>
+        <div class="radius-chip" onclick="app.setRadius(100, this)">100m</div>
+        <div class="radius-chip" onclick="app.setRadius(300, this)">300m</div>
+        <div class="radius-chip" onclick="app.setRadius(1000, this)">1 km</div>
+        <div class="radius-chip" onclick="app.setRadius(999999, this)">Global</div>
     </div>
 
-    <div class="contacts" id="contacts"></div>
-
-    <div class="sidebar-bottom">
-      <button class="side-btn" id="addBtn">＋</button>
-      <button class="side-btn" id="qrBtn">QR</button>
-      <button class="side-btn" id="settingsBtn">⚙</button>
+    <!-- 1. MAP VIEW CONTAINER -->
+    <div id="map-view" class="view-container active">
+        <div id="map"></div>
     </div>
 
-  </aside>
+    <!-- 2. SPATIAL AR CAMERA VIEW CONTAINER -->
+    <div id="ar-view" class="view-container">
+        <!-- A-Frame Scene for Spatial AR.js -->
+        <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; VRModeUI: false;" vr-mode-ui="enabled: false">
+            <a-camera gps-camera rotation-reader></a-camera>
+        </a-scene>
+        <!-- 2D HUD Projection Layer for Anti-Overlap & Smooth Anchor Rendering -->
+        <div id="ar-hud"></div>
+    </div>
 
+    <!-- 3. FEED / EXPLORE VIEW CONTAINER -->
+    <div id="feed-view" class="view-container">
+        <div id="feed-container"></div>
+    </div>
 
-  <main class="chat">
+    <!-- 4. NOTIFICATIONS CENTER VIEW -->
+    <div id="notifications-view" class="view-container">
+        <h3 style="margin-bottom: 16px;" data-i18n="notifications">Bildirişlər Mərkəzi</h3>
+        <div id="notifications-container"></div>
+    </div>
 
-    <header class="chat-header">
-
-      <button class="back-btn" id="backBtn">‹</button>
-
-      <div class="avatar" id="remoteAvatar">?</div>
-
-      <div class="chat-user">
-        <div class="chat-user-name" id="remoteName">
-          Yeni söhbət
+    <!-- 5. USER PROFILE & MY POSTS VIEW -->
+    <div id="profile-view" class="view-container">
+        <div class="glass-panel" style="padding: 20px; text-align: center; margin-bottom: 16px;">
+            <div class="avatar" style="width: 64px; height: 64px; margin: 0 auto 12px; font-size: 24px;">ŞH</div>
+            <h2 id="prof-name">Şamxal Həsənov</h2>
+            <p id="prof-bio" style="font-size: 12px; color: var(--text-sub); margin-top: 4px;">Usta / Drywall & Spatial AR Enthusiast</p>
+            <div style="display: flex; justify-content: space-around; margin-top: 16px; border-top: 1px solid var(--border-glass); padding-top: 12px;">
+                <div><strong id="stat-posts">0</strong><br><span style="font-size: 11px; color: var(--text-sub);" data-i18n="my_posts">Paylaşımlar</span></div>
+                <div><strong id="stat-views">0</strong><br><span style="font-size: 11px; color: var(--text-sub);" data-i18n="views">Baxışlar</span></div>
+                <div><strong id="stat-likes">0</strong><br><span style="font-size: 11px; color: var(--text-sub);" data-i18n="reactions">Reaksiyalar</span></div>
+            </div>
         </div>
-        <div class="chat-user-status" id="remoteStatus">
-          Peer ID ilə qoşul
+        <h4 style="margin-bottom: 12px;" data-i18n="my_location_posts">Mənim Məkan Paylaşımlarım</h4>
+        <div id="my-posts-container"></div>
+        <button class="btn-primary" style="margin-top: 16px; background: rgba(239, 68, 68, 0.2); color: #f87171;" onclick="app.clearAppData()" data-i18n="clear_data">Tətbiq Məlumatlarını Sıfırla</button>
+    </div>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <div class="bottom-nav glass-panel">
+        <div class="nav-item active" onclick="app.switchView('map', this)">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span data-i18n="nav_map">Xəritə</span>
         </div>
-      </div>
-
-      <div class="header-actions">
-
-        <div class="connection-pill" id="connectionPill">
-          Offline
+        <div class="nav-item" onclick="app.switchView('ar', this)">
+            <i class="fa-solid fa-camera-rotate"></i>
+            <span data-i18n="nav_ar">AR Kamera</span>
         </div>
-
-        <div class="private-pill" id="privatePill">
-          PRIVATE
+        <div class="add-btn-wrapper" onclick="app.openCreateModal()">
+            <div class="add-btn"><i class="fa-solid fa-plus"></i></div>
         </div>
-
-        <button class="icon-btn desktop-only" id="fingerBtn">
-          🔐
-        </button>
-
-        <button class="icon-btn" id="chatInfoBtn">
-          ⋮
-        </button>
-
-      </div>
-
-    </header>
-
-
-    <div class="security-bar">
-      🔒 E2E • ECDH + AES-256-GCM • WebRTC DTLS
-      <span id="securityState">• gözlənilir</span>
-    </div>
-
-
-    <section class="messages" id="messages">
-
-      <div class="empty" id="emptyState">
-
-        <div class="empty-logo">🔐</div>
-
-        <h2>Private P2P Chat</h2>
-
-        <p>
-          Mesajlar əvvəlcə tətbiq səviyyəsində şifrələnir,
-          sonra WebRTC kanalından göndərilir.
-          Söhbətə başlamaq üçün aşağıdakı <b>＋</b> düyməsinə bas.
-        </p>
-
-        <button class="primary" id="emptyAdd">
-          Yeni P2P əlaqə yarat
-        </button>
-
-      </div>
-
-    </section>
-
-
-    <div class="typing" id="typing"></div>
-
-
-    <div class="composer">
-
-      <div class="reply-box" id="replyBox">
-        <div class="reply-name" id="replyName"></div>
-        <div class="reply-text" id="replyText"></div>
-      </div>
-
-      <div class="emoji-panel" id="emojiPanel">
-        <button class="emoji">😀</button>
-        <button class="emoji">😂</button>
-        <button class="emoji">❤️</button>
-        <button class="emoji">👍</button>
-        <button class="emoji">🔥</button>
-        <button class="emoji">😍</button>
-        <button class="emoji">😎</button>
-        <button class="emoji">🤝</button>
-        <button class="emoji">👏</button>
-        <button class="emoji">🙏</button>
-        <button class="emoji">🤣</button>
-        <button class="emoji">😊</button>
-        <button class="emoji">😢</button>
-        <button class="emoji">😡</button>
-        <button class="emoji">🎉</button>
-        <button class="emoji">🚀</button>
-      </div>
-
-      <div class="composer-row">
-
-        <div class="compose-tools">
-          <button class="tool" id="fileBtn">＋</button>
-          <button class="tool optional" id="cameraBtn">📷</button>
-          <button class="tool optional" id="micBtn">🎙</button>
+        <div class="nav-item" onclick="app.switchView('feed', this)">
+            <i class="fa-solid fa-compass"></i>
+            <span data-i18n="nav_feed">Axtarış/Feed</span>
         </div>
-
-        <div class="text-wrap">
-          <textarea id="messageInput"
-            placeholder="Şifrəli mesaj yaz..."
-            rows="1"></textarea>
+        <div class="nav-item" onclick="app.switchView('profile', this)">
+            <i class="fa-solid fa-user"></i>
+            <span data-i18n="nav_profile">Profil</span>
         </div>
-
-        <button class="send" id="sendBtn">➤</button>
-
-      </div>
-
-      <input type="file" id="fileInput"
-        hidden
-        multiple
-        accept="image/*,audio/*,video/*,.pdf,.txt,.zip,.doc,.docx">
-
     </div>
 
-  </main>
-
-</div>
-
-
-<!-- ADD CONTACT -->
-
-<div class="overlay" id="addModal">
-
-  <div class="modal">
-
-    <div class="modal-head">
-      <div class="modal-title">P2P əlaqə</div>
-      <button class="close" data-close="addModal">×</button>
-    </div>
-
-    <div class="modal-body">
-
-      <div class="setting">
-
-        <div class="setting-title">
-          Qarşı tərəfin Peer ID-si
-        </div>
-
-        <div class="setting-desc">
-          Digər istifadəçi öz ID-sini və ya QR kodunu sənə göndərməlidir.
-        </div>
-
-        <input class="input"
-          id="peerInput"
-          placeholder="Məsələn: 48372615">
-
-        <button class="primary" id="connectBtn">
-          🔗 Təhlükəsiz qoşul
-        </button>
-
-      </div>
-
-      <div class="setting">
-
-        <div class="setting-title">
-          Mənim dəvət linkim
-        </div>
-
-        <input class="input"
-          id="inviteInput"
-          readonly>
-
-        <button class="secondary" id="copyInvite">
-          Linki kopyala
-        </button>
-
-        <button class="secondary" id="shareInvite">
-          Paylaş
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- QR -->
-
-<div class="overlay" id="qrModal">
-
-  <div class="modal">
-
-    <div class="modal-head">
-      <div class="modal-title">Mənim təhlükəsiz QR kodum</div>
-      <button class="close" data-close="qrModal">×</button>
-    </div>
-
-    <div class="modal-body">
-
-      <div id="qrBox"></div>
-
-      <div class="success">
-        QR yalnız əlaqə yaratmaq üçün Peer ID-ni daşıyır.
-        Mesajların özü QR kodun içində saxlanılmır.
-      </div>
-
-      <button class="primary" id="scanQrBtn">
-        📷 QR skan et
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- SCANNER -->
-
-<div class="overlay" id="scanModal">
-
-  <div class="modal">
-
-    <div class="modal-head">
-      <div class="modal-title">QR skaner</div>
-      <button class="close" data-close="scanModal">×</button>
-    </div>
-
-    <div class="modal-body">
-      <div id="reader"></div>
-
-      <div class="warning">
-        Kamera icazəsi lazımdır. GitHub Pages kimi HTTPS səhifəsində
-        istifadə et.
-      </div>
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- SETTINGS -->
-
-<div class="overlay" id="settingsModal">
-
-  <div class="modal">
-
-    <div class="modal-head">
-      <div class="modal-title">Təhlükəsizlik və ayarlar</div>
-      <button class="close" data-close="settingsModal">×</button>
-    </div>
-
-    <div class="modal-body">
-
-      <div class="setting">
-
-        <div class="setting-title">Profil adı</div>
-
-        <input class="input" id="nameInput"
-          placeholder="Adın">
-
-        <button class="primary" id="saveName">
-          Yadda saxla
-        </button>
-
-      </div>
-
-
-      <div class="setting">
-
-        <div class="toggle-row">
-
-          <div>
-            <div class="setting-title">
-              Private Mode
+    <!-- POST CREATION MODAL -->
+    <div id="create-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 data-i18n="modal_create_title">Yeni AR Məkan Elanı/İz Qoy</h3>
+                <i class="fa-solid fa-xmark" style="font-size: 20px; cursor: pointer;" onclick="app.closeCreateModal()"></i>
             </div>
 
-            <div class="setting-desc">
-              Aktiv olduqda bulud tərcüməsi və potensial üçüncü tərəf
-              xidmətlərinə mətn göndərilməsi dayandırılır.
-            </div>
-          </div>
-
-          <label class="switch">
-            <input type="checkbox" id="privateToggle" checked>
-            <span class="slider"></span>
-          </label>
-
-        </div>
-
-      </div>
-
-
-      <div class="setting">
-
-        <div class="toggle-row">
-
-          <div>
-            <div class="setting-title">
-              Avtomatik tərcümə
+            <!-- Location Picker Selection Mode -->
+            <div class="form-group">
+                <label data-i18n="label_location">Koordinat Mənbəyi</label>
+                <select id="post-location-mode" class="form-control" onchange="app.toggleLocationMode(this.value)">
+                    <option value="current" data-i18n="loc_current">Cari GPS Mövqeyim</option>
+                    <option value="map" data-i18n="loc_map">Xəritədən Seçilmiş Koordinat</option>
+                </select>
+                <p id="selected-coords-display" style="font-size: 11px; color: var(--accent-color); margin-top: 4px;"></p>
             </div>
 
-            <div class="setting-desc">
-              Qarşı tərəfin dilinə avtomatik çevirmə.
+            <div class="form-group">
+                <label data-i18n="label_category">Kateqoriya</label>
+                <select id="post-category" class="form-control">
+                    <option value="business">🏪 Biznes / Mağaza</option>
+                    <option value="service">🛠 Usta / Xidmət Təklifi</option>
+                    <option value="realestate">🏢 Daşınmaz Əmlak / İcarə</option>
+                    <option value="auto">🚗 Nəqliyyat / Maşın</option>
+                    <option value="social">👤 Sosial İz / Mini-Bloq</option>
+                </select>
             </div>
 
-          </div>
+            <div class="form-group">
+                <label data-i18n="label_title">Başlıq</label>
+                <input type="text" id="post-title" class="form-control" placeholder="Məs: Əhmədlidə Alçipan və Şpatlyovka Ustası">
+            </div>
 
-          <label class="switch">
-            <input type="checkbox" id="translateToggle">
-            <span class="slider"></span>
-          </label>
+            <div class="form-group">
+                <label data-i18n="label_desc">Ətraflı Məlumat / Qeyd</label>
+                <textarea id="post-desc" class="form-control" placeholder="Xidmət, qiymət və təfərrüatları qeyd edin..."></textarea>
+            </div>
 
+            <div class="form-group">
+                <label data-i18n="label_price">Qiymət / Əlaqə Nömrəsi</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="post-price" class="form-control" placeholder="Qiymət (AZN)">
+                    <input type="text" id="post-phone" class="form-control" placeholder="+994 50 000 00 00">
+                </div>
+            </div>
+
+            <!-- Dynamic Auto-Tracking Vehicle Option -->
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="post-is-moving"> <span data-i18n="label_moving">Hərəkətdə olan obyektdir (Maşın/İnsan Tracking)</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="label_media">Media və YouTube Linki</label>
+                <input type="text" id="post-youtube" class="form-control" placeholder="YouTube Video URL (https://www.youtube.com/watch?v=...)" style="margin-bottom: 8px;">
+                
+                <div class="media-picker-grid">
+                    <div class="media-option-card" onclick="document.getElementById('file-input-gallery').click()">
+                        <i class="fa-solid fa-images"></i>
+                        <span data-i18n="opt_gallery">Qalereya</span>
+                    </div>
+                    <div class="media-option-card" onclick="app.startCameraCapture('image')">
+                        <i class="fa-solid fa-camera"></i>
+                        <span data-i18n="opt_photo">Foto Çək</span>
+                    </div>
+                    <div class="media-option-card" onclick="app.startCameraCapture('video')">
+                        <i class="fa-solid fa-video"></i>
+                        <span data-i18n="opt_video">Video Çək</span>
+                    </div>
+                </div>
+
+                <input type="file" id="file-input-gallery" multiple accept="image/*,video/*" style="display: none;" onchange="app.handleFileSelect(event)">
+                <div id="media-preview-container"></div>
+            </div>
+
+            <!-- 061 - 063 Legal Disclaimer Checkbox -->
+            <div class="disclaimer-box">
+                <input type="checkbox" id="legal-check" onchange="app.validateLegalCheck()">
+                <label for="legal-check" data-i18n="disclaimer_text">
+                    Bu paylaşımın məzmununa və yerləşdirildiyi xüsusi məkana/koordinata görə bütün hüquqi və mülki məsuliyyəti tam şəkildə öz üzərimə götürürəm.
+                </label>
+            </div>
+
+            <button id="submit-post-btn" class="btn-primary" onclick="app.submitPost()" disabled style="opacity: 0.5;" data-i18n="btn_publish">Paylaş və AR Məkana Yerləşdir</button>
         </div>
-
-      </div>
-
-
-      <div class="setting">
-
-        <div class="setting-title">
-          Mənim dilim
-        </div>
-
-        <select class="select" id="myLang"></select>
-
-      </div>
-
-
-      <div class="setting">
-
-        <div class="setting-title">
-          Tərcümə dili
-        </div>
-
-        <select class="select" id="targetLang"></select>
-
-      </div>
-
-
-      <div class="setting">
-
-        <div class="setting-title">
-          Təhlükəsizlik fingerprint
-        </div>
-
-        <div class="setting-desc">
-          Qarşı tərəflə başqa etibarlı kanal vasitəsilə müqayisə et.
-          Bu, saxta vasitəçi / MITM riskini azaltmağa kömək edir.
-        </div>
-
-        <div class="fingerprint" id="myFingerprint">
-          Hesablanır...
-        </div>
-
-      </div>
-
-
-      <div class="setting">
-
-        <div class="setting-title">
-          Məlumatların saxlanması
-        </div>
-
-        <div class="setting-desc">
-          Mesaj tarixçəsi cihazdakı IndexedDB yaddaşında saxlanılır.
-          PeerJS serveri tətbiq səviyyəli mesaj plaintextini almır.
-        </div>
-
-        <button class="secondary" id="exportBtn">
-          Məlumatları export et
-        </button>
-
-        <button class="secondary danger" id="clearBtn">
-          Bütün yerli məlumatları sil
-        </button>
-
-      </div>
-
-
-      <div class="setting">
-
-        <div class="setting-title">
-          Vacib təhlükəsizlik qeydi
-        </div>
-
-        <div class="warning">
-          Bu tətbiq təhlükəsizlik auditi keçməyib.
-          Telefonun özü, brauzer, əməliyyat sistemi, keylogger,
-          screenshot, zərərli proqram və ya fiziki giriş kompromet
-          olunarsa, tətbiq plaintext-i qorumaq iqtidarında deyil.
-        </div>
-
-      </div>
-
     </div>
 
-  </div>
-
-</div>
-
-
-<!-- FINGERPRINT -->
-
-<div class="overlay" id="fingerModal">
-
-  <div class="modal">
-
-    <div class="modal-head">
-      <div class="modal-title">E2E fingerprint</div>
-      <button class="close" data-close="fingerModal">×</button>
-    </div>
-
-    <div class="modal-body">
-
-      <div class="success">
-        🔐 Bu fingerprint həmin ECDH public key-in
-        SHA-256 identifikatorudur.
-      </div>
-
-      <div class="setting">
-
-        <div class="setting-title">
-          Mənim fingerprint
+    <!-- LIVE CAMERA CAPTURE SCREEN FOR SELFIE/PHOTO/VIDEO -->
+    <div id="camera-capture-screen">
+        <video id="capture-video-preview" autoplay playsinline muted></video>
+        <div class="camera-controls">
+            <button class="icon-btn" onclick="app.stopCameraCapture()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="shutter-btn" id="shutter-btn" onclick="app.triggerShutter()"></div>
+            <button class="icon-btn" onclick="app.switchCameraFacing()"><i class="fa-solid fa-rotate"></i></button>
         </div>
+    </div>
 
-        <div class="fingerprint" id="fingerMine"></div>
-
-      </div>
-
-      <div class="setting">
-
-        <div class="setting-title">
-          Qarşı tərəfin fingerprint
+    <!-- FIRST TIME USER ONBOARDING MODAL -->
+    <div id="onboarding-modal" class="onboarding-overlay" style="display: none;">
+        <div class="onboarding-card glass-panel">
+            <i class="fa-solid fa-vr-cardboard"></i>
+            <h2>ARWORLD-a Xoş Gəldiniz!</h2>
+            <p style="font-size: 13px; color: var(--text-sub); margin: 12px 0 20px;">
+                Ətrafınızdakı elanları, ustaları, biznesləri və sosial izləri real vaxtda AR Kameranızla görün və ya xəritəyə öz izinizin koordinatını bağlayın.
+            </p>
+            <button class="btn-primary" onclick="app.closeOnboarding()">Başlayın</button>
         </div>
-
-        <div class="fingerprint" id="fingerRemote">
-          Qoşulma gözlənilir...
-        </div>
-
-      </div>
-
-      <div class="warning">
-        Ən güclü yoxlama üçün bu kodu telefon zəngi və ya başqa
-        etibarlı kanal ilə qarşı tərəfin gördüyü kodla müqayisə et.
-      </div>
-
     </div>
 
-  </div>
-
-</div>
-
-
-<!-- CAMERA -->
-
-<div class="overlay" id="cameraModal">
-
-  <div class="modal">
-
-    <div class="modal-head">
-      <div class="modal-title">Kamera</div>
-      <button class="close" data-close="cameraModal">×</button>
-    </div>
-
-    <div class="modal-body">
-
-      <video id="cameraVideo"
-        class="camera-video"
-        autoplay
-        playsinline></video>
-
-      <div class="camera-controls">
-        <button id="switchCamera">↔ Kamera</button>
-        <button id="takePhoto">📸 Çək</button>
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- AUDIO -->
-
-<div class="overlay" id="audioModal">
-
-  <div class="modal">
-
-    <div class="modal-head">
-      <div class="modal-title">Səs yazısı</div>
-      <button class="close" data-close="audioModal">×</button>
-    </div>
-
-    <div class="modal-body">
-
-      <div class="success" id="recordState">
-        Hazırdır.
-      </div>
-
-      <button class="primary" id="recordStart">
-        🎙 Yazmağa başla
-      </button>
-
-      <button class="secondary" id="recordStop">
-        ■ Dayandır
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- INFO -->
-
-<div class="overlay" id="infoModal">
-
-  <div class="modal">
-
-    <div class="modal-head">
-      <div class="modal-title">Söhbət haqqında</div>
-      <button class="close" data-close="infoModal">×</button>
-    </div>
-
-    <div class="modal-body">
-
-      <div class="setting">
-        <div class="setting-title">Transport</div>
-        <div class="setting-desc">
-          WebRTC DataChannel
-        </div>
-      </div>
-
-      <div class="setting">
-        <div class="setting-title">Tətbiq səviyyəsi</div>
-        <div class="setting-desc">
-          ECDH P-256 + AES-256-GCM
-        </div>
-      </div>
-
-      <div class="setting">
-        <div class="setting-title">Şəbəkə səviyyəsi</div>
-        <div class="setting-desc">
-          WebRTC DTLS
-        </div>
-      </div>
-
-      <div class="setting">
-        <div class="setting-title">Translation</div>
-        <div class="setting-desc">
-          Private Mode aktivdirsə bulud tərcüməsi istifadə edilmir.
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<div class="drop-zone" id="dropZone">
-  <div class="drop-box">
-    📦<br><br>
-    Faylı buraya burax
-  </div>
-</div>
-
-
-<div class="toast-area" id="toastArea"></div>
-
-
-<script>
-"use strict";
-
-/* =========================================================
-   VAULT CHAT
-   PRIVATE P2P CORE
-   ========================================================= */
-
-const APP_VERSION = "1.0-secure-core";
-const DB_NAME = "vault_chat_db";
-const DB_VERSION = 1;
-
-const CHUNK_SIZE = 16 * 1024;
-const MAX_FILE_SIZE = 15 * 1024 * 1024;
-
-const state = {
-  peer: null,
-  peerId: null,
-  currentPeer: null,
-  sessions: new Map(),
-  contacts: new Map(),
-  messages: new Map(),
-  myProfile: {
-    name: localStorage.getItem("vault_name") || "Anonymous",
-    lang: localStorage.getItem("vault_lang") || navigator.language.slice(0,2) || "en"
-  },
-  settings: {
-    privateMode: localStorage.getItem("vault_private") !== "false",
-    autoTranslate: localStorage.getItem("vault_translate") === "true",
-    targetLang: localStorage.getItem("vault_target") || "en"
-  },
-  db: null,
-  typingTimer: null,
-  recording: null,
-  mediaStream: null,
-  facingMode: "user",
-  replyTo: null,
-  scanner: null
-};
-
-
-/* =========================================================
-   LANGUAGE LIST
-   ========================================================= */
-
-const LANGS = {
-  af:"Afrikaans",
-  sq:"Albanian",
-  am:"Amharic",
-  ar:"Arabic",
-  hy:"Armenian",
-  az:"Azerbaijani",
-  eu:"Basque",
-  be:"Belarusian",
-  bn:"Bengali",
-  bs:"Bosnian",
-  bg:"Bulgarian",
-  ca:"Catalan",
-  zh:"Chinese",
-  hr:"Croatian",
-  cs:"Czech",
-  da:"Danish",
-  nl:"Dutch",
-  en:"English",
-  et:"Estonian",
-  fi:"Finnish",
-  fr:"French",
-  gl:"Galician",
-  ka:"Georgian",
-  de:"German",
-  el:"Greek",
-  gu:"Gujarati",
-  he:"Hebrew",
-  hi:"Hindi",
-  hu:"Hungarian",
-  is:"Icelandic",
-  id:"Indonesian",
-  ga:"Irish",
-  it:"Italian",
-  ja:"Japanese",
-  jv:"Javanese",
-  kn:"Kannada",
-  kk:"Kazakh",
-  km:"Khmer",
-  ko:"Korean",
-  ku:"Kurdish",
-  ky:"Kyrgyz",
-  lo:"Lao",
-  lv:"Latvian",
-  lt:"Lithuanian",
-  mk:"Macedonian",
-  ms:"Malay",
-  ml:"Malayalam",
-  mt:"Maltese",
-  mr:"Marathi",
-  mn:"Mongolian",
-  ne:"Nepali",
-  no:"Norwegian",
-  ps:"Pashto",
-  fa:"Persian",
-  pl:"Polish",
-  pt:"Portuguese",
-  pa:"Punjabi",
-  ro:"Romanian",
-  ru:"Russian",
-  sr:"Serbian",
-  si:"Sinhala",
-  sk:"Slovak",
-  sl:"Slovenian",
-  so:"Somali",
-  es:"Spanish",
-  su:"Sundanese",
-  sw:"Swahili",
-  sv:"Swedish",
-  tl:"Tagalog",
-  tg:"Tajik",
-  ta:"Tamil",
-  te:"Telugu",
-  th:"Thai",
-  tr:"Turkish",
-  tk:"Turkmen",
-  uk:"Ukrainian",
-  ur:"Urdu",
-  uz:"Uzbek",
-  vi:"Vietnamese",
-  cy:"Welsh",
-  yi:"Yiddish"
-};
-
-
-/* =========================================================
-   DOM
-   ========================================================= */
-
-const $ = id => document.getElementById(id);
-
-const messagesEl = $("messages");
-const emptyState = $("emptyState");
-const input = $("messageInput");
-
-
-/* =========================================================
-   TOAST
-   ========================================================= */
-
-function toast(message, type=""){
-  const el = document.createElement("div");
-  el.className = "toast " + type;
-  el.textContent = message;
-
-  $("toastArea").appendChild(el);
-
-  setTimeout(()=>{
-    el.style.opacity = "0";
-    el.style.transform = "translateY(-5px)";
-    setTimeout(()=>el.remove(),220);
-  },3500);
-}
-
-
-/* =========================================================
-   MODALS
-   ========================================================= */
-
-function openModal(id){
-  $(id).classList.add("open");
-}
-
-function closeModal(id){
-  $(id).classList.remove("open");
-}
-
-document.querySelectorAll("[data-close]").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    closeModal(btn.dataset.close);
-  });
-});
-
-document.querySelectorAll(".overlay").forEach(overlay=>{
-  overlay.addEventListener("click",e=>{
-    if(e.target === overlay){
-      overlay.classList.remove("open");
-    }
-  });
-});
-
-
-/* =========================================================
-   BASE64
-   ========================================================= */
-
-function bytesToBase64(bytes){
-  let binary = "";
-  const chunk = 0x8000;
-
-  for(let i=0;i<bytes.length;i+=chunk){
-    binary += String.fromCharCode(
-      ...bytes.subarray(i,Math.min(i+chunk,bytes.length))
-    );
-  }
-
-  return btoa(binary);
-}
-
-function base64ToBytes(str){
-  const binary = atob(str);
-  const out = new Uint8Array(binary.length);
-
-  for(let i=0;i<binary.length;i++){
-    out[i] = binary.charCodeAt(i);
-  }
-
-  return out;
-}
-
-
-/* =========================================================
-   CRYPTO
-   ========================================================= */
-
-async function sha256(data){
-  return new Uint8Array(
-    await crypto.subtle.digest(
-      "SHA-256",
-      typeof data === "string"
-        ? new TextEncoder().encode(data)
-        : data
-    )
-  );
-}
-
-async function fingerprintFromJwk(jwk){
-
-  const canonical = JSON.stringify({
-    k:jwk.k || "",
-    crv:jwk.crv || "",
-    x:jwk.x || "",
-    y:jwk.y || ""
-  });
-
-  const hash = await sha256(canonical);
-
-  const hex = [...hash]
-    .map(x=>x.toString(16).padStart(2,"0"))
-    .join("");
-
-  return hex.match(/.{1,4}/g).join(" ");
-}
-
-
-async function createCryptoSession(){
-
-  const keyPair = await crypto.subtle.generateKey(
-    {
-      name:"ECDH",
-      namedCurve:"P-256"
-    },
-    true,
-    ["deriveKey"]
-  );
-
-  const publicJwk = await crypto.subtle.exportKey(
-    "jwk",
-    keyPair.publicKey
-  );
-
-  return {
-    privateKey:keyPair.privateKey,
-    publicKey:keyPair.publicKey,
-    publicJwk,
-    remoteJwk:null,
-    key:null,
-    fingerprint:await fingerprintFromJwk(publicJwk),
-    remoteFingerprint:null,
-    ready:false,
-    queue:[]
-  };
-}
-
-
-async function deriveSessionKey(session, remoteJwk){
-
-  const remotePublic = await crypto.subtle.importKey(
-    "jwk",
-    remoteJwk,
-    {
-      name:"ECDH",
-      namedCurve:"P-256"
-    },
-    true,
-    []
-  );
-
-  session.key = await crypto.subtle.deriveKey(
-    {
-      name:"ECDH",
-      public:remotePublic
-    },
-    session.privateKey,
-    {
-      name:"AES-GCM",
-      length:256
-    },
-    false,
-    ["encrypt","decrypt"]
-  );
-
-  session.remoteJwk = remoteJwk;
-
-  session.remoteFingerprint =
-    await fingerprintFromJwk(remoteJwk);
-
-  session.ready = true;
-
-  updateSecurityUI();
-
-  flushSessionQueue(session);
-}
-
-
-function sessionAAD(peerId){
-
-  const ids = [state.peerId || "", peerId || ""]
-    .sort()
-    .join("|");
-
-  return new TextEncoder().encode(
-    "VAULT-CHAT-E2E-V1|" + ids
-  );
-}
-
-
-async function encryptObject(obj,session){
-
-  if(!session.key){
-    throw new Error("Secure session is not ready");
-  }
-
-  const iv = crypto.getRandomValues(
-    new Uint8Array(12)
-  );
-
-  const plaintext = new TextEncoder().encode(
-    JSON.stringify(obj)
-  );
-
-  const encrypted = await crypto.subtle.encrypt(
-    {
-      name:"AES-GCM",
-      iv,
-      additionalData:sessionAAD(state.currentPeer)
-    },
-    session.key,
-    plaintext
-  );
-
-  return {
-    type:"secure",
-    v:1,
-    iv:bytesToBase64(iv),
-    data:bytesToBase64(
-      new Uint8Array(encrypted)
-    )
-  };
-}
-
-
-async function decryptObject(packet,session){
-
-  if(!session.key){
-    throw new Error("No session key");
-  }
-
-  const decrypted = await crypto.subtle.decrypt(
-    {
-      name:"AES-GCM",
-      iv:base64ToBytes(packet.iv),
-      additionalData:sessionAAD(state.currentPeer)
-    },
-    session.key,
-    base64ToBytes(packet.data)
-  );
-
-  return JSON.parse(
-    new TextDecoder().decode(decrypted)
-  );
-}
-
-
-/* =========================================================
-   IDB
-   ========================================================= */
-
-function openDB(){
-
-  return new Promise((resolve,reject)=>{
-
-    const request = indexedDB.open(
-      DB_NAME,
-      DB_VERSION
-    );
-
-    request.onupgradeneeded = e => {
-
-      const db = e.target.result;
-
-      if(!db.objectStoreNames.contains("messages")){
-        const store = db.createObjectStore(
-          "messages",
-          {keyPath:"id"}
-        );
-
-        store.createIndex(
-          "chat_ts",
-          ["chatId","ts"]
-        );
-      }
-
-      if(!db.objectStoreNames.contains("contacts")){
-        db.createObjectStore(
-          "contacts",
-          {keyPath:"id"}
-        );
-      }
-
-      if(!db.objectStoreNames.contains("media")){
-        db.createObjectStore(
-          "media",
-          {keyPath:"id"}
-        );
-      }
-
-    };
-
-    request.onsuccess = ()=>{
-      state.db = request.result;
-      resolve(state.db);
-    };
-
-    request.onerror = ()=>{
-      reject(request.error);
-    };
-
-  });
-}
-
-
-function dbPut(storeName,value){
-
-  return new Promise((resolve,reject)=>{
-
-    const tx = state.db.transaction(
-      storeName,
-      "readwrite"
-    );
-
-    tx.objectStore(storeName).put(value);
-
-    tx.oncomplete = ()=>resolve();
-    tx.onerror = ()=>reject(tx.error);
-
-  });
-}
-
-
-function dbDelete(storeName,key){
-
-  return new Promise((resolve,reject)=>{
-
-    const tx = state.db.transaction(
-      storeName,
-      "readwrite"
-    );
-
-    tx.objectStore(storeName).delete(key);
-
-    tx.oncomplete = ()=>resolve();
-    tx.onerror = ()=>reject(tx.error);
-
-  });
-}
-
-
-function dbGetAll(storeName){
-
-  return new Promise((resolve,reject)=>{
-
-    const tx = state.db.transaction(
-      storeName,
-      "readonly"
-    );
-
-    const request =
-      tx.objectStore(storeName).getAll();
-
-    request.onsuccess = ()=>{
-      resolve(request.result || []);
-    };
-
-    request.onerror = ()=>{
-      reject(request.error);
-    };
-
-  });
-}
-
-
-/* =========================================================
-   ID
-   ========================================================= */
-
-function generatePeerId(){
-
-  const stored =
-    localStorage.getItem("vault_peer_id");
-
-  if(stored && /^\d{8}$/.test(stored)){
-    return stored;
-  }
-
-  const id =
-    String(Math.floor(
-      10000000 +
-      Math.random()*90000000
-    ));
-
-  localStorage.setItem(
-    "vault_peer_id",
-    id
-  );
-
-  return id;
-}
-
-
-/* =========================================================
-   PEER INITIALIZATION
-   ========================================================= */
-
-function initPeer(){
-
-  state.peerId = generatePeerId();
-
-  $("myId").textContent =
-    "Peer ID: " + state.peerId;
-
-  $("inviteInput").value =
-    location.origin +
-    location.pathname +
-    "?ref=" +
-    state.peerId;
-
-  state.peer = new Peer(
-    state.peerId,
-    {
-      host:"0.peerjs.com",
-      port:443,
-      path:"/",
-      secure:true,
-      debug:0,
-      config:{
-        iceServers:[
-          {
-            urls:"stun:stun.l.google.com:19302"
-          }
-        ]
-      }
-    }
-  );
-
-  state.peer.on("open",id=>{
-    state.peerId = id;
-
-    $("myId").textContent =
-      "Peer ID: " + id;
-
-    $("inviteInput").value =
-      location.origin +
-      location.pathname +
-      "?ref=" + id;
-
-    $("remoteStatus").textContent =
-      "Hazır • Peer ID ilə qoşul";
-
-    toast(
-      "P2P ID hazırdır: " + id,
-      "success"
-    );
-
-    autoConnectFromURL();
-  });
-
-
-  state.peer.on("connection",conn=>{
-    setupConnection(conn,false);
-  });
-
-
-  state.peer.on("disconnected",()=>{
-    $("connectionPill").textContent =
-      "Signaling offline";
-
-    $("connectionPill").classList.remove("online");
-
-    $("remoteStatus").textContent =
-      "Signaling bağlantısı kəsildi";
-
-    setTimeout(()=>{
-      try{
-        state.peer.reconnect();
-      }catch(e){}
-    },2000);
-  });
-
-
-  state.peer.on("error",err=>{
-
-    console.error("Peer error:",err);
-
-    if(err.type === "unavailable-id"){
-
-      localStorage.removeItem(
-        "vault_peer_id"
-      );
-
-      toast(
-        "Peer ID artıq istifadə olunur. Yenisi yaradılır.",
-        "error"
-      );
-
-      setTimeout(()=>{
-        location.reload();
-      },1200);
-
-      return;
-    }
-
-    toast(
-      "P2P: " + (err.message || err.type),
-      "error"
-    );
-  });
-}
-
-
-/* =========================================================
-   CONNECTION
-   ========================================================= */
-
-async function setupConnection(conn,outgoing){
-
-  const peerId = conn.peer;
-
-  let session = state.sessions.get(peerId);
-
-  if(session && session.conn){
-    try{
-      session.conn.close();
-    }catch(e){}
-  }
-
-  session = await createCryptoSession();
-
-  session.conn = conn;
-  session.peerId = peerId;
-  session.outgoing = outgoing;
-  session.lastPing = 0;
-  session.latency = null;
-
-  state.sessions.set(
-    peerId,
-    session
-  );
-
-  addOrUpdateContact({
-    id:peerId,
-    name:"Secure Peer " + peerId.slice(-4),
-    status:"Connecting..."
-  });
-
-  if(outgoing){
-    state.currentPeer = peerId;
-    document.body.classList.add("chat-open");
-    renderChat();
-  }
-
-
-  conn.on("open",async()=>{
-
-    state.currentPeer = peerId;
-
-    document.body.classList.add("chat-open");
-
-    $("connectionPill").textContent =
-      "Connecting...";
-
-    $("connectionPill").classList.add("online");
-
-    $("remoteStatus").textContent =
-      "Secure handshake...";
-
-    renderChat();
-
-    await sendHandshake(session);
-
-  });
-
-
-  conn.on("data",async packet=>{
-
-    try{
-
-      if(packet &&
-         packet.type === "crypto-hello"){
-
-        await handleCryptoHello(
-          session,
-          packet
-        );
-
-        return;
-      }
-
-
-      if(packet &&
-         packet.type === "secure"){
-
-        const obj =
-          await decryptObject(
-            packet,
-            session
-          );
-
-        await handleSecureObject(
-          obj,
-          session
-        );
-
-      }
-
-    }catch(err){
-
-      console.error(
-        "Secure packet rejected:",
-        err
-      );
-
-      toast(
-        "Şifrəli paket doğrulanmadı.",
-        "error"
-      );
-
-    }
-
-  });
-
-
-  conn.on("close",()=>{
-
-    session.ready = false;
-
-    if(state.currentPeer === peerId){
-
-      $("connectionPill").textContent =
-        "Disconnected";
-
-      $("connectionPill")
-        .classList
-        .remove("online");
-
-      $("remoteStatus").textContent =
-        "Əlaqə bağlandı";
-
-      $("securityState").textContent =
-        "• disconnected";
-
-    }
-
-    updateContactsUI();
-  });
-
-
-  conn.on("error",err=>{
-    console.error("Connection error",err);
-
-    if(state.currentPeer === peerId){
-      toast(
-        "P2P bağlantı xətası.",
-        "error"
-      );
-    }
-  });
-
-}
-
-
-async function sendHandshake(session){
-
-  try{
-
-    session.conn.send({
-      type:"crypto-hello",
-      v:1,
-      publicKey:session.publicJwk
-    });
-
-  }catch(e){
-
-    toast(
-      "Kripto handshake göndərilmədi.",
-      "error"
-    );
-
-  }
-}
-
-
-async function handleCryptoHello(session,packet){
-
-  if(!packet.publicKey){
-    throw new Error("Missing public key");
-  }
-
-  if(!session.key){
-
-    await deriveSessionKey(
-      session,
-      packet.publicKey
-    );
-
-    await sendHandshake(session);
-
-    $("connectionPill").textContent =
-      "🔒 Secure";
-
-    $("securityState").textContent =
-      "• encrypted";
-
-    $("remoteStatus").textContent =
-      "🔒 E2E encrypted";
-
-    toast(
-      "E2E təhlükəsiz kanal quruldu.",
-      "success"
-    );
-
-    await sendSecure(
-      {
-        type:"profile",
-        profile:state.myProfile
-      },
-      session
-    );
-
-    await sendSecure(
-      {
-        type:"presence",
-        online:true
-      },
-      session
-    );
-
-  }
-
-}
-
-
-async function sendSecure(obj,session){
-
-  if(!session){
-    throw new Error("Session yoxdur");
-  }
-
-  if(!session.ready){
-
-    session.queue.push(obj);
-
-    return;
-  }
-
-  const packet =
-    await encryptObject(
-      obj,
-      session
-    );
-
-  session.conn.send(packet);
-}
-
-
-async function flushSessionQueue(session){
-
-  const queue =
-    [...session.queue];
-
-  session.queue.length = 0;
-
-  for(const item of queue){
-
-    try{
-      await sendSecure(
-        item,
-        session
-      );
-    }catch(e){
-      console.error(e);
-    }
-
-  }
-
-}
-
-
-/* =========================================================
-   CONNECT
-   ========================================================= */
-
-function connectToPeer(peerId){
-
-  peerId = String(peerId || "")
-    .trim();
-
-  if(!/^\d{8}$/.test(peerId)){
-
-    toast(
-      "Peer ID 8 rəqəm olmalıdır.",
-      "error"
-    );
-
-    return;
-  }
-
-  if(peerId === state.peerId){
-
-    toast(
-      "Öz cihazına qoşula bilməzsən.",
-      "error"
-    );
-
-    return;
-  }
-
-  if(!state.peer){
-
-    toast(
-      "P2P sistemi hələ hazır deyil.",
-      "error"
-    );
-
-    return;
-  }
-
-  const existing =
-    state.sessions.get(peerId);
-
-  if(existing &&
-     existing.conn &&
-     existing.conn.open){
-
-    state.currentPeer = peerId;
-
-    document.body.classList.add("chat-open");
-
-    renderChat();
-
-    return;
-  }
-
-  toast(
-    "P2P bağlantısı yaradılır..."
-  );
-
-  const conn =
-    state.peer.connect(
-      peerId,
-      {
-        reliable:true,
-        serialization:"json"
-      }
-    );
-
-  setupConnection(
-    conn,
-    true
-  );
-}
-
-
-/* =========================================================
-   URL AUTO CONNECT
-   ========================================================= */
-
-function autoConnectFromURL(){
-
-  const params =
-    new URLSearchParams(
-      location.search
-    );
-
-  const ref =
-    params.get("ref");
-
-  if(ref &&
-     /^\d{8}$/.test(ref) &&
-     ref !== state.peerId){
-
-    $("peerInput").value = ref;
-
-    setTimeout(()=>{
-      connectToPeer(ref);
-    },1000);
-
-  }
-}
-
-
-/* =========================================================
-   SECURE OBJECT HANDLER
-   ========================================================= */
-
-async function handleSecureObject(obj,session){
-
-  switch(obj.type){
-
-    case "profile":
-
-      handleRemoteProfile(
-        session.peerId,
-        obj.profile
-      );
-
-      break;
-
-
-    case "presence":
-
-      handlePresence(
-        session.peerId,
-        obj
-      );
-
-      break;
-
-
-    case "typing":
-
-      if(state.currentPeer === session.peerId){
-
-        $("typing").textContent =
-          obj.value
-            ? "yazır..."
-            : "";
-      }
-
-      break;
-
-
-    case "ping":
-
-      await sendSecure(
-        {
-          type:"pong",
-          id:obj.id,
-          t:obj.t
-        },
-        session
-      );
-
-      break;
-
-
-    case "pong":
-
-      if(obj.id === session.pingId){
-
-        session.latency =
-          Date.now() - obj.t;
-
-        updateChatStatus();
-      }
-
-      break;
-
-
-    case "message":
-
-      await receiveMessage(
-        obj.message,
-        session
-      );
-
-      break;
-
-
-    case "read":
-
-      markMessageRead(
-        obj.messageId
-      );
-
-      break;
-
-
-    case "delete":
-
-      await deleteRemoteMessage(
-        obj.messageId
-      );
-
-      break;
-
-
-    case "reaction":
-
-      updateReaction(
-        obj.messageId,
-        obj.reaction
-      );
-
-      break;
-
-
-    case "file":
-
-      await receiveFile(
-        obj,
-        session
-      );
-
-      break;
-
-  }
-
-}
-
-
-/* =========================================================
-   PROFILE
-   ========================================================= */
-
-function handleRemoteProfile(peerId,profile){
-
-  const contact =
-    state.contacts.get(peerId) || {
-      id:peerId
-    };
-
-  contact.name =
-    profile?.name ||
-    "Secure Peer " +
-    peerId.slice(-4);
-
-  contact.lang =
-    profile?.lang || "en";
-
-  contact.status =
-    "E2E encrypted";
-
-  state.contacts.set(
-    peerId,
-    contact
-  );
-
-  saveContact(contact);
-
-  updateContactsUI();
-  renderChat();
-}
-
-
-function handlePresence(peerId,obj){
-
-  const contact =
-    state.contacts.get(peerId) || {
-      id:peerId
-    };
-
-  contact.online =
-    !!obj.online;
-
-  state.contacts.set(
-    peerId,
-    contact
-  );
-
-  if(state.currentPeer === peerId){
-
-    $("remoteStatus").textContent =
-      obj.online
-        ? "● Online • E2E"
-        : "Offline";
-  }
-
-  updateContactsUI();
-}
-
-
-function addOrUpdateContact(contact){
-
-  const old =
-    state.contacts.get(contact.id);
-
-  const merged = {
-    ...(old || {}),
-    ...contact
-  };
-
-  state.contacts.set(
-    contact.id,
-    merged
-  );
-
-  saveContact(
-    merged
-  );
-
-  updateContactsUI();
-}
-
-
-function saveContact(contact){
-
-  if(!state.db) return;
-
-  dbPut(
-    "contacts",
-    contact
-  ).catch(()=>{});
-}
-
-
-/* =========================================================
-   CONTACT UI
-   ========================================================= */
-
-function updateContactsUI(){
-
-  const root =
-    $("contacts");
-
-  const search =
-    $("searchInput")
-      .value
-      .toLowerCase()
-      .trim();
-
-  root.innerHTML = "";
-
-  const contacts =
-    [...state.contacts.values()]
-      .filter(c=>
-        !search ||
-        (c.name || "")
-          .toLowerCase()
-          .includes(search) ||
-        c.id.includes(search)
-      )
-      .sort((a,b)=>
-        (b.lastTs || 0) -
-        (a.lastTs || 0)
-      );
-
-  if(!contacts.length){
-
-    const p =
-      document.createElement("div");
-
-    p.style.cssText =
-      "padding:25px;text-align:center;color:#647b90;font-size:12px";
-
-    p.textContent =
-      "Hələ kontakt yoxdur.";
-
-    root.appendChild(p);
-
-    return;
-  }
-
-
-  contacts.forEach(contact=>{
-
-    const item =
-      document.createElement("div");
-
-    item.className =
-      "contact" +
-      (state.currentPeer === contact.id
-        ? " active"
-        : "");
-
-    const avatar =
-      document.createElement("div");
-
-    avatar.className =
-      "avatar";
-
-    avatar.style.width = "42px";
-    avatar.style.height = "42px";
-
-    avatar.textContent =
-      (contact.name || "P")
-        .slice(0,1)
-        .toUpperCase();
-
-
-    const main =
-      document.createElement("div");
-
-    main.className =
-      "contact-main";
-
-    const name =
-      document.createElement("div");
-
-    name.className =
-      "contact-name";
-
-    name.textContent =
-      contact.name ||
-      "Secure Peer";
-
-
-    const preview =
-      document.createElement("div");
-
-    preview.className =
-      "contact-preview";
-
-    const session =
-      state.sessions.get(contact.id);
-
-    preview.textContent =
-      session?.ready
-        ? "🔒 E2E encrypted"
-        : "Tap to connect";
-
-
-    main.append(
-      name,
-      preview
-    );
-
-
-    const time =
-      document.createElement("div");
-
-    time.className =
-      "contact-time";
-
-    if(contact.online){
-      time.textContent = "●";
-      time.style.color =
-        "#20d68b";
-    }
-
-
-    item.append(
-      avatar,
-      main,
-      time
-    );
-
-    item.addEventListener(
-      "click",
-      ()=>{
-        state.currentPeer =
-          contact.id;
-
-        document.body
-          .classList
-          .add("chat-open");
-
-        const session =
-          state.sessions.get(
-            contact.id
-          );
-
-        if(!session ||
-           !session.conn ||
-           !session.conn.open){
-
-          connectToPeer(
-            contact.id
-          );
-
-        }else{
-
-          renderChat();
-
-        }
-      }
-    );
-
-    root.appendChild(item);
-
-  });
-
-}
-
-
-/* =========================================================
-   CHAT RENDER
-   ========================================================= */
-
-async function renderChat(){
-
-  if(!state.currentPeer){
-
-    $("remoteName").textContent =
-      "Yeni söhbət";
-
-    $("remoteStatus").textContent =
-      "Peer ID ilə qoşul";
-
-    return;
-  }
-
-  const contact =
-    state.contacts.get(
-      state.currentPeer
-    );
-
-  $("remoteName").textContent =
-    contact?.name ||
-    "Secure Peer " +
-    state.currentPeer.slice(-4);
-
-  const session =
-    state.sessions.get(
-      state.currentPeer
-    );
-
-  if(session?.ready){
-
-    $("remoteStatus").textContent =
-      "🔒 E2E encrypted";
-
-  }else{
-
-    $("remoteStatus").textContent =
-      "Connecting...";
-
-  }
-
-  const all =
-    [...state.messages.values()]
-      .filter(m=>
-        m.chatId === state.currentPeer
-      )
-      .sort((a,b)=>a.ts-b.ts);
-
-  messagesEl.innerHTML = "";
-
-  if(!all.length){
-
-    messagesEl.appendChild(
-      emptyState
-    );
-
-    emptyState.style.display =
-      "block";
-
-    return;
-  }
-
-  emptyState.style.display =
-    "none";
-
-  let previousDate = "";
-
-  for(const msg of all){
-
-    const date =
-      new Date(msg.ts)
-        .toLocaleDateString(
-          undefined,
-          {
-            day:"numeric",
-            month:"short",
-            year:"numeric"
-          }
-        );
-
-    if(date !== previousDate){
-
-      const sep =
-        document.createElement("div");
-
-      sep.className =
-        "date-separator";
-
-      sep.textContent =
-        date;
-
-      messagesEl.appendChild(
-        sep
-      );
-
-      previousDate = date;
-    }
-
-    messagesEl.appendChild(
-      renderMessage(msg)
-    );
-
-  }
-
-  setTimeout(()=>{
-    messagesEl.scrollTop =
-      messagesEl.scrollHeight;
-  },20);
-
-}
-
-
-/* =========================================================
-   MESSAGE RENDER
-   ========================================================= */
-
-function renderMessage(msg){
-
-  const wrapper =
-    document.createElement("div");
-
-  wrapper.className =
-    "message " +
-    (msg.from === state.peerId
-      ? "me"
-      : "them");
-
-  wrapper.dataset.id =
-    msg.id;
-
-
-  const bubble =
-    document.createElement("div");
-
-  bubble.className =
-    "bubble";
-
-
-  if(msg.kind === "text"){
-
-    const original =
-      document.createElement("div");
-
-    original.className =
-      "original";
-
-    original.textContent =
-      msg.text || "";
-
-    bubble.appendChild(
-      original
-    );
-
-
-    if(msg.translation){
-
-      const trans =
-        document.createElement("div");
-
-      trans.className =
-        "translation";
-
-      const label =
-        document.createElement("div");
-
-      label.className =
-        "translation-label";
-
-      label.textContent =
-        "TRANSLATION";
-
-      trans.append(
-        label,
-        document.createTextNode(
-          msg.translation
-        )
-      );
-
-      bubble.appendChild(
-        trans
-      );
-    }
-
-  }
-
-
-  if(msg.kind === "image"){
-
-    const img =
-      document.createElement("img");
-
-    img.className =
-      "image-message";
-
-    img.alt =
-      "Encrypted image";
-
-    if(msg.data){
-
-      img.src =
-        msg.data;
-    }
-
-    img.addEventListener(
-      "click",
-      ()=>{
-        openImage(msg.data);
-      }
-    );
-
-    bubble.appendChild(
-      img
-    );
-
-  }
-
-
-  if(msg.kind === "audio"){
-
-    const audio =
-      document.createElement("audio");
-
-    audio.className =
-      "audio-player";
-
-    audio.controls = true;
-
-    audio.src =
-      msg.data;
-
-    bubble.appendChild(
-      audio
-    );
-
-  }
-
-
-  if(msg.kind === "file"){
-
-    const fileCard =
-      document.createElement("div");
-
-    fileCard.className =
-      "file-card";
-
-    const icon =
-      document.createElement("div");
-
-    icon.className =
-      "file-icon";
-
-    icon.textContent = "📎";
-
-    const info =
-      document.createElement("div");
-
-    const name =
-      document.createElement("div");
-
-    name.className =
-      "file-name";
-
-    name.textContent =
-      msg.fileName ||
-      "Encrypted file";
-
-    const size =
-      document.createElement("div");
-
-    size.className =
-      "file-size";
-
-    size.textContent =
-      formatBytes(
-        msg.fileSize || 0
-      );
-
-    info.append(
-      name,
-      size
-    );
-
-    fileCard.append(
-      icon,
-      info
-    );
-
-    fileCard.addEventListener(
-      "click",
-      ()=>{
-        downloadData(
-          msg.data,
-          msg.fileName,
-          msg.fileType
-        );
-      }
-    );
-
-    bubble.appendChild(
-      fileCard
-    );
-
-  }
-
-
-  const meta =
-    document.createElement("div");
-
-  meta.className =
-    "message-meta";
-
-  const time =
-    new Date(msg.ts)
-      .toLocaleTimeString(
-        [],
-        {
-          hour:"2-digit",
-          minute:"2-digit"
-        }
-      );
-
-  meta.appendChild(
-    document.createTextNode(
-      time
-    )
-  );
-
-
-  if(msg.from === state.peerId){
-
-    const check =
-      document.createElement("span");
-
-    check.className =
-      "check";
-
-    check.textContent =
-      msg.status === "read"
-        ? "✓✓"
-        : msg.status === "delivered"
-          ? "✓✓"
-          : "✓";
-
-    meta.appendChild(
-      check
-    );
-  }
-
-
-  bubble.appendChild(
-    meta
-  );
-
-
-  wrapper.appendChild(
-    bubble
-  );
-
-
-  const actions =
-    document.createElement("div");
-
-  actions.className =
-    "message-actions";
-
-
-  const reply =
-    document.createElement("button");
-
-  reply.textContent =
-    "Reply";
-
-  reply.onclick =
-    ()=>{
-      setReply(msg);
-    };
-
-
-  const copy =
-    document.createElement("button");
-
-  copy.textContent =
-    "Copy";
-
-  copy.onclick =
-    ()=>{
-      navigator.clipboard
-        ?.writeText(
-          msg.text || ""
-        );
-
-      toast(
-        "Kopyalandı.",
-        "success"
-      );
-    };
-
-
-  const del =
-    document.createElement("button");
-
-  del.textContent =
-    "Delete";
-
-  del.onclick =
-    ()=>{
-      deleteMessage(
-        msg.id
-      );
-    };
-
-
-  actions.append(
-    reply,
-    copy,
-    del
-  );
-
-  wrapper.appendChild(
-    actions
-  );
-
-
-  wrapper.addEventListener(
-    "contextmenu",
-    e=>{
-      e.preventDefault();
-      setReply(msg);
-    }
-  );
-
-
-  return wrapper;
-}
-
-
-/* =========================================================
-   SEND TEXT
-   ========================================================= */
-
-async function sendText(){
-
-  const text =
-    input.value.trim();
-
-  if(!text) return;
-
-  if(!state.currentPeer){
-
-    toast(
-      "Əvvəlcə P2P kontakt seç.",
-      "error"
-    );
-
-    return;
-  }
-
-  const session =
-    state.sessions.get(
-      state.currentPeer
-    );
-
-  if(!session?.ready){
-
-    toast(
-      "Təhlükəsiz kanal hələ hazır deyil.",
-      "error"
-    );
-
-    return;
-  }
-
-
-  const msg = {
-    id:crypto.randomUUID(),
-    chatId:state.currentPeer,
-    from:state.peerId,
-    to:state.currentPeer,
-    ts:Date.now(),
-    kind:"text",
-    text:text,
-    translation:"",
-    status:"sent",
-    replyTo:state.replyTo?.id || null
-  };
-
-
-  if(
-    state.settings.autoTranslate &&
-    !state.settings.privateMode
-  ){
-
-    const remote =
-      state.contacts.get(
-        state.currentPeer
-      );
-
-    const target =
-      remote?.lang ||
-      state.settings.targetLang;
-
-    try{
-
-      msg.translation =
-        await translateText(
-          text,
-          state.myProfile.lang,
-          target
-        );
-
-    }catch(e){
-
-      toast(
-        "Tərcümə alınmadı. Orijinal mətn saxlanıldı."
-      );
-
-    }
-
-  }
-
-
-  await saveMessage(
-    msg
-  );
-
-  await sendSecure(
-    {
-      type:"message",
-      message:msg
-    },
-    session
-  );
-
-
-  msg.status =
-    "delivered";
-
-  await saveMessage(
-    msg
-  );
-
-  input.value = "";
-
-  input.style.height =
-    "44px";
-
-  clearReply();
-
-  renderChat();
-
-  await sendSecure(
-    {
-      type:"typing",
-      value:false
-    },
-    session
-  );
-
-}
-
-
-/* =========================================================
-   RECEIVE MESSAGE
-   ========================================================= */
-
-async function receiveMessage(msg,session){
-
-  if(!msg ||
-     !msg.id ||
-     msg.chatId !== session.peerId){
-
-    return;
-  }
-
-
-  msg.status =
-    "delivered";
-
-
-  await saveMessage(
-    msg
-  );
-
-
-  addOrUpdateContact({
-    id:session.peerId,
-    name:
-      state.contacts.get(
-        session.peerId
-      )?.name ||
-      "Secure Peer",
-    lastTs:msg.ts
-  });
-
-
-  if(state.currentPeer === session.peerId){
-
-    renderChat();
-
-    await sendSecure(
-      {
-        type:"read",
-        messageId:msg.id
-      },
-      session
-    );
-
-  }else{
-
-    notifyIncoming(
-      msg
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   SAVE MESSAGE
-   ========================================================= */
-
-async function saveMessage(msg){
-
-  state.messages.set(
-    msg.id,
-    msg
-  );
-
-  if(state.db){
-
-    try{
-      await dbPut(
-        "messages",
-        msg
-      );
-    }catch(e){
-      console.error(e);
-    }
-
-  }
-
-}
-
-
-/* =========================================================
-   DELETE
-   ========================================================= */
-
-async function deleteMessage(id){
-
-  const msg =
-    state.messages.get(id);
-
-  if(!msg) return;
-
-  state.messages.delete(id);
-
-  if(state.db){
-    await dbDelete(
-      "messages",
-      id
-    );
-  }
-
-  if(
-    msg.from === state.peerId &&
-    state.currentPeer
-  ){
-
-    const session =
-      state.sessions.get(
-        state.currentPeer
-      );
-
-    if(session?.ready){
-
-      await sendSecure(
-        {
-          type:"delete",
-          messageId:id
-        },
-        session
-      );
-
-    }
-
-  }
-
-  renderChat();
-}
-
-
-async function deleteRemoteMessage(id){
-
-  state.messages.delete(id);
-
-  if(state.db){
-
-    await dbDelete(
-      "messages",
-      id
-    );
-
-  }
-
-  renderChat();
-}
-
-
-function markMessageRead(id){
-
-  const msg =
-    state.messages.get(id);
-
-  if(!msg) return;
-
-  msg.status =
-    "read";
-
-  saveMessage(
-    msg
-  ).then(()=>{
-    renderChat();
-  });
-
-}
-
-
-/* =========================================================
-   REACTION
-   ========================================================= */
-
-async function updateReaction(id,reaction){
-
-  const msg =
-    state.messages.get(id);
-
-  if(!msg) return;
-
-  msg.reaction =
-    reaction;
-
-  await saveMessage(
-    msg
-  );
-
-  renderChat();
-}
-
-
-async function reactMessage(id,reaction){
-
-  const session =
-    state.sessions.get(
-      state.currentPeer
-    );
-
-  if(!session?.ready) return;
-
-  await sendSecure(
-    {
-      type:"reaction",
-      messageId:id,
-      reaction
-    },
-    session
-  );
-
-  updateReaction(
-    id,
-    reaction
-  );
-
-}
-
-
-/* =========================================================
-   TYPING
-   ========================================================= */
-
-input.addEventListener(
-  "input",
-  async ()=>{
-
-    input.style.height =
-      "44px";
-
-    input.style.height =
-      Math.min(
-        input.scrollHeight,
-        140
-      ) + "px";
-
-
-    const session =
-      state.sessions.get(
-        state.currentPeer
-      );
-
-    if(!session?.ready)
-      return;
-
-
-    await sendSecure(
-      {
-        type:"typing",
-        value:true
-      },
-      session
-    );
-
-
-    clearTimeout(
-      state.typingTimer
-    );
-
-    state.typingTimer =
-      setTimeout(async()=>{
-
-        const s =
-          state.sessions.get(
-            state.currentPeer
-          );
-
-        if(s?.ready){
-
-          await sendSecure(
-            {
-              type:"typing",
-              value:false
-            },
-            s
-          );
-
-        }
-
-      },900);
-
-  }
-);
-
-
-/* =========================================================
-   TRANSLATION
-   ========================================================= */
-
-async function translateText(
-  text,
-  source,
-  target
-){
-
-  if(!text) return "";
-
-  if(source === target)
-    return text;
-
-
-  /* Try browser local translation API if available. */
-
-  try{
-
-    if("Translator" in window){
-
-      const translator =
-        await window.Translator.create({
-          sourceLanguage:source,
-          targetLanguage:target
-        });
-
-      const result =
-        await translator.translate(
-          text
-        );
-
-      return result;
-    }
-
-  }catch(e){
-    console.warn(
-      "Local translator unavailable",
-      e
-    );
-  }
-
-
-  if(state.settings.privateMode){
-
-    throw new Error(
-      "Private Mode cloud translation disabled"
-    );
-  }
-
-
-  const url =
-    "https://api.mymemory.translated.net/get" +
-    "?q=" +
-    encodeURIComponent(text) +
-    "&langpair=" +
-    encodeURIComponent(
-      source + "|" + target
-    );
-
-
-  const response =
-    await fetch(url);
-
-
-  if(!response.ok){
-    throw new Error(
-      "Translation HTTP error"
-    );
-  }
-
-
-  const data =
-    await response.json();
-
-
-  const translated =
-    data?.responseData?.translatedText;
-
-
-  if(!translated){
-    throw new Error(
-      "No translation"
-    );
-  }
-
-
-  return translated;
-}
-
-
-/* =========================================================
-   LANGUAGE DETECTION
-   ========================================================= */
-
-function detectLanguage(text){
-
-  if(/[əığşçöüƏİĞŞÇÖÜ]/.test(text))
-    return "az";
-
-  if(/[а-яА-ЯёЁ]/.test(text))
-    return "ru";
-
-  if(/[؀-ۿ]/.test(text))
-    return "ar";
-
-  if(/[\u4e00-\u9fff]/.test(text))
-    return "zh";
-
-  if(/[\u3040-\u30ff]/.test(text))
-    return "ja";
-
-  if(/[\uac00-\ud7af]/.test(text))
-    return "ko";
-
-  return state.myProfile.lang || "en";
-}
-
-
-/* =========================================================
-   FILES
-   ========================================================= */
-
-function formatBytes(bytes){
-
-  if(!bytes)
-    return "0 B";
-
-  const units =
-    ["B","KB","MB","GB"];
-
-  const i =
-    Math.floor(
-      Math.log(bytes) /
-      Math.log(1024)
-    );
-
-  return (
-    bytes /
-    Math.pow(1024,i)
-  ).toFixed(
-    i ? 1 : 0
-  ) +
-  " " +
-  units[i];
-}
-
-
-function fileToDataURL(file){
-
-  return new Promise(
-    (resolve,reject)=>{
-
-      const reader =
-        new FileReader();
-
-      reader.onload =
-        ()=>resolve(
-          reader.result
-        );
-
-      reader.onerror =
-        ()=>reject(
-          reader.error
-        );
-
-      reader.readAsDataURL(
-        file
-      );
-
-    }
-  );
-}
-
-
-async function sendFiles(files){
-
-  if(!state.currentPeer){
-
-    toast(
-      "Əvvəlcə kontakt seç.",
-      "error"
-    );
-
-    return;
-  }
-
-
-  const session =
-    state.sessions.get(
-      state.currentPeer
-    );
-
-  if(!session?.ready){
-
-    toast(
-      "Secure kanal hazır deyil.",
-      "error"
-    );
-
-    return;
-  }
-
-
-  for(const file of files){
-
-    if(file.size > MAX_FILE_SIZE){
-
-      toast(
-        file.name +
-        " — maksimum 15 MB.",
-        "error"
-      );
-
-      continue;
-    }
-
-
-    try{
-
-      const data =
-        await fileToDataURL(
-          file
-        );
-
-
-      const id =
-        crypto.randomUUID();
-
-
-      const kind =
-        file.type.startsWith("image/")
-          ? "image"
-          : file.type.startsWith("audio/")
-            ? "audio"
-            : "file";
-
-
-      const msg = {
-        id,
-        chatId:state.currentPeer,
-        from:state.peerId,
-        to:state.currentPeer,
-        ts:Date.now(),
-        kind,
-        status:"sent",
-        fileName:file.name,
-        fileType:file.type,
-        fileSize:file.size,
-        data
-      };
-
-
-      await saveMessage(
-        msg
-      );
-
-
-      /*
-        DataChannel itself is reliable, but the entire
-        file is encrypted as an application-level payload.
-        For very large files production version should use
-        encrypted chunk/ACK protocol.
-      */
-
-      await sendSecure(
-        {
-          type:"file",
-          id,
-          name:file.name,
-          mime:file.type,
-          size:file.size,
-          data
-        },
-        session
-      );
-
-
-      msg.status =
-        "delivered";
-
-      await saveMessage(
-        msg
-      );
-
-      renderChat();
-
-
-    }catch(e){
-
-      console.error(e);
-
-      toast(
-        "Fayl göndərilmədi.",
-        "error"
-      );
-
-    }
-
-  }
-
-}
-
-
-/* =========================================================
-   RECEIVE FILE
-   ========================================================= */
-
-async function receiveFile(obj,session){
-
-  if(!obj.data ||
-     obj.size > MAX_FILE_SIZE){
-
-    toast(
-      "Fayl qəbul edilmədi.",
-      "error"
-    );
-
-    return;
-  }
-
-
-  const msg = {
-    id:obj.id ||
-      crypto.randomUUID(),
-
-    chatId:session.peerId,
-
-    from:session.peerId,
-
-    to:state.peerId,
-
-    ts:Date.now(),
-
-    kind:
-      obj.mime?.startsWith("image/")
-        ? "image"
-        : obj.mime?.startsWith("audio/")
-          ? "audio"
-          : "file",
-
-    status:"delivered",
-
-    fileName:obj.name,
-
-    fileType:obj.mime,
-
-    fileSize:obj.size,
-
-    data:obj.data
-  };
-
-
-  await saveMessage(
-    msg
-  );
-
-
-  if(state.currentPeer === session.peerId){
-
-    renderChat();
-
-  }else{
-
-    notifyIncoming(
-      msg
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   DOWNLOAD
-   ========================================================= */
-
-function downloadData(
-  data,
-  name,
-  type
-){
-
-  const a =
-    document.createElement("a");
-
-  a.href = data;
-
-  a.download =
-    name ||
-    "vault-file";
-
-  a.click();
-
-}
-
-
-function openImage(src){
-
-  if(!src) return;
-
-  const overlay =
-    document.createElement("div");
-
-  overlay.className =
-    "overlay open";
-
-  overlay.innerHTML =
-    '<div style="max-width:95%;max-height:90%;display:flex;align-items:center;justify-content:center">' +
-    '<img src="' +
-    src +
-    '" style="max-width:100%;max-height:90dvh;border-radius:15px">' +
-    '</div>';
-
-  overlay.addEventListener(
-    "click",
-    ()=>overlay.remove()
-  );
-
-  document.body.appendChild(
-    overlay
-  );
-}
-
-
-/* =========================================================
-   REPLY
-   ========================================================= */
-
-function setReply(msg){
-
-  state.replyTo =
-    msg;
-
-  $("replyBox")
-    .classList
-    .add("open");
-
-  $("replyName").textContent =
-    msg.from === state.peerId
-      ? "Sən"
-      : (
-        state.contacts.get(
-          msg.from
-        )?.name ||
-        "Peer"
-      );
-
-  $("replyText").textContent =
-    msg.text ||
-    msg.fileName ||
-    "[media]";
-
-  input.focus();
-}
-
-
-function clearReply(){
-
-  state.replyTo =
-    null;
-
-  $("replyBox")
-    .classList
-    .remove("open");
-}
-
-
-/* =========================================================
-   PING
-   ========================================================= */
-
-async function pingCurrent(){
-
-  const session =
-    state.sessions.get(
-      state.currentPeer
-    );
-
-  if(!session?.ready)
-    return;
-
-  const id =
-    crypto.randomUUID();
-
-  session.pingId =
-    id;
-
-  session.pingT =
-    Date.now();
-
-  await sendSecure(
-    {
-      type:"ping",
-      id,
-      t:Date.now()
-    },
-    session
-  );
-
-}
-
-
-function updateChatStatus(){
-
-  const session =
-    state.sessions.get(
-      state.currentPeer
-    );
-
-  if(!session?.ready)
-    return;
-
-  $("remoteStatus").textContent =
-    "🔒 E2E encrypted" +
-    (
-      session.latency != null
-        ? " • " +
-          session.latency +
-          "ms"
-        : ""
-    );
-}
-
-
-/* =========================================================
-   SECURITY UI
-   ========================================================= */
-
-function updateSecurityUI(){
-
-  const session =
-    state.sessions.get(
-      state.currentPeer
-    );
-
-  $("fingerMine").textContent =
-    "";
-
-  $("myFingerprint").textContent =
-    "Hazırlandıqdan sonra görünəcək.";
-
-  const anySession =
-    session ||
-    [...state.sessions.values()][0];
-
-  if(anySession){
-
-    $("fingerMine").textContent =
-      anySession.fingerprint || "";
-
-    $("fingerRemote").textContent =
-      anySession.remoteFingerprint ||
-      "Qoşulma gözlənilir...";
-
-  }
-
-  if(session?.ready){
-
-    $("securityState").textContent =
-      "• E2E encrypted";
-
-    $("connectionPill").textContent =
-      "🔒 Secure";
-
-    $("connectionPill")
-      .classList
-      .add("secure");
-
-  }
-
-}
-
-
-/* =========================================================
-   NOTIFICATIONS
-   ========================================================= */
-
-async function notifyIncoming(msg){
-
-  try{
-
-    if(
-      Notification.permission ===
-      "granted"
-    ){
-
-      new Notification(
-        "VAULT CHAT",
-        {
-          body:
-            msg.kind === "text"
-              ? msg.text
-              : "Yeni fayl"
-        }
-      );
-
-    }
-
-  }catch(e){}
-
-  document.title =
-    "● VAULT CHAT";
-
-  setTimeout(()=>{
-    document.title =
-      "VAULT CHAT — Private P2P";
-  },4000);
-
-}
-
-
-/* =========================================================
-   CAMERA
-   ========================================================= */
-
-async function startCamera(){
-
-  try{
-
-    state.mediaStream =
-      await navigator.mediaDevices.getUserMedia({
-        video:{
-          facingMode:
-            state.facingMode
-        },
-        audio:false
-      });
-
-    $("cameraVideo").srcObject =
-      state.mediaStream;
-
-    openModal(
-      "cameraModal"
-    );
-
-  }catch(e){
-
-    toast(
-      "Kamera icazəsi alınmadı.",
-      "error"
-    );
-
-  }
-
-}
-
-
-function stopCamera(){
-
-  if(state.mediaStream){
-
-    state.mediaStream
-      .getTracks()
-      .forEach(
-        t=>t.stop()
-      );
-
-    state.mediaStream =
-      null;
-  }
-
-  $("cameraVideo").srcObject =
-    null;
-}
-
-
-$("cameraBtn").addEventListener(
-  "click",
-  startCamera
-);
-
-
-$("switchCamera").addEventListener(
-  "click",
-  async()=>{
-
-    stopCamera();
-
-    state.facingMode =
-      state.facingMode === "user"
-        ? "environment"
-        : "user";
-
-    await startCamera();
-
-  }
-);
-
-
-$("takePhoto").addEventListener(
-  "click",
-  async()=>{
-
-    const video =
-      $("cameraVideo");
-
-    if(!video.videoWidth){
-
-      toast(
-        "Kamera hələ hazır deyil.",
-        "error"
-      );
-
-      return;
-    }
-
-    const canvas =
-      document.createElement("canvas");
-
-    const max = 1400;
-
-    const ratio =
-      Math.min(
-        1,
-        max /
-        video.videoWidth
-      );
-
-    canvas.width =
-      video.videoWidth * ratio;
-
-    canvas.height =
-      video.videoHeight * ratio;
-
-    canvas
-      .getContext("2d")
-      .drawImage(
-        video,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-    canvas.toBlob(
-      async blob=>{
-
-        if(!blob) return;
-
-        const file =
-          new File(
-            [blob],
-            "camera-" +
-            Date.now() +
-            ".jpg",
-            {
-              type:"image/jpeg"
+    <!-- MAIN ENGINE JAVASCRIPT LOGIC -->
+    <script>
+        /**
+         * ARWORLD ENGINE - SINGLE FILE COMPLETE PRODUCTION ARCHITECTURE
+         * Developer: Senior Full-Stack & Spatial AR Architect
+         */
+        class ARWorldApp {
+            constructor() {
+                // Application State Engine
+                this.userPos = { lat: 40.3772, lng: 49.8920 }; // Default Baku
+                this.selectedMapPos = null;
+                this.scanningRadius = 300; // meters
+                this.currentView = 'map';
+                this.currentLang = 'AZ';
+                this.theme = 'dark';
+                this.posts = [];
+                this.notifications = [];
+                this.mediaPreviews = [];
+                this.map = null;
+                this.markersGroup = null;
+                this.pickedMapMarker = null;
+                this.watchPositionId = null;
+                this.lockedTargetId = null;
+
+                // Live Camera Capture State
+                this.captureStream = null;
+                this.mediaRecorder = null;
+                this.recordedChunks = [];
+                this.captureMode = 'image'; // image | video
+                this.isRecording = false;
+                this.facingMode = 'environment';
+
+                // Language Dictionary
+                this.i18n = {
+                    AZ: {
+                        nav_map: "Xəritə", nav_ar: "AR Kamera", nav_feed: "Axtarış/Feed", nav_profile: "Profil",
+                        modal_create_title: "Yeni AR Məkan Elanı", label_location: "Koordinat Mənbəyi",
+                        loc_current: "Cari GPS Mövqeyim", loc_map: "Xəritədən Seçilmiş Koordinat",
+                        label_category: "Kateqoriya", label_title: "Başlıq", label_desc: "Ətraflı Məlumat",
+                        label_price: "Qiymət / Nömrə", label_moving: "Hərəkətdə olan obyektdir (Tracking)",
+                        label_media: "Media & YouTube Linki", opt_gallery: "Qalereya", opt_photo: "Foto Çək", opt_video: "Video Çək",
+                        disclaimer_text: "Bu paylaşımın məzmununa və yerləşdirildiyi xüsusi məkana görə bütün hüquqi məsuliyyəti öz üzərimə götürürəm.",
+                        btn_publish: "Paylaş və AR Məkana Yerləşdir", notifications: "Bildirişlər Mərkəzi",
+                        my_posts: "Paylaşımlar", views: "Baxışlar", reactions: "Reaksiyalar",
+                        my_location_posts: "Mənim Məkan Paylaşımlarım", clear_data: "Tətbiq Məlumatlarını Sıfırla"
+                    },
+                    EN: {
+                        nav_map: "Map", nav_ar: "AR Camera", nav_feed: "Search/Feed", nav_profile: "Profile",
+                        modal_create_title: "New AR Spatial Post", label_location: "Coordinate Source",
+                        loc_current: "Current GPS Location", loc_map: "Selected Map Location",
+                        label_category: "Category", label_title: "Title", label_desc: "Details",
+                        label_price: "Price / Phone", label_moving: "Moving Object Tracking Enabled",
+                        label_media: "Media & YouTube Link", opt_gallery: "Gallery", opt_photo: "Take Photo", opt_video: "Record Video",
+                        disclaimer_text: "I assume full legal responsibility for the content and spatial placement of this post.",
+                        btn_publish: "Publish to AR Space", notifications: "Notification Center",
+                        my_posts: "Posts", views: "Views", reactions: "Reactions",
+                        my_location_posts: "My Spatial Posts", clear_data: "Reset Application Data"
+                    },
+                    RU: {
+                        nav_map: "Карта", nav_ar: "AR Камера", nav_feed: "Лента", nav_profile: "Профиль",
+                        modal_create_title: "Новое AR Объявление", label_location: "Источник Координат",
+                        loc_current: "Мое GPS Положение", loc_map: "Выбранное на карте",
+                        label_category: "Категория", label_title: "Заголовок", label_desc: "Описание",
+                        label_price: "Цена / Телефон", label_moving: "Движущийся объект (Трекинг)",
+                        label_media: "Медиа и YouTube Link", opt_gallery: "Галерея", opt_photo: "Сделать Фото", opt_video: "Записать Видео",
+                        disclaimer_text: "Я несу полную юридическую ответственность за содержание и местоположение этого поста.",
+                        btn_publish: "Опубликовать в AR", notifications: "Центр Уведомлений",
+                        my_posts: "Публикации", views: "Просмотры", reactions: "Реакции",
+                        my_location_posts: "Мои Публикации", clear_data: "Сбросить Данные Приложения"
+                    }
+                };
+
+                this.init();
             }
-          );
 
-        await sendFiles([
-          file
-        ]);
-
-        closeModal(
-          "cameraModal"
-        );
-
-        stopCamera();
-
-      },
-      "image/jpeg",
-      .82
-    );
-
-  }
-);
-
-
-/* =========================================================
-   AUDIO
-   ========================================================= */
-
-$("micBtn").addEventListener(
-  "click",
-  ()=>{
-    openModal(
-      "audioModal"
-    );
-  }
-);
-
-
-$("recordStart").addEventListener(
-  "click",
-  async()=>{
-
-    try{
-
-      const stream =
-        await navigator.mediaDevices
-          .getUserMedia({
-            audio:true
-          });
-
-      const chunks = [];
-
-      const recorder =
-        new MediaRecorder(
-          stream
-        );
-
-      state.recording = {
-        recorder,
-        stream,
-        chunks,
-        started:Date.now()
-      };
-
-
-      recorder.ondataavailable =
-        e=>{
-
-          if(e.data.size)
-            chunks.push(
-              e.data
-            );
-
-        };
-
-
-      recorder.onstop =
-        async()=>{
-
-          const blob =
-            new Blob(
-              chunks,
-              {
-                type:
-                  recorder.mimeType ||
-                  "audio/webm"
-              }
-            );
-
-          stream
-            .getTracks()
-            .forEach(
-              t=>t.stop()
-            );
-
-
-          if(
-            Date.now() -
-            state.recording.started >
-            120000
-          ){
-
-            toast(
-              "Səs limiti 2 dəqiqədir.",
-              "error"
-            );
-
-            return;
-          }
-
-
-          const file =
-            new File(
-              [blob],
-              "voice-" +
-              Date.now() +
-              ".webm",
-              {
-                type:blob.type
-              }
-            );
-
-          await sendFiles([
-            file
-          ]);
-
-          $("recordState").textContent =
-            "Səs göndərildi.";
-
-        };
-
-
-      recorder.start();
-
-      $("recordState").textContent =
-        "🔴 Yazılır...";
-
-      $("recordStart").disabled =
-        true;
-
-    }catch(e){
-
-      toast(
-        "Mikrofon icazəsi alınmadı.",
-        "error"
-      );
-
-    }
-
-  }
-);
-
-
-$("recordStop").addEventListener(
-  "click",
-  ()=>{
-
-    if(
-      state.recording?.recorder?.state ===
-      "recording"
-    ){
-
-      state.recording
-        .recorder
-        .stop();
-
-      $("recordStart").disabled =
-        false;
-
-      $("recordState").textContent =
-        "Hazırlanır...";
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   QR GENERATION
-   ========================================================= */
-
-function showMyQR(){
-
-  const box =
-    $("qrBox");
-
-  box.innerHTML = "";
-
-  const qr =
-    qrcode(
-      0,
-      "M"
-    );
-
-  const link =
-    location.origin +
-    location.pathname +
-    "?ref=" +
-    state.peerId;
-
-  qr.addData(
-    link
-  );
-
-  qr.make();
-
-  box.innerHTML =
-    qr.createImgTag(
-      5,
-      8
-    );
-
-  openModal(
-    "qrModal"
-  );
-}
-
-
-/* =========================================================
-   QR SCANNER
-   ========================================================= */
-
-async function startQRScanner(){
-
-  closeModal(
-    "qrModal"
-  );
-
-  openModal(
-    "scanModal"
-  );
-
-  if(state.scanner){
-
-    try{
-      await state.scanner.clear();
-    }catch(e){}
-
-  }
-
-  state.scanner =
-    new Html5Qrcode(
-      "reader"
-    );
-
-  try{
-
-    await state.scanner.start(
-      {
-        facingMode:"environment"
-      },
-      {
-        fps:10,
-        qrbox:{
-          width:250,
-          height:250
-        }
-      },
-      decoded=>{
-        handleQR(decoded);
-      },
-      ()=>{}
-    );
-
-  }catch(e){
-
-    toast(
-      "QR kamera açıla bilmədi.",
-      "error"
-    );
-
-  }
-
-}
-
-
-async function handleQR(decoded){
-
-  try{
-
-    if(state.scanner){
-
-      await state.scanner.stop();
-
-    }
-
-  }catch(e){}
-
-  closeModal(
-    "scanModal"
-  );
-
-
-  try{
-
-    const url =
-      new URL(
-        decoded
-      );
-
-    const ref =
-      url.searchParams.get(
-        "ref"
-      );
-
-    if(ref){
-
-      $("peerInput").value =
-        ref;
-
-      openModal(
-        "addModal"
-      );
-
-      connectToPeer(
-        ref
-      );
-
-      return;
-    }
-
-  }catch(e){}
-
-
-  if(/^\d{8}$/.test(decoded)){
-
-    $("peerInput").value =
-      decoded;
-
-    openModal(
-      "addModal"
-    );
-
-    connectToPeer(
-      decoded
-    );
-
-    return;
-  }
-
-
-  toast(
-    "Bu QR VAULT CHAT Peer ID deyil.",
-    "error"
-  );
-
-}
-
-
-/* =========================================================
-   EXPORT
-   ========================================================= */
-
-async function exportData(){
-
-  const messages =
-    await dbGetAll(
-      "messages"
-    );
-
-  const contacts =
-    await dbGetAll(
-      "contacts"
-    );
-
-  const data = {
-    version:APP_VERSION,
-    exportedAt:new Date().toISOString(),
-    messages,
-    contacts
-  };
-
-  const blob =
-    new Blob(
-      [
-        JSON.stringify(
-          data,
-          null,
-          2
-        )
-      ],
-      {
-        type:"application/json"
-      }
-    );
-
-  const url =
-    URL.createObjectURL(
-      blob
-    );
-
-  const a =
-    document.createElement("a");
-
-  a.href = url;
-
-  a.download =
-    "vault-chat-backup-" +
-    Date.now() +
-    ".json";
-
-  a.click();
-
-  setTimeout(()=>{
-    URL.revokeObjectURL(url);
-  },1000);
-
-  toast(
-    "Backup yaradıldı.",
-    "success"
-  );
-
-}
-
-
-/* =========================================================
-   CLEAR DATA
-   ========================================================= */
-
-async function clearData(){
-
-  const ok =
-    confirm(
-      "Bütün yerli mesajlar və kontaktlar silinsin?"
-    );
-
-  if(!ok) return;
-
-  const tx =
-    state.db.transaction(
-      [
-        "messages",
-        "contacts",
-        "media"
-      ],
-      "readwrite"
-    );
-
-  tx.objectStore(
-    "messages"
-  ).clear();
-
-  tx.objectStore(
-    "contacts"
-  ).clear();
-
-  tx.objectStore(
-    "media"
-  ).clear();
-
-  tx.oncomplete = ()=>{
-
-    state.messages.clear();
-    state.contacts.clear();
-
-    updateContactsUI();
-    renderChat();
-
-    toast(
-      "Yerli məlumatlar silindi.",
-      "success"
-    );
-
-  };
-
-}
-
-
-/* =========================================================
-   NAME
-   ========================================================= */
-
-$("saveName").addEventListener(
-  "click",
-  async()=>{
-
-    const name =
-      $("nameInput")
-        .value
-        .trim();
-
-    if(!name){
-
-      toast(
-        "Ad boş ola bilməz.",
-        "error"
-      );
-
-      return;
-    }
-
-    state.myProfile.name =
-      name;
-
-    localStorage.setItem(
-      "vault_name",
-      name
-    );
-
-    $("myName").textContent =
-      name;
-
-
-    const session =
-      state.sessions.get(
-        state.currentPeer
-      );
-
-    if(session?.ready){
-
-      await sendSecure(
-        {
-          type:"profile",
-          profile:state.myProfile
-        },
-        session
-      );
-
-    }
-
-    toast(
-      "Profil yadda saxlanıldı.",
-      "success"
-    );
-
-  }
-);
-
-
-/* =========================================================
-   SETTINGS
-   ========================================================= */
-
-$("privateToggle").checked =
-  state.settings.privateMode;
-
-$("translateToggle").checked =
-  state.settings.autoTranslate;
-
-$("nameInput").value =
-  state.myProfile.name;
-
-
-$("privateToggle").addEventListener(
-  "change",
-  ()=>{
-
-    state.settings.privateMode =
-      $("privateToggle").checked;
-
-    localStorage.setItem(
-      "vault_private",
-      state.settings.privateMode
-    );
-
-    $("privatePill").textContent =
-      state.settings.privateMode
-        ? "PRIVATE"
-        : "TRANSLATE";
-
-    toast(
-      state.settings.privateMode
-        ? "Private Mode aktivdir."
-        : "Cloud translation icazəsi açıldı."
-    );
-
-  }
-);
-
-
-$("translateToggle").addEventListener(
-  "change",
-  ()=>{
-
-    state.settings.autoTranslate =
-      $("translateToggle").checked;
-
-    localStorage.setItem(
-      "vault_translate",
-      state.settings.autoTranslate
-    );
-
-  }
-);
-
-
-/* =========================================================
-   LANGUAGE UI
-   ========================================================= */
-
-function populateLanguages(){
-
-  const my =
-    $("myLang");
-
-  const target =
-    $("targetLang");
-
-  my.innerHTML = "";
-  target.innerHTML = "";
-
-  Object.entries(LANGS)
-    .forEach(([code,name])=>{
-
-      const a =
-        document.createElement("option");
-
-      a.value = code;
-      a.textContent =
-        code.toUpperCase() +
-        " — " +
-        name;
-
-      my.appendChild(a);
-
-
-      const b =
-        a.cloneNode(true);
-
-      target.appendChild(
-        b
-      );
-
-    });
-
-
-  my.value =
-    LANGS[state.myProfile.lang]
-      ? state.myProfile.lang
-      : "en";
-
-  target.value =
-    LANGS[state.settings.targetLang]
-      ? state.settings.targetLang
-      : "en";
-}
-
-
-$("myLang").addEventListener(
-  "change",
-  ()=>{
-
-    state.myProfile.lang =
-      $("myLang").value;
-
-    localStorage.setItem(
-      "vault_lang",
-      state.myProfile.lang
-    );
-
-  }
-);
-
-
-$("targetLang").addEventListener(
-  "change",
-  ()=>{
-
-    state.settings.targetLang =
-      $("targetLang").value;
-
-    localStorage.setItem(
-      "vault_target",
-      state.settings.targetLang
-    );
-
-  }
-);
-
-
-/* =========================================================
-   BUTTONS
-   ========================================================= */
-
-$("addBtn").addEventListener(
-  "click",
-  ()=>{
-    openModal(
-      "addModal"
-    );
-  }
-);
-
-
-$("emptyAdd").addEventListener(
-  "click",
-  ()=>{
-    openModal(
-      "addModal"
-    );
-  }
-);
-
-
-$("connectBtn").addEventListener(
-  "click",
-  ()=>{
-    connectToPeer(
-      $("peerInput").value
-    );
-  }
-);
-
-
-$("qrBtn").addEventListener(
-  "click",
-  showMyQR
-);
-
-
-$("scanQrBtn").addEventListener(
-  "click",
-  startQRScanner
-);
-
-
-$("settingsBtn").addEventListener(
-  "click",
-  ()=>{
-    updateSecurityUI();
-    openModal(
-      "settingsModal"
-    );
-  }
-);
-
-
-$("fingerBtn").addEventListener(
-  "click",
-  ()=>{
-    updateSecurityUI();
-    openModal(
-      "fingerModal"
-    );
-  }
-);
-
-
-$("chatInfoBtn").addEventListener(
-  "click",
-  ()=>{
-    openModal(
-      "infoModal"
-    );
-  }
-);
-
-
-$("backBtn").addEventListener(
-  "click",
-  ()=>{
-    document.body
-      .classList
-      .remove("chat-open");
-
-    state.currentPeer =
-      null;
-
-    updateContactsUI();
-  }
-);
-
-
-$("sendBtn").addEventListener(
-  "click",
-  sendText
-);
-
-
-input.addEventListener(
-  "keydown",
-  e=>{
-
-    if(
-      e.key === "Enter" &&
-      !e.shiftKey
-    ){
-
-      e.preventDefault();
-
-      sendText();
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   EMOJI
-   ========================================================= */
-
-const emojiPanel =
-  $("emojiPanel");
-
-document.querySelectorAll(
-  ".emoji"
-).forEach(btn=>{
-
-  btn.addEventListener(
-    "click",
-    ()=>{
-
-      const start =
-        input.selectionStart;
-
-      const end =
-        input.selectionEnd;
-
-      input.value =
-        input.value.slice(0,start) +
-        btn.textContent +
-        input.value.slice(end);
-
-      input.focus();
-
-      input.selectionStart =
-        input.selectionEnd =
-        start +
-        btn.textContent.length;
-
-    }
-  );
-
-});
-
-
-$("fileBtn").addEventListener(
-  "click",
-  ()=>{
-    $("fileInput").click();
-  }
-);
-
-
-$("fileInput").addEventListener(
-  "change",
-  async e=>{
-
-    await sendFiles(
-      [...e.target.files]
-    );
-
-    e.target.value = "";
-
-  }
-);
-
-
-/* =========================================================
-   DRAG DROP
-   ========================================================= */
-
-document.addEventListener(
-  "dragover",
-  e=>{
-    e.preventDefault();
-
-    $("dropZone")
-      .classList
-      .add("active");
-  }
-);
-
-
-document.addEventListener(
-  "dragleave",
-  e=>{
-
-    if(
-      e.clientX <= 0 ||
-      e.clientY <= 0 ||
-      e.clientX >= innerWidth ||
-      e.clientY >= innerHeight
-    ){
-
-      $("dropZone")
-        .classList
-        .remove("active");
-
-    }
-
-  }
-);
-
-
-document.addEventListener(
-  "drop",
-  async e=>{
-
-    e.preventDefault();
-
-    $("dropZone")
-      .classList
-      .remove("active");
-
-    if(e.dataTransfer.files.length){
-
-      await sendFiles(
-        [...e.dataTransfer.files]
-      );
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   SEARCH
-   ========================================================= */
-
-$("searchInput").addEventListener(
-  "input",
-  updateContactsUI
-);
-
-
-/* =========================================================
-   SHARE
-   ========================================================= */
-
-$("copyInvite").addEventListener(
-  "click",
-  async()=>{
-
-    try{
-
-      await navigator.clipboard.writeText(
-        $("inviteInput").value
-      );
-
-      toast(
-        "Dəvət linki kopyalandı.",
-        "success"
-      );
-
-    }catch(e){
-
-      toast(
-        "Clipboard icazəsi yoxdur.",
-        "error"
-      );
-
-    }
-
-  }
-);
-
-
-$("shareInvite").addEventListener(
-  "click",
-  async()=>{
-
-    const url =
-      $("inviteInput").value;
-
-    if(navigator.share){
-
-      try{
-
-        await navigator.share({
-          title:"VAULT CHAT",
-          text:"Private P2P Chat",
-          url
-        });
-
-      }catch(e){}
-
-    }else{
-
-      await navigator.clipboard.writeText(
-        url
-      );
-
-      toast(
-        "Link kopyalandı.",
-        "success"
-      );
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   EXPORT/CLEAR
-   ========================================================= */
-
-$("exportBtn").addEventListener(
-  "click",
-  exportData
-);
-
-$("clearBtn").addEventListener(
-  "click",
-  clearData
-);
-
-
-/* =========================================================
-   QR AUTO FROM URL
-   ========================================================= */
-
-$("inviteInput").value =
-  location.origin +
-  location.pathname +
-  "?ref=" +
-  state.peerId;
-
-
-/* =========================================================
-   NOTIFICATION PERMISSION
-   ========================================================= */
-
-if(
-  "Notification" in window &&
-  Notification.permission ===
-  "default"
-){
-
-  setTimeout(()=>{
-    Notification.requestPermission()
-      .catch(()=>{});
-  },4000);
-
-}
-
-
-/* =========================================================
-   DATABASE LOAD
-   ========================================================= */
-
-async function loadLocalData(){
-
-  await openDB();
-
-
-  const messages =
-    await dbGetAll(
-      "messages"
-    );
-
-  messages.forEach(
-    msg=>{
-      state.messages.set(
-        msg.id,
-        msg
-      );
-    }
-  );
-
-
-  const contacts =
-    await dbGetAll(
-      "contacts"
-    );
-
-  contacts.forEach(
-    contact=>{
-      state.contacts.set(
-        contact.id,
-        contact
-      );
-    }
-  );
-
-
-  updateContactsUI();
-
-}
-
-
-/* =========================================================
-   INITIAL UI
-   ========================================================= */
-
-$("myName").textContent =
-  state.myProfile.name;
-
-$("privatePill").textContent =
-  state.settings.privateMode
-    ? "PRIVATE"
-    : "TRANSLATE";
-
-populateLanguages();
-
-
-/* =========================================================
-   INITIALIZATION
-   ========================================================= */
-
-(async function boot(){
-
-  if(
-    !window.crypto ||
-    !crypto.subtle
-  ){
-
-    toast(
-      "Web Crypto dəstəklənmir. HTTPS istifadə et.",
-      "error"
-    );
-
-    return;
-  }
-
-
-  try{
-
-    await loadLocalData();
-
-  }catch(e){
-
-    console.error(e);
-
-    toast(
-      "Yerli yaddaş açıla bilmədi.",
-      "error"
-    );
-
-  }
-
-
-  initPeer();
-
-})();
-
-
-/* =========================================================
-   PERIODIC PING
-   ========================================================= */
-
-setInterval(
-  pingCurrent,
-  15000
-);
-
-
-/* =========================================================
-   SECURITY STATE REFRESH
-   ========================================================= */
-
-setInterval(
-  updateSecurityUI,
-  3000
-);
-
-
-/* =========================================================
-   VISIBILITY / READ
-   ========================================================= */
-
-document.addEventListener(
-  "visibilitychange",
-  async()=>{
-
-    if(
-      document.visibilityState !==
-      "visible"
-    ) return;
-
-    if(!state.currentPeer)
-      return;
-
-    const session =
-      state.sessions.get(
-        state.currentPeer
-      );
-
-    if(!session?.ready)
-      return;
-
-    const unread =
-      [...state.messages.values()]
-        .filter(m=>
-          m.chatId ===
-            state.currentPeer &&
-          m.from !==
-            state.peerId &&
-          m.status !==
-            "read"
-        );
-
-    for(const msg of unread){
-
-      msg.status =
-        "read";
-
-      await saveMessage(
-        msg
-      );
-
-      await sendSecure(
-        {
-          type:"read",
-          messageId:msg.id
-        },
-        session
-      );
-
-    }
-
-    renderChat();
-
-  }
-);
-
-
-/* =========================================================
-   ONLINE BEFORE UNLOAD
-   ========================================================= */
-
-window.addEventListener(
-  "beforeunload",
-  ()=>{
-
-    for(
-      const session of
-      state.sessions.values()
-    ){
-
-      try{
-
-        if(session.ready){
-
-          /*
-            The browser may terminate immediately.
-            This is best-effort only.
-          */
-
-          session.conn.send(
-            "disconnect"
-          );
-
+            init() {
+                this.loadFromStorage();
+                this.initMap();
+                this.initGPSWatch();
+                this.setupARFrameEngine();
+                this.renderAllViews();
+                this.checkOnboarding();
+
+                // 60FPS AR HUD Projection Loop
+                requestAnimationFrame(() => this.arHUDLoop());
+            }
+
+            /* ==========================================================================
+               094 - NATIVE LOCALSTORAGE & MOCK DEMO DATA SEEDING
+               ========================================================================== */
+            loadFromStorage() {
+                const storedPosts = localStorage.getItem('arworld_posts');
+                if (storedPosts) {
+                    this.posts = JSON.parse(storedPosts);
+                } else {
+                    // Seed initial demo data in Baku
+                    this.posts = [
+                        {
+                            id: "post_1",
+                            userId: "user_master_1",
+                            userName: "Elşən Usta",
+                            category: "service",
+                            title: "Alçipan və Şpatlyovka Xidməti (Əhmədli)",
+                            desc: "30 illik təcrübəli usta tərəfindən fiqurlu alçipan tavanlar və hamar şpatlyovka işləri.",
+                            price: "12 AZN / m2",
+                            phone: "+994501234567",
+                            lat: 40.3780,
+                            lng: 49.8925,
+                            isMoving: false,
+                            media: ["https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=500&auto=format&fit=crop&q=60"],
+                            youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                            views: 142,
+                            reactions: { heart: 12, fire: 8, checked: 15 },
+                            comments: [
+                                { id: "c1", user: "Rauf M.", text: "Qiymətə material daxildir?", time: "10 dəq əvvəl" }
+                            ],
+                            createdAt: new Date().toISOString()
+                        },
+                        {
+                            id: "post_2",
+                            userId: "user_auto_2",
+                            userName: "Kamran V.",
+                            category: "auto",
+                            title: "Toyota Prius İcarəsi / Evakuator",
+                            desc: "Sutqalıq icarəyə verilir. Hərəkətdə olan canlı GPS izləməli avtomobil.",
+                            price: "40 AZN / gün",
+                            phone: "+994709876543",
+                            lat: 40.3765,
+                            lng: 49.8910,
+                            isMoving: true,
+                            speedVector: { latSpd: 0.00001, lngSpd: 0.00001 },
+                            media: ["https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=500&auto=format&fit=crop&q=60"],
+                            youtubeUrl: "",
+                            views: 89,
+                            reactions: { heart: 5, fire: 12, checked: 3 },
+                            comments: [],
+                            createdAt: new Date().toISOString()
+                        }
+                    ];
+                    this.saveToStorage();
+                }
+
+                const storedNotifs = localStorage.getItem('arworld_notifs');
+                this.notifications = storedNotifs ? JSON.parse(storedNotifs) : [
+                    { id: "n1", text: "Ərazidə (50m radiusda) yeni Alçipan Ustası elanı aşkar olundu!", time: "İndi" }
+                ];
+            }
+
+            saveToStorage() {
+                localStorage.setItem('arworld_posts', JSON.stringify(this.posts));
+                localStorage.setItem('arworld_notifs', JSON.stringify(this.notifications));
+            }
+
+            /* ==========================================================================
+               001 - 010 MAP & REAL-TIME GPS TRACKING SYSTEM
+               ========================================================================== */
+            initMap() {
+                this.map = L.map('map', { zoomControl: false }).setView([this.userPos.lat, this.userPos.lng], 16);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(this.map);
+
+                this.markersGroup = L.layerGroup().addTo(this.map);
+
+                // User Location Circle Marker
+                this.userMarker = L.circleMarker([this.userPos.lat, this.userPos.lng], {
+                    radius: 9,
+                    fillColor: '#06b6d4',
+                    color: '#fff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(this.map).bindPopup("<b>Mənim Cari Mövqeyim</b>");
+
+                // Map Click for Interactive Marker Placement
+                this.map.on('click', (e) => {
+                    this.selectedMapPos = e.latlng;
+                    if (this.pickedMapMarker) this.map.removeLayer(this.pickedMapMarker);
+                    
+                    this.pickedMapMarker = L.marker(e.latlng, {
+                        icon: L.divIcon({
+                            className: 'custom-map-pin',
+                            html: `<div style="background: var(--accent-danger); width: 20px; height: 20px; border-radius: 50%; border: 3px solid white;"></div>`
+                        })
+                    }).addTo(this.map);
+
+                    document.getElementById('selected-coords-display').innerText = 
+                        `Seçilmiş Koordinat: ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+                });
+            }
+
+            initGPSWatch() {
+                if ("geolocation" in navigator) {
+                    this.watchPositionId = navigator.geolocation.watchPosition(
+                        (pos) => {
+                            this.userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                            if (this.userMarker) this.userMarker.setLatLng([this.userPos.lat, this.userPos.lng]);
+                            this.checkGeoFenceAlerts();
+                            this.updateDistancesInUI();
+                        },
+                        (err) => console.warn("GPS Permission or Signal warning:", err),
+                        { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
+                    );
+                }
+            }
+
+            // Haversine Precise Distance Formula (Meters)
+            calculateDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371e3; // metres
+                const φ1 = lat1 * Math.PI / 180;
+                const φ2 = lat2 * Math.PI / 180;
+                const Δφ = (lat2 - lat1) * Math.PI / 180;
+                const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+                const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                        Math.cos(φ1) * Math.cos(φ2) *
+                        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+                return R * c; // in metres
+            }
+
+            /* ==========================================================================
+               031 - 040 ANTI-OVERLAP ENGINE & 2D/3D HYBRID AR PROJECTION
+               ========================================================================== */
+            arHUDLoop() {
+                if (this.currentView === 'ar') {
+                    const hud = document.getElementById('ar-hud');
+                    hud.innerHTML = '';
+
+                    const nearby = this.posts.filter(p => {
+                        const dist = this.calculateDistance(this.userPos.lat, this.userPos.lng, p.lat, p.lng);
+                        return dist <= this.scanningRadius;
+                    });
+
+                    // 031 Anti-Overlap Offset Stacking calculation
+                    const clusterGrid = {};
+
+                    nearby.forEach((post, index) => {
+                        // 021 Moving Object Vector Interpolation (Dead Reckoning)
+                        if (post.isMoving && post.speedVector) {
+                            post.lat += post.speedVector.latSpd;
+                            post.lng += post.speedVector.lngSpd;
+                        }
+
+                        const dist = Math.round(this.calculateDistance(this.userPos.lat, this.userPos.lng, post.lat, post.lng));
+
+                        // Key hashing for spatial overlap detection
+                        const gridKey = `${post.lat.toFixed(4)}_${post.lng.toFixed(4)}`;
+                        clusterGrid[gridKey] = (clusterGrid[gridKey] || 0) + 1;
+                        const stackOffset = clusterGrid[gridKey] * 35; // Vertical stacking offset
+
+                        // Simulated Perspective Screen Projection (Center Angle Calculations)
+                        const angle = Math.atan2(post.lng - this.userPos.lng, post.lat - this.userPos.lat) * (180 / Math.PI);
+                        const screenX = (window.innerWidth / 2) + (angle * 8); 
+                        const screenY = (window.innerHeight / 2) - (dist * 1.5) - stackOffset;
+
+                        if (screenX > 20 && screenX < window.innerWidth - 120 && screenY > 50 && screenY < window.innerHeight - 100) {
+                            const card = document.createElement('div');
+                            card.className = `ar-card-2d ${this.lockedTargetId === post.id ? 'locked' : ''}`;
+                            card.style.left = `${screenX}px`;
+                            card.style.top = `${screenY}px`;
+                            card.onclick = () => this.lockOnTarget(post.id);
+
+                            card.innerHTML = `
+                                <div style="font-size: 10px; color: var(--accent-color); font-weight: bold;">${post.category.toUpperCase()} • ${dist}m</div>
+                                <div style="font-size: 12px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${post.title}</div>
+                                <div style="font-size: 11px; color: #34d399;">${post.price || ''}</div>
+                            `;
+                            hud.appendChild(card);
+                        }
+                    });
+                }
+                requestAnimationFrame(() => this.arHUDLoop());
+            }
+
+            lockOnTarget(id) {
+                this.lockedTargetId = (this.lockedTargetId === id) ? null : id;
+                const post = this.posts.find(p => p.id === id);
+                if (post) {
+                    alert(`Fokuslandı: ${post.title}\nMəsafə: ${Math.round(this.calculateDistance(this.userPos.lat, this.userPos.lng, post.lat, post.lng))}m\nƏlaqə: ${post.phone || 'Yoxdur'}`);
+                }
+            }
+
+            /* ==========================================================================
+               041 - 050 MEDIA, GALLERY & CAMERA CAPTURE ENGINE
+               ========================================================================== */
+            startCameraCapture(mode) {
+                this.captureMode = mode;
+                const screen = document.getElementById('camera-capture-screen');
+                const video = document.getElementById('capture-video-preview');
+                screen.style.display = 'flex';
+
+                navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: this.facingMode },
+                    audio: mode === 'video'
+                }).then(stream => {
+                    this.captureStream = stream;
+                    video.srcObject = stream;
+                }).catch(err => {
+                    alert("Kamera icazəsi verilə bilmədi: " + err);
+                    this.stopCameraCapture();
+                });
+            }
+
+            stopCameraCapture() {
+                if (this.captureStream) {
+                    this.captureStream.getTracks().forEach(track => track.stop());
+                }
+                document.getElementById('camera-capture-screen').style.display = 'none';
+            }
+
+            switchCameraFacing() {
+                this.facingMode = this.facingMode === 'environment' ? 'user' : 'environment';
+                this.startCameraCapture(this.captureMode);
+            }
+
+            triggerShutter() {
+                const shutterBtn = document.getElementById('shutter-btn');
+                
+                if (this.captureMode === 'image') {
+                    const video = document.getElementById('capture-video-preview');
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg');
+                    this.mediaPreviews.push(dataUrl);
+                    this.renderMediaPreviews();
+                    this.stopCameraCapture();
+                } else {
+                    // Video Recording Mode
+                    if (!this.isRecording) {
+                        this.isRecording = true;
+                        shutterBtn.classList.add('recording');
+                        this.recordedChunks = [];
+                        this.mediaRecorder = new MediaRecorder(this.captureStream);
+                        this.mediaRecorder.ondataavailable = e => this.recordedChunks.push(e.data);
+                        this.mediaRecorder.onstop = () => {
+                            const blob = new Blob(this.recordedChunks, { type: 'video/mp4' });
+                            const videoUrl = URL.createObjectURL(blob);
+                            this.mediaPreviews.push(videoUrl);
+                            this.renderMediaPreviews();
+                        };
+                        this.mediaRecorder.start();
+                    } else {
+                        this.isRecording = false;
+                        shutterBtn.classList.remove('recording');
+                        this.mediaRecorder.stop();
+                        this.stopCameraCapture();
+                    }
+                }
+            }
+
+            handleFileSelect(event) {
+                const files = event.target.files;
+                if (!files) return;
+
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.mediaPreviews.push(e.target.result);
+                        this.renderMediaPreviews();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            renderMediaPreviews() {
+                const container = document.getElementById('media-preview-container');
+                container.innerHTML = '';
+                this.mediaPreviews.forEach((src, idx) => {
+                    const isVideo = src.startsWith('data:video') || src.startsWith('blob:');
+                    const elem = isVideo ? document.createElement('video') : document.createElement('img');
+                    elem.src = src;
+                    elem.className = 'preview-item';
+                    elem.onclick = () => {
+                        this.mediaPreviews.splice(idx, 1);
+                        this.renderMediaPreviews();
+                    };
+                    container.appendChild(elem);
+                });
+            }
+
+            /* ==========================================================================
+               VIEW SWITCHING & RENDER ENGINE
+               ========================================================================== */
+            switchView(viewName, element) {
+                this.currentView = viewName;
+                document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+                document.getElementById(`${viewName}-view`).classList.add('active');
+                if (element) element.classList.add('active');
+
+                if (viewName === 'map') {
+                    setTimeout(() => this.map.invalidateSize(), 200);
+                }
+            }
+
+            renderAllViews() {
+                this.renderMapMarkers();
+                this.renderFeed();
+                this.renderNotifications();
+                this.renderProfile();
+            }
+
+            renderMapMarkers() {
+                if (!this.markersGroup) return;
+                this.markersGroup.clearLayers();
+
+                this.posts.forEach(post => {
+                    const dist = Math.round(this.calculateDistance(this.userPos.lat, this.userPos.lng, post.lat, post.lng));
+                    if (dist > this.scanningRadius) return;
+
+                    const marker = L.marker([post.lat, post.lng]).addTo(this.markersGroup);
+                    
+                    const youtubeEmbed = post.youtubeUrl ? 
+                        `<iframe style="width:100%; height:120px; border-radius:8px; margin-top:6px;" src="https://www.youtube.com/embed/${this.extractYouTubeId(post.youtubeUrl)}" frameborder="0" allowfullscreen></iframe>` : '';
+
+                    marker.bindPopup(`
+                        <div style="max-width:200px;">
+                            <strong style="color:var(--accent-color);">${post.title}</strong><br>
+                            <small>${post.desc}</small><br>
+                            <b style="color:#10b981;">${post.price || ''}</b><br>
+                            <small style="color:#94a3b8;">Məsafə: ${dist}m</small>
+                            ${youtubeEmbed}
+                            <a href="tel:${post.phone}" style="display:block; margin-top:6px; background:#06b6d4; color:#fff; text-align:center; padding:4px; border-radius:6px; text-decoration:none;">Zəng Et</a>
+                        </div>
+                    `);
+                });
+            }
+
+            renderFeed() {
+                const container = document.getElementById('feed-container');
+                container.innerHTML = '';
+
+                this.posts.forEach(post => {
+                    const dist = Math.round(this.calculateDistance(this.userPos.lat, this.userPos.lng, post.lat, post.lng));
+                    if (dist > this.scanningRadius) return;
+
+                    const card = document.createElement('div');
+                    card.className = 'post-card glass-panel';
+
+                    const mediaHtml = post.media && post.media.length > 0 ? 
+                        `<div class="media-carousel"><img src="${post.media[0]}"></div>` : '';
+
+                    const youtubeHtml = post.youtubeUrl ? 
+                        `<div class="media-carousel"><iframe src="https://www.youtube.com/embed/${this.extractYouTubeId(post.youtubeUrl)}" frameborder="0" allowfullscreen></iframe></div>` : '';
+
+                    card.innerHTML = `
+                        <div class="post-header">
+                            <div class="post-user">
+                                <div class="avatar">${post.userName.substring(0,2)}</div>
+                                <div>
+                                    <div style="font-weight: bold; font-size: 14px;">${post.userName}</div>
+                                    <div style="font-size: 11px; color: var(--text-sub);">${dist}m uzaqlıqda</div>
+                                </div>
+                            </div>
+                            <span class="category-badge cat-${post.category}">${post.category}</span>
+                        </div>
+                        <h4 style="margin-bottom: 6px;">${post.title}</h4>
+                        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 8px;">${post.desc}</p>
+                        ${mediaHtml}
+                        ${youtubeHtml}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                            <span style="font-weight: bold; color: var(--accent-success);">${post.price || ''}</span>
+                            <a href="tel:${post.phone}" style="color: var(--accent-color); font-weight: bold; text-decoration: none;"><i class="fa-solid fa-phone"></i> ${post.phone || ''}</a>
+                        </div>
+                        <div class="post-actions">
+                            <div class="reaction-group">
+                                <span class="reaction-btn" onclick="app.react('${post.id}', 'heart')"><i class="fa-solid fa-heart"></i> ${post.reactions.heart || 0}</span>
+                                <span class="reaction-btn" onclick="app.react('${post.id}', 'fire')"><i class="fa-solid fa-fire"></i> ${post.reactions.fire || 0}</span>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-sub);"><i class="fa-solid fa-eye"></i> ${post.views}</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            renderNotifications() {
+                const container = document.getElementById('notifications-container');
+                container.innerHTML = '';
+                this.notifications.forEach(n => {
+                    const item = document.createElement('div');
+                    item.className = 'glass-panel';
+                    item.style.padding = '12px';
+                    item.style.marginBottom = '8px';
+                    item.style.fontSize = '13px';
+                    item.innerHTML = `<i class="fa-solid fa-bell" style="color:var(--accent-color); margin-right:8px;"></i> ${n.text} <br><small style="color:var(--text-sub); display:block; text-align:right;">${n.time}</small>`;
+                    container.appendChild(item);
+                });
+            }
+
+            renderProfile() {
+                const myPosts = this.posts.filter(p => p.userId === 'user_current');
+                document.getElementById('stat-posts').innerText = myPosts.length;
+                
+                let totalViews = 0, totalLikes = 0;
+                myPosts.forEach(p => {
+                    totalViews += p.views;
+                    totalLikes += (p.reactions.heart || 0);
+                });
+
+                document.getElementById('stat-views').innerText = totalViews;
+                document.getElementById('stat-likes').innerText = totalLikes;
+
+                const container = document.getElementById('my-posts-container');
+                container.innerHTML = '';
+                myPosts.forEach(post => {
+                    const item = document.createElement('div');
+                    item.className = 'glass-panel';
+                    item.style.padding = '12px';
+                    item.style.marginBottom = '8px';
+                    item.innerHTML = `
+                        <div style="display:flex; justify-content:space-between;">
+                            <strong>${post.title}</strong>
+                            <i class="fa-solid fa-trash" style="color:var(--accent-danger); cursor:pointer;" onclick="app.deletePost('${post.id}')"></i>
+                        </div>
+                        <small style="color:var(--text-sub);">${post.desc}</small>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
+            /* ==========================================================================
+               POST CREATION & LEGAL DISCLAIMER LOGIC
+               ========================================================================== */
+            openCreateModal() {
+                document.getElementById('create-modal').classList.add('active');
+            }
+
+            closeCreateModal() {
+                document.getElementById('create-modal').classList.remove('active');
+            }
+
+            toggleLocationMode(mode) {
+                const display = document.getElementById('selected-coords-display');
+                if (mode === 'current') {
+                    display.innerText = `Cari Mövqe: ${this.userPos.lat.toFixed(5)}, ${this.userPos.lng.toFixed(5)}`;
+                } else {
+                    display.innerText = this.selectedMapPos ? 
+                        `Seçilmiş Koordinat: ${this.selectedMapPos.lat.toFixed(5)}, ${this.selectedMapPos.lng.toFixed(5)}` : 
+                        "Xəritədən bir nöqtəyə klikləyin!";
+                }
+            }
+
+            validateLegalCheck() {
+                const checked = document.getElementById('legal-check').checked;
+                const btn = document.getElementById('submit-post-btn');
+                btn.disabled = !checked;
+                btn.style.opacity = checked ? "1" : "0.5";
+            }
+
+            submitPost() {
+                const locMode = document.getElementById('post-location-mode').value;
+                let targetLat = this.userPos.lat;
+                let targetLng = this.userPos.lng;
+
+                if (locMode === 'map') {
+                    if (!this.selectedMapPos) {
+                        alert("Lütfən xəritə üzərindən koordinat seçin!");
+                        return;
+                    }
+                    targetLat = this.selectedMapPos.lat;
+                    targetLng = this.selectedMapPos.lng;
+                }
+
+                const newPost = {
+                    id: "post_" + Date.now(),
+                    userId: "user_current",
+                    userName: "Şamxal Həsənov",
+                    category: document.getElementById('post-category').value,
+                    title: document.getElementById('post-title').value || "AR Məkan Elanı",
+                    desc: document.getElementById('post-desc').value || "",
+                    price: document.getElementById('post-price').value || "",
+                    phone: document.getElementById('post-phone').value || "",
+                    lat: targetLat,
+                    lng: targetLng,
+                    isMoving: document.getElementById('post-is-moving').checked,
+                    media: [...this.mediaPreviews],
+                    youtubeUrl: document.getElementById('post-youtube').value,
+                    views: 1,
+                    reactions: { heart: 0, fire: 0, checked: 0 },
+                    comments: [],
+                    createdAt: new Date().toISOString()
+                };
+
+                this.posts.unshift(newPost);
+                this.saveToStorage();
+                this.renderAllViews();
+                this.closeCreateModal();
+                this.mediaPreviews = [];
+                this.renderMediaPreviews();
+                alert("Paylaşımınız uğurla koordinata bağlandı və AR məkana yerləşdirildi!");
+            }
+
+            deletePost(id) {
+                this.posts = this.posts.filter(p => p.id !== id);
+                this.saveToStorage();
+                this.renderAllViews();
+            }
+
+            react(postId, type) {
+                const post = this.posts.find(p => p.id === postId);
+                if (post) {
+                    post.reactions[type] = (post.reactions[type] || 0) + 1;
+                    this.saveToStorage();
+                    this.renderFeed();
+                }
+            }
+
+            /* ==========================================================================
+               UTILITIES & DYNAMIC HELPERS
+               ========================================================================== */
+            setRadius(r, elem) {
+                this.scanningRadius = r;
+                document.querySelectorAll('.radius-chip').forEach(c => c.classList.remove('active'));
+                elem.classList.add('active');
+                this.renderAllViews();
+            }
+
+            extractYouTubeId(url) {
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[2].length === 11) ? match[2] : '';
+            }
+
+            checkGeoFenceAlerts() {
+                this.posts.forEach(p => {
+                    const dist = this.calculateDistance(this.userPos.lat, this.userPos.lng, p.lat, p.lng);
+                    if (dist <= 50 && !p.notified) {
+                        p.notified = true;
+                        this.notifications.unshift({
+                            id: "notif_" + Date.now(),
+                            text: `Yaxınlığınızda (50m): ${p.title}`,
+                            time: "İndi"
+                        });
+                        this.saveToStorage();
+                        this.renderNotifications();
+                    }
+                });
+            }
+
+            updateDistancesInUI() {
+                if (this.currentView === 'feed') this.renderFeed();
+            }
+
+            toggleTheme() {
+                this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                document.body.className = `${this.theme}-theme`;
+                document.getElementById('theme-icon').className = this.theme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+            }
+
+            cycleLanguage() {
+                const langs = ['AZ', 'EN', 'RU'];
+                const nextIdx = (langs.indexOf(this.currentLang) + 1) % langs.length;
+                this.currentLang = langs[nextIdx];
+                document.getElementById('lang-code').innerText = this.currentLang;
+
+                const dict = this.i18n[this.currentLang];
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (dict[key]) el.innerText = dict[key];
+                });
+            }
+
+            clearAppData() {
+                if (confirm("Tətbiqdəki bütün məlumatlar sıfırlansın?")) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
+
+            checkOnboarding() {
+                if (!localStorage.getItem('arworld_onboarded')) {
+                    document.getElementById('onboarding-modal').style.display = 'flex';
+                }
+            }
+
+            closeOnboarding() {
+                localStorage.setItem('arworld_onboarded', 'true');
+                document.getElementById('onboarding-modal').style.display = 'none';
+            }
         }
 
-      }catch(e){}
-
-    }
-
-  }
-);
-
-</script>
-
+        // Initialize Production Application Instance
+        const app = new ARWorldApp();
+    </script>
 </body>
-          </html>
+</html>
