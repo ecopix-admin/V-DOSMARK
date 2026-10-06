@@ -1,10 +1,11 @@
-<!DOCTYPE html><html lang="az">
+<!DOCTYPE html>
+<html lang="az">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="theme-color" content="#08090c">
-<meta name="description" content="Modern dark music player">
-<title>SONORA — Music</title><style>
+<meta name="description" content="Modern dark music player with admin upload">
+<title>SONORA — Music Hub</title><style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#08090c;
@@ -62,7 +63,7 @@ a{color:inherit;text-decoration:none}
 .nav{
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:10px;
 }
 .nav button,.nav a{
   background:transparent;
@@ -72,8 +73,13 @@ a{color:inherit;text-decoration:none}
   font-size:14px;
 }
 .nav button:hover,.nav a:hover{background:var(--panel2);color:white}
+.upload-btn-nav {
+  background: linear-gradient(135deg,#8b5cf6,#a78bfa) !important;
+  color: white !important;
+  font-weight: 600;
+}
 .search{
-  width:280px;
+  width:240px;
   height:40px;
   border:1px solid var(--line);
   background:#111319;
@@ -96,6 +102,32 @@ a{color:inherit;text-decoration:none}
   width:min(1180px,90%);
   margin:auto;
 }
+
+/* Admin Modal Paneli */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px); z-index: 1000; display: none;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal-card {
+  background: #12151c; border: 1px solid var(--line);
+  width: 100%; max-width: 480px; border-radius: 20px;
+  padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+}
+.modal-card h3 { font-size: 20px; margin-bottom: 16px; color: #fff; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.form-group input {
+  width: 100%; background: #1a1d26; border: 1px solid var(--line);
+  padding: 10px 14px; border-radius: 10px; color: #fff; outline: none;
+}
+.form-group input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-actions button { flex: 1; padding: 11px; border-radius: 10px; font-weight: 700; }
+.btn-cancel { background: var(--panel2); color: var(--muted); }
+.btn-save { background: var(--accent); color: #fff; }
+
 .hero{
   padding:58px 0 34px;
   display:grid;
@@ -197,6 +229,7 @@ a{color:inherit;text-decoration:none}
   border-radius:15px;
   transition:.2s;
   cursor:pointer;
+  position: relative;
 }
 .track:hover{
   background:rgba(255,255,255,.035);
@@ -236,6 +269,11 @@ a{color:inherit;text-decoration:none}
   color:#7e8490;
 }
 .trackMenu:hover{background:var(--panel2);color:white}
+.delete-track {
+  background: transparent; color: var(--danger); font-size: 14px;
+  padding: 6px; border-radius: 6px; margin-left: 5px;
+}
+.delete-track:hover { background: rgba(239, 68, 68, 0.15); }
 
 .empty{
   display:none;
@@ -347,13 +385,6 @@ a{color:inherit;text-decoration:none}
   justify-content:flex-end;
   gap:9px;
 }
-.smallBtn{
-  background:transparent;
-  color:#9ca1ad;
-  padding:8px;
-  border-radius:9px;
-}
-.smallBtn:hover{background:var(--panel2);color:white}
 .progressWrap{
   position:absolute;
   left:18px;
@@ -369,18 +400,6 @@ a{color:inherit;text-decoration:none}
   border-radius:10px;
   position:relative;
 }
-.progress:after{
-  content:"";
-  position:absolute;
-  right:-3px;
-  top:-2px;
-  width:8px;height:8px;
-  background:white;
-  border-radius:50%;
-  opacity:0;
-}
-.progressWrap:hover .progress:after{opacity:1}
-
 .time{
   position:absolute;
   left:20px;
@@ -420,8 +439,7 @@ a{color:inherit;text-decoration:none}
 
 @media(max-width:800px){
   .header{padding:0 5%;height:64px}
-  .nav a,.nav button{display:none}
-  .search{width:150px}
+  .search{width:120px}
   .hero{
     grid-template-columns:1fr;
     padding-top:38px;
@@ -455,107 +473,120 @@ a{color:inherit;text-decoration:none}
   .volume{display:none}
   .progressWrap{left:12px;right:12px;bottom:5px}
   .time{display:none}
-  body{padding-bottom:145px}
 }
-@media(max-width:430px){
-  .hero h1{font-size:43px;letter-spacing:-2.5px}
-  .hero p{font-size:14px}
-  .logo{font-size:18px}
-  .logoIcon{width:31px;height:31px}
-  .search{width:125px;height:36px}
-  .search input{font-size:12px}
-}
-</style></head><body><header class="header">
+</style></head><body>
+
+<header class="header">
   <a class="logo" href="#">
     <span class="logoIcon">♫</span>
     SONORA
-  </a>  <div class="nav">
+  </a>
+  <div class="nav">
     <div class="search">
       <span>⌕</span>
-      <input id="search" type="search" placeholder="Mahnı və ifaçı axtar...">
+      <input id="search" type="search" placeholder="Axtar...">
     </div>
-    <button onclick="scrollToMusic()">Musiqi</button>
+    <button class="upload-btn-nav" onclick="openModal()">+ Mahnı Əlavə Et</button>
     <button onclick="shareSite()">Paylaş</button>
   </div>
-</header><main class="container">  <section class="hero">
+</header>
+
+<!-- Admin Yükləmə Paneli Modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal-card">
+    <h3>Yeni Mahnı Əlavə Et</h3>
+    <div class="form-group">
+      <label>Mahnının Adı</label>
+      <input type="text" id="inputTitle" placeholder="Məs: Phantom in the City">
+    </div>
+    <div class="form-group">
+      <label>İfaçı / Prodüser</label>
+      <input type="text" id="inputArtist" placeholder="Məs: Şamxal Həsənov">
+    </div>
+    <div class="form-group">
+      <label>Qapaq Şəklinin Linki (URL)</label>
+      <input type="text" id="inputCover" placeholder="https://... şəkil linki">
+    </div>
+    <div class="form-group">
+      <label>MP3 Faylın Linki (URL)</label>
+      <input type="text" id="inputAudio" placeholder="https://... mp3 faylın birbaşa linki">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Ləğv et</button>
+      <button class="btn-save" onclick="saveNewTrack()">Əlavə Et</button>
+    </div>
+  </div>
+</div>
+
+<main class="container">  
+  <section class="hero">
     <div>
       <h1>Musiqini<br><span>hiss et.</span></h1>
       <p>
         Sevdiyin musiqiləri kəşf et, dinlə və öz ritmini yarat.
-        Sadə, sürətli və müasir musiqi təcrübəsi.
-      </p>  <div class="heroActions">
-    <button class="primary" onclick="playTrack(0)">▶ İndi dinlə</button>
-    <button class="secondary" onclick="shareSite()">↗ Paylaş</button>
-    <a class="secondary" href="https://www.buymeacoffee.com/" target="_blank" rel="noopener">
-      ☕ Dəstək ol
-    </a>
-  </div>
-</div>
+        Sadə, sürətli və müasir musiqi platforması.
+      </p>
+      <div class="heroActions">
+        <button class="primary" onclick="playTrack(0)">▶ İndi dinlə</button>
+        <a class="secondary" href="https://www.buymeacoffee.com/" target="_blank" rel="noopener">
+          ☕ Dəstək ol
+        </a>
+      </div>
+    </div>
 
-<div class="heroArt">
-  <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1000&q=85" alt="Music">
-  <div class="heroBadge">● İndi trenddə</div>
-</div>
+    <div class="heroArt">
+      <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1000&q=85" alt="Music">
+      <div class="heroBadge">● İndi trenddə</div>
+    </div>
+  </section>  
 
-  </section>  <section id="music">
+  <section id="music">
     <div class="sectionHead">
-      <h2>Son mahnılar</h2>
+      <h2>Mahnılar</h2>
       <span id="trackCount">0 mahnı</span>
-    </div><div class="tracks" id="tracks"></div>
-<div class="empty" id="empty">Axtarışa uyğun mahnı tapılmadı.</div>
+    </div>
+    <div class="tracks" id="tracks"></div>
+    <div class="empty" id="empty">Mahnı tapılmadı. Zəhmət olmasa yuxarıdan yeni mahnı əlavə edin.</div>
+  </section>  
 
-  </section>  <section class="features">
-    <div class="feature">
-      <div class="featureIcon">⚡</div>
-      <h3>Sürətli pleyer</h3>
-      <p>Mobil və kompüterdə rahat işləyən yüngül musiqi interfeysi.</p>
-    </div><div class="feature">
-  <div class="featureIcon">🎧</div>
-  <h3>Arxa fonda dinlə</h3>
-  <p>Audio elementi brauzerin dəstəklədiyi müddətdə səhifə dəyişdikdə də davam edir.</p>
-</div>
+  <footer class="footer">
+    © 2026 SONORA — Music Platform.
+  </footer>
+</main>
 
-<div class="feature">
-  <div class="featureIcon">🌙</div>
-  <h3>Dark Mode</h3>
-  <p>Göz yormayan tünd interfeys və gecə istifadəsi üçün optimallaşdırılmış görünüş.</p>
-</div>
-
-  </section>  <footer class="footer">
-    © 2026 SONORA — Music for everyone.
-  </footer></main><div class="player">  <div class="now">
-    <img id="nowCover"
-         src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=200&q=80"
-         alt="Cover">
+<div class="player">  
+  <div class="now">
+    <img id="nowCover" src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=200&q=80" alt="Cover">
     <div class="nowText">
       <div class="nowTitle" id="nowTitle">Mahnı seç</div>
       <div class="nowArtist" id="nowArtist">SONORA</div>
     </div>
-  </div>  <div class="controls">
+  </div>  
+  <div class="controls">
     <button class="ctrl repeat" id="repeatBtn" title="Təkrar">↻</button>
     <button class="ctrl" id="prevBtn" title="Əvvəlki">⏮</button>
     <button class="ctrl play" id="playBtn" title="Play/Pause">▶</button>
     <button class="ctrl" id="nextBtn" title="Növbəti">⏭</button>
-  </div>  <div class="rightControls">
+  </div>  
+  <div class="rightControls">
     <span>🔊</span>
     <input class="volume" id="volume" type="range" min="0" max="1" step=".01" value=".8">
-  </div>  <div class="progressWrap" id="progressWrap">
+  </div>  
+  <div class="progressWrap" id="progressWrap">
     <div class="progress" id="progress"></div>
-  </div>  <div class="time">
+  </div>  
+  <div class="time">
     <span id="currentTime">0:00</span>
     <span id="duration">0:00</span>
-  </div></div><div class="toast" id="toast"></div><audio id="audio" preload="metadata"></audio>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<audio id="audio" preload="metadata"></audio>
 
 <script>
-/*
-  SONORA MUSIC PLAYER
-  -------------------
-  Öz musiqilərini əlavə etmək üçün aşağıdakı
-  tracks massivində title, artist, cover və audio
-  linklərini dəyişə bilərsən.
-*/
-
-const tracks = [
+// Əsas mahnı siyahısı (əgər yaddaşda yoxdursa bunlarla başlayır)
+let tracks = JSON.parse(localStorage.getItem("sonora_tracks")) || [
   {
     title:"Midnight Dreams",
     artist:"Luna Vale",
@@ -567,42 +598,6 @@ const tracks = [
     artist:"The Midnight",
     cover:"https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=85",
     audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
-  },
-  {
-    title:"Afterglow",
-    artist:"Nova Sky",
-    cover:"https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=600&q=85",
-    audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
-  },
-  {
-    title:"Electric Soul",
-    artist:"Mira",
-    cover:"https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=600&q=85",
-    audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
-  },
-  {
-    title:"Ocean Lights",
-    artist:"Aria Moon",
-    cover:"https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=600&q=85",
-    audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
-  },
-  {
-    title:"Lost In Tokyo",
-    artist:"Kairo",
-    cover:"https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=600&q=85",
-    audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3"
-  },
-  {
-    title:"Golden Hour",
-    artist:"Elena",
-    cover:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=85",
-    audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3"
-  },
-  {
-    title:"Dreamscape",
-    artist:"Atlas",
-    cover:"https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=600&q=85",
-    audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"
   }
 ];
 
@@ -610,6 +605,7 @@ const audio = document.getElementById("audio");
 const tracksEl = document.getElementById("tracks");
 const emptyEl = document.getElementById("empty");
 const searchEl = document.getElementById("search");
+const uploadModal = document.getElementById("uploadModal");
 
 const playBtn = document.getElementById("playBtn");
 const prevBtn = document.getElementById("prevBtn");
@@ -632,41 +628,78 @@ let currentIndex = -1;
 let repeat = false;
 let filteredTracks = [...tracks];
 
+function openModal() { uploadModal.classList.add("active"); }
+function closeModal() { uploadModal.classList.remove("active"); }
+
+function saveNewTrack() {
+  const title = document.getElementById("inputTitle").value.trim();
+  const artist = document.getElementById("inputArtist").value.trim();
+  const cover = document.getElementById("inputCover").value.trim();
+  const audioLink = document.getElementById("inputAudio").value.trim();
+
+  if(!title || !audioLink) {
+    showToast("Zəhmət olmasa mahnı adını və MP3 linkini daxil edin.");
+    return;
+  }
+
+  const newTrack = {
+    title: title,
+    artist: artist || "Bəstəkar",
+    cover: cover || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=85",
+    audio: audioLink
+  };
+
+  tracks.push(newTrack);
+  localStorage.setItem("sonora_tracks", JSON.stringify(tracks));
+  
+  renderTracks(tracks);
+  closeModal();
+  showToast("Mahnı uğurla əlavə olundu ✓");
+
+  // Formu təmizlə
+  document.getElementById("inputTitle").value = "";
+  document.getElementById("inputArtist").value = "";
+  document.getElementById("inputCover").value = "";
+  document.getElementById("inputAudio").value = "";
+}
+
+function deleteTrack(originalIndex, event) {
+  event.stopPropagation();
+  if(confirm("Bu mahnını silmək istədiyinizdən əminsiniz?")) {
+    tracks.splice(originalIndex, 1);
+    localStorage.setItem("sonora_tracks", JSON.stringify(tracks));
+    renderTracks(tracks);
+    showToast("Mahnı silindi.");
+  }
+}
+
 function renderTracks(list = tracks){
   filteredTracks = list;
   tracksEl.innerHTML = "";
-
-  document.getElementById("trackCount").textContent =
-    `${list.length} mahnı`;
+  document.getElementById("trackCount").textContent = `${list.length} mahnı`;
 
   if(!list.length){
     emptyEl.style.display = "block";
     return;
   }
-
   emptyEl.style.display = "none";
 
   list.forEach((track, visibleIndex) => {
     const originalIndex = tracks.indexOf(track);
-
     const el = document.createElement("div");
     el.className = "track" + (originalIndex === currentIndex ? " active" : "");
 
     el.innerHTML = `
-      <img class="cover" src="${track.cover}" alt="${escapeHTML(track.title)}"
-           loading="lazy">
+      <img class="cover" src="${escapeHTML(track.cover)}" alt="Cover" loading="lazy">
       <div class="trackInfo">
         <div class="trackTitle">${escapeHTML(track.title)}</div>
         <div class="artist">${escapeHTML(track.artist)}</div>
       </div>
-      <div class="duration" data-duration="${originalIndex}">--:--</div>
-      <button class="trackMenu" aria-label="Mahnı">
-        ${originalIndex === currentIndex ? "♫" : "⋯"}
-      </button>
+      <button class="delete-track" title="Sil" onclick="deleteTrack(${originalIndex}, event)">✕</button>
     `;
 
     el.addEventListener("click", e => {
-      if(e.target.closest(".trackMenu")) return;
+      if(e.target.closest(".delete-track")) return;
       playTrack(originalIndex);
     });
 
@@ -675,17 +708,11 @@ function renderTracks(list = tracks){
 }
 
 function escapeHTML(value){
-  return String(value)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+  return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
 }
 
 function playTrack(index){
   if(index < 0 || index >= tracks.length) return;
-
   currentIndex = index;
   const track = tracks[index];
 
@@ -699,25 +726,20 @@ function playTrack(index){
   renderTracks(filteredTracks);
 
   audio.play()
-    .then(()=>{
-      playBtn.textContent = "Ⅱ";
-    })
-    .catch(()=>{
+    .then(()=> playBtn.textContent = "Ⅱ")
+    .catch(()=> {
       playBtn.textContent = "▶";
-      showToast("Audio oynatmaq üçün Play düyməsinə toxun.");
+      showToast("Oynatmaq üçün Play düyməsinə toxun.");
     });
 }
 
 function togglePlay(){
-  if(currentIndex === -1){
+  if(currentIndex === -1 && tracks.length > 0){
     playTrack(0);
     return;
   }
-
   if(audio.paused){
-    audio.play()
-      .then(()=>playBtn.textContent="Ⅱ")
-      .catch(()=>showToast("Mahnını oynatmaq mümkün olmadı."));
+    audio.play().then(()=> playBtn.textContent="Ⅱ");
   }else{
     audio.pause();
     playBtn.textContent="▶";
@@ -726,99 +748,52 @@ function togglePlay(){
 
 function nextTrack(){
   if(!tracks.length) return;
-
-  let next = currentIndex + 1;
-
-  if(next >= tracks.length){
-    next = 0;
-  }
-
+  let next = (currentIndex + 1) % tracks.length;
   playTrack(next);
 }
 
 function prevTrack(){
   if(!tracks.length) return;
-
-  if(audio.currentTime > 3){
-    audio.currentTime = 0;
-    return;
-  }
-
-  let prev = currentIndex - 1;
-
-  if(prev < 0){
-    prev = tracks.length - 1;
-  }
-
+  if(audio.currentTime > 3){ audio.currentTime = 0; return; }
+  let prev = (currentIndex - 1 + tracks.length) % tracks.length;
   playTrack(prev);
 }
 
 function toggleRepeat(){
   repeat = !repeat;
   repeatBtn.classList.toggle("active", repeat);
-  repeatBtn.textContent = repeat ? "↻" : "↻";
-  showToast(repeat ? "Təkrar aktivdir" : "Təkrar söndürülüb");
+  showToast(repeat ? "Təkrar aktivdir" : "Təkrar söndürüldü");
 }
 
 function formatTime(seconds){
   if(!Number.isFinite(seconds)) return "0:00";
-
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
-
   return `${mins}:${String(secs).padStart(2,"0")}`;
 }
 
 audio.addEventListener("timeupdate",()=>{
   if(!audio.duration) return;
-
-  const percent = (audio.currentTime / audio.duration) * 100;
-  progress.style.width = `${percent}%`;
-
+  progress.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
   currentTimeEl.textContent = formatTime(audio.currentTime);
 });
 
 audio.addEventListener("loadedmetadata",()=>{
   durationEl.textContent = formatTime(audio.duration);
-
-  const durationEls = document.querySelectorAll(
-    `[data-duration="${currentIndex}"]`
-  );
-
-  durationEls.forEach(el=>{
-    el.textContent = formatTime(audio.duration);
-  });
-});
-
-audio.addEventListener("play",()=>{
-  playBtn.textContent = "Ⅱ";
-});
-
-audio.addEventListener("pause",()=>{
-  playBtn.textContent = "▶";
 });
 
 audio.addEventListener("ended",()=>{
-  if(repeat){
-    audio.currentTime = 0;
-    audio.play();
-  }else{
-    nextTrack();
-  }
+  if(repeat){ audio.currentTime = 0; audio.play(); }
+  else { nextTrack(); }
 });
 
-progressWrap.addEventListener("click",(event)=>{
+progressWrap.addEventListener("click",(e)=>{
   if(!audio.duration) return;
-
   const rect = progressWrap.getBoundingClientRect();
-  const position = (event.clientX - rect.left) / rect.width;
-
-  audio.currentTime = position * audio.duration;
+  audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
 });
 
-volumeEl.addEventListener("input",()=>{
-  audio.volume = Number(volumeEl.value);
-});
+volumeEl.addEventListener("input",()=> audio.volume = Number(volumeEl.value));
 
 playBtn.addEventListener("click",togglePlay);
 prevBtn.addEventListener("click",prevTrack);
@@ -827,77 +802,27 @@ repeatBtn.addEventListener("click",toggleRepeat);
 
 searchEl.addEventListener("input",()=>{
   const q = searchEl.value.trim().toLowerCase();
-
-  const result = tracks.filter(track =>
-    track.title.toLowerCase().includes(q) ||
-    track.artist.toLowerCase().includes(q)
-  );
-
+  const result = tracks.filter(t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
   renderTracks(result);
 });
 
-function scrollToMusic(){
-  document.getElementById("music").scrollIntoView({
-    behavior:"smooth"
-  });
-}
-
 async function shareSite(){
-  const shareData = {
-    title:"SONORA — Music",
-    text:"SONORA-da musiqiyə qulaq as!",
-    url:window.location.href
-  };
-
   try{
-    if(navigator.share){
-      await navigator.share(shareData);
-    }else{
-      await navigator.clipboard.writeText(window.location.href);
-      showToast("Saytın linki kopyalandı ✓");
-    }
-  }catch(err){
-    if(err.name !== "AbortError"){
-      showToast("Paylaşmaq mümkün olmadı.");
-    }
-  }
+    if(navigator.share){ await navigator.share({title:"SONORA", url:window.location.href}); }
+    else{ await navigator.clipboard.writeText(window.location.href); showToast("Link kopyalandı ✓"); }
+  }catch(e){}
 }
 
 let toastTimer;
-
-function showToast(message){
+function showToast(msg){
   clearTimeout(toastTimer);
-
-  toast.textContent = message;
+  toast.textContent = msg;
   toast.classList.add("show");
-
-  toastTimer = setTimeout(()=>{
-    toast.classList.remove("show");
-  },2200);
+  toastTimer = setTimeout(()=> toast.classList.remove("show"), 2200);
 }
 
-document.addEventListener("keydown",event=>{
-  if(
-    event.target.tagName === "INPUT" ||
-    event.target.tagName === "TEXTAREA"
-  ) return;
-
-  if(event.code === "Space"){
-    event.preventDefault();
-    togglePlay();
-  }
-
-  if(event.code === "ArrowRight"){
-    nextTrack();
-  }
-
-  if(event.code === "ArrowLeft"){
-    prevTrack();
-  }
-});
-
 audio.volume = .8;
-
 renderTracks();
-</script></body>
+</script>
+</body>
 </html>
