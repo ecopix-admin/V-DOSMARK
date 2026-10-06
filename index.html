@@ -1,984 +1,164 @@
-<!doctype html>
-
-<html lang="az">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080a0f">
-<meta name="description" content="PLACE MEMORY — məkanları xatirəyə çevir.">
-<title>PLACE MEMORY™</title><style>
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-margin:0;
-background:#080a0f;
-color:#f5f7fb;
-font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
-}
-button,input,textarea,select{font:inherit}
-button{cursor:pointer}
-.app{width:min(920px,100%);margin:auto;padding:18px}
-.hero{padding:45px 4px 25px}
-.logo{
-font-size:13px;
-font-weight:900;
-letter-spacing:.18em;
-color:#9ba3ff
-}
-.hero h1{
-font-size:clamp(42px,10vw,78px);
-line-height:.93;
-letter-spacing:-.05em;
-margin:14px 0
-}
-.hero p{
-max-width:650px;
-font-size:17px;
-line-height:1.65;
-color:#9da5b5
-}
-.card{
-background:#11151e;
-border:1px solid #272e3b;
-border-radius:26px;
-padding:20px;
-margin:15px 0;
-box-shadow:0 20px 70px #0004
-}
-.card h2{margin-top:0}
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:12px
-}
-@media(max-width:650px){
-.grid{grid-template-columns:1fr}
-.app{padding:14px}
-.hero{padding-top:28px}
-}
-.field{margin-top:13px}
-label{
-display:block;
-font-size:12px;
-font-weight:700;
-color:#aab2c1;
-margin-bottom:7px
-}
-input,textarea,select{
-width:100%;
-padding:14px;
-border-radius:15px;
-border:1px solid #303746;
-background:#090c12;
-color:#fff;
-outline:none
-}
-input:focus,textarea:focus,select:focus{
-border-color:#8189ff;
-box-shadow:0 0 0 3px #8189ff18
-}
-textarea{
-min-height:130px;
-resize:vertical
-}
-.actions{
-display:flex;
-gap:9px;
-flex-wrap:wrap;
-margin-top:15px
-}
-button{
-border:0;
-border-radius:15px;
-padding:13px 17px;
-background:#eff1ff;
-color:#11131a;
-font-weight:850
-}
-button.secondary{
-background:#222834;
-color:#edf0f7
-}
-button.danger{
-background:#391d25;
-color:#ffd4db
-}
-button:active{transform:scale(.98)}
-.hidden{display:none!important}
-
-.preview{
-display:none;
-margin-top:15px;
-border-radius:20px;
-overflow:hidden;
-border:1px solid #303746
-}
-.preview img{
-display:block;
-width:100%;
-max-height:400px;
-object-fit:cover
-}
-
-.result{display:none}
-
-.memory{
-position:relative;
-overflow:hidden;
-background:
-radial-gradient(circle at 100% 0,#737cff20,transparent 30%),
-linear-gradient(145deg,#181d29,#0c0f16);
-border:1px solid #303848;
-border-radius:28px;
-padding:24px
-}
-.memory:after{
-content:"";
-position:absolute;
-width:180px;
-height:180px;
-right:-90px;
-bottom:-90px;
-border-radius:50%;
-background:#777fff12
-}
-.eyebrow{
-font-size:12px;
-letter-spacing:.16em;
-font-weight:900;
-color:#8f98ff
-}
-.memory h2{
-font-size:clamp(30px,7vw,48px);
-line-height:1;
-margin:9px 0 17px
-}
-.meta{
-display:flex;
-flex-wrap:wrap;
-gap:8px
-}
-.pill{
-padding:8px 11px;
-border:1px solid #303746;
-border-radius:999px;
-color:#aeb6c5;
-font-size:12px
-}
-.quote{
-font-size:19px;
-line-height:1.65;
-color:#e7eaf0;
-white-space:pre-wrap
-}
-.out-image{
-display:none;
-width:100%;
-max-height:480px;
-object-fit:cover;
-border-radius:20px;
-margin-top:18px
-}
-.qrbox{
-width:160px;
-height:160px;
-padding:10px;
-background:#fff;
-border-radius:17px;
-margin-top:18px
-}
-.qrbox img{
-display:block;
-width:140px;
-height:140px
-}
-.small{
-font-size:12px;
-line-height:1.6;
-color:#7f8898
-}
-.feature{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:10px
-}
-@media(max-width:650px){
-.feature{grid-template-columns:1fr}
-}
-.feature div{
-padding:16px;
-border:1px solid #292f3c;
-border-radius:18px;
-background:#0d1017
-}
-.feature b{display:block;margin-bottom:5px}
-.feature span{font-size:12px;color:#858e9e;line-height:1.5}
-
-.toast{
-position:fixed;
-left:50%;
-bottom:22px;
-transform:translate(-50%,25px);
-opacity:0;
-pointer-events:none;
-background:#f3f4ff;
-color:#11131a;
-padding:12px 17px;
-border-radius:15px;
-font-size:13px;
-font-weight:850;
-z-index:99;
-transition:.25s
-}
-.toast.show{
-opacity:1;
-transform:translate(-50%,0)
-}
-.status{
-font-size:12px;
-color:#777f90;
-margin-top:10px
-}
-.footer{
-padding:30px 4px 45px;
-text-align:center;
-color:#606979;
-font-size:12px
-}
-</style></head><body><div class="app"><section class="hero">
-<div class="logo">PLACE MEMORY™</div><h1>
-Bir məkan.<br>
-Bir hekayə.<br>
-Əbədi yaddaş.
-</h1><p>
-Xüsusi bir məkanı rəqəmsal xatirəyə çevir.
-Şəkil, tarix, GPS və şəxsi hekayəni bir Memory-də birləşdir.
-Sonra onu QR kodla paylaş.
-</p>
-</section><section class="card"><h2>✨ Yeni Memory yarat</h2><div class="grid"><div>
-<label>Memory adı</label>
-<input id="title" value="Bizim ilk görüşümüz">
-</div><div>
-<label>Memory növü</label><select id="type">
-<option value="Love">❤️ Love</option>
-<option value="Wedding">💍 Wedding</option>
-<option value="Family">👨‍👩‍👧 Family</option>
-<option value="Baby">👶 Baby</option>
-<option value="Travel">✈️ Travel</option>
-<option value="Pet">🐾 Pet</option>
-<option value="Business">🏢 Business</option>
-<option value="Other">✨ Other</option>
-</select>
-</div></div><div class="field"><label>Məkan</label>
-
-<input
-id="place"
-placeholder="Məsələn: İçərişəhər, Bakı"
-
-«»
-
-</div><div class="grid"><div class="field"><label>Tarix</label>
-
-<input id="date" type="date"></div><div class="field"><label>GPS koordinat</label>
-
-<input
-id="coords"
-placeholder="GPS düyməsinə bas"
-
-«»
-
-</div></div><div class="field"><label>Hekayə / məktub</label>
-
-<textarea
-id="story"
-placeholder="Bu məkan sizin üçün nə ifadə edir?"
-></textarea></div><div class="actions"><button id="gps">
-📍 Mövqeyimi götür
-</button><button id="photoBtn" class="secondary">
-📷 Şəkil əlavə et
-</button><input
-id="photo"
-type="file"
-accept="image/*"
-class="hidden"
-
-«»
-
-<button id="create">
-✨ Memory yarat
-</button><button id="demo" class="secondary">
-Nümunə doldur
-</button></div><div id="gpsStatus" class="status"></div><div id="preview" class="preview">
-<img id="previewImg" alt="Memory şəkli">
-</div></section><section id="result" class="card result"><div class="memory"><div id="outType" class="eyebrow"></div><h2 id="outTitle"></h2><div class="meta"><span id="outPlace" class="pill"></span>
-
-<span id="outDate" class="pill"></span>
-
-<span id="outCoords" class="pill"></span>
-
-</div><img
-id="outImg"
-class="out-image"
-alt="Memory foto"
-
-«»
-
-<p id="outStory" class="quote"></p><div id="qr" class="qrbox"></div><p class="small">
-QR kodu skan edən şəxs bu Memory səhifəsinə keçə bilər.
-Bu GitHub prototipində məlumat cihazda saxlanılır.
-Real məhsul versiyasında hər Memory üçün ayrıca server ID yaradılacaq.
-</p><div class="actions"><button id="share">
-↗ Paylaş
-</button><button id="save" class="secondary">
-💾 Cihazda saxla
-</button><button id="copy" class="secondary">
-🔗 Linki kopyala
-</button><button id="clear" class="danger">
-Sil
-</button></div></div></section><section class="card"><h3>🚀 Bu məhsulu nəyə çeviririk?</h3><div class="feature"><div>
-<b>💎 Premium kart</b>
-<span>
-Metal, taxta, şüşə və ya daş üzərində QR.
-</span>
-</div><div>
-<b>📍 Place Memory</b>
-<span>
-İnsan xüsusi məkanını öz şəxsi hekayəsinə bağlayır.
-</span>
-</div><div>
-<b>🎁 Hədiyyə</b>
-<span>
-Sevgili, toy, uşaq, ailə, səyahət və xatirələr üçün.
-</span>
-</div></div><p class="small">
-Məqsəd: ucuz fiziki obyekt + yüksək emosional dəyər + rəqəmsal xidmət.
-</p></section><div class="footer">
-PLACE MEMORY™ — Turn places into memories.
-</div></div><div id="toast" class="toast"></div><script>
-
-const $ = selector => document.querySelector(selector);
-
-let imageData = "";
-let currentMemory = null;
-
-
-/* TOAST */
-
-function toast(message){
-
-const element = $("#toast");
-
-element.textContent = message;
-
-element.classList.add("show");
-
-clearTimeout(window.toastTimer);
-
-window.toastTimer = setTimeout(()=>{
-
-element.classList.remove("show");
-
-},2300);
-
-}
-
-
-/* DEFAULT DATE */
-
-$("#date").value =
-new Date().toISOString().slice(0,10);
-
-
-/* PHOTO */
-
-$("#photoBtn").onclick = () => {
-
-$("#photo").click();
-
-};
-
-
-$("#photo").onchange = event => {
-
-const file = event.target.files[0];
-
-if(!file) return;
-
-if(file.size > 8 * 1024 * 1024){
-
-toast("Şəkil maksimum 8 MB ola bilər");
-
-return;
-
-}
-
-const reader = new FileReader();
-
-reader.onload = () => {
-
-imageData = reader.result;
-
-$("#previewImg").src = imageData;
-
-$("#preview").style.display = "block";
-
-toast("Şəkil əlavə edildi ✓");
-
-};
-
-reader.readAsDataURL(file);
-
-};
-
-
-/* GPS */
-
-$("#gps").onclick = () => {
-
-if(!navigator.geolocation){
-
-toast("Bu brauzer GPS-i dəstəkləmir");
-
-return;
-
-}
-
-$("#gpsStatus").textContent =
-"Mövqe müəyyən edilir...";
-
-navigator.geolocation.getCurrentPosition(
-
-position => {
-
-const lat =
-position.coords.latitude.toFixed(6);
-
-const lon =
-position.coords.longitude.toFixed(6);
-
-$("#coords").value =
-lat + ", " + lon;
-
-$("#gpsStatus").textContent =
-"Mövqe hazırdır ✓";
-
-toast("GPS götürüldü ✓");
-
-},
-
-error => {
-
-$("#gpsStatus").textContent =
-"GPS icazəsi verilmədi.";
-
-toast("GPS icazəsini aktiv et");
-
-},
-
-{
-enableHighAccuracy:true,
-timeout:10000,
-maximumAge:0
-}
-
-);
-
-};
-
-
-/* DEMO */
-
-$("#demo").onclick = () => {
-
-$("#title").value =
-"Bizim ilk görüşümüz";
-
-$("#type").value =
-"Love";
-
-$("#place").value =
-"İçərişəhər, Bakı";
-
-$("#date").value =
-"2026-06-14";
-
-$("#story").value =
-"Bu məkanda hər şey başladı. " +
-"Həmin günün baxışlarını, söhbətimizi " +
-"və hisslərimizi bu Memory-də əbədi saxlayırıq.";
-
-toast("Nümunə dolduruldu ✓");
-
-};
-
-
-/* QR */
-
-function createQR(url){
-
-const qrURL =
-"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="
-+
-encodeURIComponent(url);
-
-$("#qr").innerHTML =
-'<img src="' +
-qrURL +
-'" alt="PLACE MEMORY QR">';
-
-}
-
-
-/* CREATE */
-
-$("#create").onclick = () => {
-
-const title =
-$("#title").value.trim();
-
-const place =
-$("#place").value.trim();
-
-const story =
-$("#story").value.trim();
-
-if(!title){
-
-toast("Memory adına yaz");
-
-$("#title").focus();
-
-return;
-
-}
-
-if(!place){
-
-toast("Məkanı yaz");
-
-$("#place").focus();
-
-return;
-
-}
-
-if(!story){
-
-toast("Hekayəni yaz");
-
-$("#story").focus();
-
-return;
-
-}
-
-
-currentMemory = {
-
-id:
-"PM-" +
-Date.now().toString(36).toUpperCase(),
-
-title:title,
-
-type:
-$("#type").value,
-
-place:place,
-
-date:
-$("#date").value,
-
-coords:
-$("#coords").value,
-
-story:story,
-
-image:imageData,
-
-createdAt:
-new Date().toISOString()
-
-};
-
-
-/* OUTPUT */
-
-$("#outType").textContent =
-currentMemory.type.toUpperCase()
-+
-" MEMORY";
-
-$("#outTitle").textContent =
-currentMemory.title;
-
-$("#outPlace").textContent =
-"📍 " + currentMemory.place;
-
-$("#outDate").textContent =
-"📅 " +
-(
-currentMemory.date ||
-"Tarix yoxdur"
-);
-
-$("#outCoords").textContent =
-"🧭 " +
-(
-currentMemory.coords ||
-"GPS yoxdur"
-);
-
-$("#outStory").textContent =
-currentMemory.story;
-
-
-/* IMAGE */
-
-if(currentMemory.image){
-
-$("#outImg").src =
-currentMemory.image;
-
-$("#outImg").style.display =
-"block";
-
-}else{
-
-$("#outImg").style.display =
-"none";
-
-}
-
-
-/* SHARE URL */
-
-const publicURL =
-location.href.split("#")[0]
-+
-"#memory="
-+
-currentMemory.id;
-
-createQR(publicURL);
-
-
-/* SAVE DRAFT */
-
-try{
-
-localStorage.setItem(
-"PLACE_MEMORY_CURRENT",
-JSON.stringify(currentMemory)
-);
-
-}catch(error){
-
-console.warn(error);
-
-}
-
-
-$("#result").style.display =
-"block";
-
-$("#result").scrollIntoView({
-behavior:"smooth",
-block:"start"
-});
-
-toast("Memory hazırdır ✓");
-
-};
-
-
-/* SAVE */
-
-$("#save").onclick = () => {
-
-if(!currentMemory){
-
-toast("Əvvəl Memory yarat");
-
-return;
-
-}
-
-try{
-
-localStorage.setItem(
-"PLACE_MEMORY_SAVED",
-JSON.stringify(currentMemory)
-);
-
-toast("Cihazda saxlanıldı ✓");
-
-}catch(error){
-
-toast("Yaddaş üçün yer çatmır");
-
-}
-
-};
-
-
-/* COPY */
-
-$("#copy").onclick = async () => {
-
-if(!currentMemory){
-
-toast("Əvvəl Memory yarat");
-
-return;
-
-}
-
-const url =
-location.href.split("#")[0]
-+
-"#memory="
-+
-currentMemory.id;
-
-try{
-
-await navigator.clipboard.writeText(url);
-
-toast("Memory linki kopyalandı ✓");
-
-}catch(error){
-
-prompt(
-"Linki kopyala:",
-url
-);
-
-}
-
-};
-
-
-/* SHARE */
-
-$("#share").onclick = async () => {
-
-if(!currentMemory){
-
-toast("Əvvəl Memory yarat");
-
-return;
-
-}
-
-const url =
-location.href.split("#")[0]
-+
-"#memory="
-+
-currentMemory.id;
-
-if(navigator.share){
-
-try{
-
-await navigator.share({
-
-title:
-currentMemory.title,
-
-text:
-currentMemory.story,
-
-url:url
-
-});
-
-}catch(error){}
-
-}else{
-
-try{
-
-await navigator.clipboard.writeText(url);
-
-toast("Paylaşım linki kopyalandı ✓");
-
-}catch(error){
-
-toast("Paylaşma dəstəklənmir");
-
-}
-
-}
-
-};
-
-
-/* CLEAR */
-
-$("#clear").onclick = () => {
-
-localStorage.removeItem(
-"PLACE_MEMORY_CURRENT"
-);
-
-localStorage.removeItem(
-"PLACE_MEMORY_SAVED"
-);
-
-currentMemory = null;
-
-$("#result").style.display =
-"none";
-
-toast("Memory silindi");
-
-};
-
-
-/* LOAD SAVED */
-
-(function(){
-
-try{
-
-const saved =
-localStorage.getItem(
-"PLACE_MEMORY_SAVED"
-)
-||
-localStorage.getItem(
-"PLACE_MEMORY_CURRENT"
-);
-
-if(!saved) return;
-
-const data =
-JSON.parse(saved);
-
-$("#title").value =
-data.title || "";
-
-$("#type").value =
-data.type || "Love";
-
-$("#place").value =
-data.place || "";
-
-$("#date").value =
-data.date || "";
-
-$("#coords").value =
-data.coords || "";
-
-$("#story").value =
-data.story || "";
-
-if(data.image){
-
-imageData =
-data.image;
-
-$("#previewImg").src =
-data.image;
-
-$("#preview").style.display =
-"block";
-
-}
-
-}catch(error){
-
-console.warn(
-"Saved Memory yüklənmədi",
-error
-);
-
-}
-
-})();
-
-
-/* OPEN MEMORY ID */
-
-(function(){
-
-const hash =
-location.hash;
-
-if(!hash.startsWith("#memory="))
-return;
-
-const id =
-decodeURIComponent(
-hash.substring(8)
-);
-
-try{
-
-const saved =
-localStorage.getItem(
-"PLACE_MEMORY_SAVED"
-)
-||
-localStorage.getItem(
-"PLACE_MEMORY_CURRENT"
-);
-
-if(!saved) return;
-
-const data =
-JSON.parse(saved);
-
-if(data.id !== id) return;
-
-currentMemory = data;
-
-$("#outType").textContent =
-data.type.toUpperCase()
-+
-" MEMORY";
-
-$("#outTitle").textContent =
-data.title;
-
-$("#outPlace").textContent =
-"📍 " + data.place;
-
-$("#outDate").textContent =
-"📅 " +
-(data.date || "Tarix yoxdur");
-
-$("#outCoords").textContent =
-"🧭 " +
-(data.coords || "GPS yoxdur");
-
-$("#outStory").textContent =
-data.story;
-
-if(data.image){
-
-$("#outImg").src =
-data.image;
-
-$("#outImg").style.display =
-"block";
-
-}
-
-createQR(location.href);
-
-$("#result").style.display =
-"block";
-
-}catch(error){
-
-console.warn(error);
-
-}
-
-})();
-
-</script></body>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Indie Beats | Music Hub</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            margin-top: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        header h1 {
+            font-size: 24px;
+            color: #38bdf8;
+            margin-bottom: 8px;
+        }
+        header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .playlist {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+        .playlist li {
+            padding: 12px 16px;
+            background: #0f172a;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .playlist li:hover {
+            background: #334155;
+        }
+        .playlist li.active {
+            border-left: 4px solid #38bdf8;
+            background: #1e293b;
+        }
+        .player-box {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .now-playing {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #e2e8f0;
+        }
+        audio {
+            width: 100%;
+            outline: none;
+            margin-bottom: 16px;
+        }
+        .donate-section {
+            text-align: center;
+            margin-top: 24px;
+        }
+        .donate-btn {
+            display: inline-block;
+            background-color: #ffdd00;
+            color: #000;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 30px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(255, 221, 0, 0.3);
+            transition: transform 0.2s;
+        }
+        .donate-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Global Indie Beats</h1>
+            <p>Exclusive AI & Trap-Rap Sound Hub</p>
+        </header>
+
+        <!-- Musiqi Siyahısı -->
+        <ul class="playlist" id="playlist">
+            <li data-src="https://www.w3schools.com/html/horse.mp3" class="active">
+                <span>1. Phantom in the City (Remix)</span>
+                <span>🎵</span>
+            </li>
+            <li data-src="https://www.w3schools.com/html/mov_bbb.mp4">
+                <span>2. Midnight Energy (Instrumental)</span>
+                <span>🎵</span>
+            </li>
+        </ul>
+
+        <!-- Pleyer Bölməsi -->
+        <div class="player-box">
+            <div class="now-playing" id="nowPlaying">Selected: Phantom in the City (Remix)</div>
+            <audio id="audioPlayer" controls autoplay>
+                <source src="https://www.w3schools.com/html/horse.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <!-- Donasiya Düyməsi (Buy Me a Coffee) -->
+        <div class="donate-section">
+            <a href="https://www.buymeacoffee.com" target="_blank" class="donate-btn">☕ Buy Me a Coffee</a>
+        </div>
+    </div>
+
+    <script>
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playlistItems = document.querySelectorAll('#playlist li');
+        const nowPlaying = document.getElementById('nowPlaying');
+
+        playlistItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Aktiv sinfi dəyiş
+                playlistItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                // Yeni mahnı linkini yüklə və çal
+                const src = item.getAttribute('data-src');
+                const title = item.querySelector('span').innerText;
+                
+                audioPlayer.src = src;
+                nowPlaying.innerText = `Selected: ${title}`;
+                audioPlayer.play();
+            });
+        });
+    </script>
+
+</body>
 </html>
