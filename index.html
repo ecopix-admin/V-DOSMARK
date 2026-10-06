@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b12">
+<title>ARWORLD — Spatial World</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  margin:0;
+  width:100%;
+  min-height:100%;
+  background:#070b12;
+  color:#f5f7fb;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+  overflow-x:hidden;
+}
+
+button,
+input,
+textarea,
+select{
+  font:inherit;
+}
+
+button{
+  border:0;
+  cursor:pointer;
+}
+
+.app{
+  width:100%;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 20% 0%,rgba(0,180,255,.08),transparent 30%),
+    radial-gradient(circle at 90% 20%,rgba(125,70,255,.08),transparent 30%),
+    #070b12;
+}
+
+.header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 15px;
+  background:rgba(7,11,18,.92);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+
+.logoIcon{
+  width:34px;
+  height:34px;
+  border-radius:11px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#00d4ff,#6b5cff);
+  box-shadow:0 0 22px rgba(0,212,255,.25);
+}
+
+.headerActions{
+  display:flex;
+  gap:7px;
+}
+
+.iconBtn{
+  width:39px;
+  height:39px;
+  border-radius:12px;
+  color:#fff;
+  background:#111824;
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.main{
+  width:min(100%,900px);
+  margin:auto;
+  padding:18px 14px 100px;
+}
+
+.hero{
+  padding:18px 4px 10px;
+}
+
+.hero h1{
+  margin:0;
+  font-size:29px;
+  line-height:1.1;
+}
+
+.hero p{
+  color:#8994a6;
+  margin:9px 0 0;
+  line-height:1.5;
+}
+
+.card{
+  background:rgba(15,21,32,.9);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;
+  padding:15px;
+  margin-top:14px;
+  box-shadow:0 15px 50px rgba(0,0,0,.18);
+}
+
+.sectionTitle{
+  font-size:15px;
+  font-weight:800;
+  margin-bottom:12px;
+}
+
+.locationRow{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  color:#fff;
+  background:#0a1019;
+  border:1px solid #202b3b;
+  border-radius:12px;
+  padding:12px;
+  outline:none;
+}
+
+input:focus,
+textarea:focus{
+  border-color:#16bfff;
+}
+
+textarea{
+  resize:vertical;
+  min-height:100px;
+}
+
+.btn{
+  min-height:44px;
+  padding:10px 14px;
+  border-radius:13px;
+  color:#fff;
+  background:#151e2c;
+  border:1px solid rgba(255,255,255,.08);
+  font-weight:700;
+}
+
+.btn.primary{
+  background:linear-gradient(135deg,#00bfff,#685cff);
+  border:0;
+}
+
+.btn.success{
+  background:#123525;
+  border-color:#1d7547;
+}
+
+.btn.danger{
+  background:#35151b;
+  border-color:#722633;
+}
+
+.btn.full{
+  width:100%;
+}
+
+.btn:active{
+  transform:scale(.98);
+}
+
+.chips{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.chip{
+  padding:9px 12px;
+  border-radius:999px;
+  color:#9ca8b8;
+  background:#0c131e;
+  border:1px solid #202b3b;
+}
+
+.chip.on{
+  color:#fff;
+  background:#182d42;
+  border-color:#00bfff;
+}
+
+.mediaActions{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.mediaActions .btn{
+  min-height:62px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:4px;
+}
+
+.mediaList{
+  display:grid;
+  gap:9px;
+  margin-top:12px;
+}
+
+.mediaItem{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  background:#0a1019;
+  border:1px solid #202b3b;
+  border-radius:14px;
+}
+
+.mediaPreview{
+  width:55px;
+  height:55px;
+  border-radius:10px;
+  overflow:hidden;
+  background:#141d29;
+  display:grid;
+  place-items:center;
+  flex:none;
+}
+
+.mediaPreview img,
+.mediaPreview video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.mediaInfo{
+  flex:1;
+  min-width:0;
+}
+
+.mediaName{
+  font-weight:700;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.mediaType{
+  color:#7f8b9c;
+  font-size:12px;
+  margin-top:4px;
+}
+
+.removeBtn{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:#32141a;
+  color:#ff7585;
+}
+
+.info{
+  color:#8290a2;
+  font-size:13px;
+  line-height:1.5;
+  margin-top:8px;
+}
+
+.status{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:10px 12px;
+  background:#0a1019;
+  border-radius:12px;
+  color:#9ba7b8;
+  margin-top:10px;
+}
+
+.dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#777;
+}
+
+.dot.ok{
+  background:#22d37a;
+  box-shadow:0 0 10px #22d37a;
+}
+
+.bottom{
+  position:fixed;
+  z-index:40;
+  left:0;
+  right:0;
+  bottom:0;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  background:rgba(7,11,18,.94);
+  backdrop-filter:blur(18px);
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.bottomInner{
+  width:min(100%,900px);
+  margin:auto;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+}
+
+.bottom button{
+  height:50px;
+  border-radius:14px;
+  background:#111824;
+  color:#9ca8b8;
+}
+
+.bottom button.active{
+  color:#fff;
+  background:#192536;
+}
+
+.fab{
+  position:fixed;
+  right:18px;
+  bottom:82px;
+  z-index:45;
+  width:58px;
+  height:58px;
+  border-radius:20px;
+  color:#fff;
+  font-size:26px;
+  background:linear-gradient(135deg,#00c9ff,#735cff);
+  box-shadow:0 12px 35px rgba(0,0,0,.35);
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);
+}
+
+.modal{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  transform:translateX(-50%);
+  width:min(100%,700px);
+  max-height:92vh;
+  overflow:auto;
+  background:#0b111b;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:25px 25px 0 0;
+  padding:18px 15px calc(25px + env(safe-area-inset-bottom));
+}
+
+.modalHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:15px;
+}
+
+.modalHead h2{
+  margin:0;
+  font-size:20px;
+}
+
+.close{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  background:#161f2d;
+  color:#fff;
+}
+
+.mapOverlay{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  display:none;
+  background:#070b12;
+}
+
+.mapTop{
+  position:absolute;
+  z-index:5;
+  left:12px;
+  right:12px;
+  top:12px;
+  display:flex;
+  gap:8px;
+}
+
+.mapTop button{
+  width:45px;
+  height:45px;
+  border-radius:13px;
+  background:rgba(7,11,18,.9);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.1);
+}
+
+#map{
+  width:100%;
+  height:100%;
+  background:#101722;
+}
+
+.cross{
+  position:absolute;
+  z-index:4;
+  left:50%;
+  top:50%;
+  width:36px;
+  height:36px;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+
+.cross:before,
+.cross:after{
+  content:"";
+  position:absolute;
+  background:#00cfff;
+  box-shadow:0 0 12px #00cfff;
+}
+
+.cross:before{
+  width:36px;
+  height:2px;
+  top:17px;
+}
+
+.cross:after{
+  width:2px;
+  height:36px;
+  left:17px;
+}
+
+.camOverlay{
+  position:fixed;
+  inset:0;
+  z-index:130;
+  display:none;
+  background:#000;
+}
+
+#camVideo{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.camTop{
+  position:absolute;
+  z-index:3;
+  top:14px;
+  left:14px;
+  right:14px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.camBottom{
+  position:absolute;
+  z-index:3;
+  bottom:25px;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:center;
+  gap:18px;
+}
+
+.camBtn{
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  background:#fff;
+  border:5px solid rgba(255,255,255,.35);
+}
+
+.camBtn.record{
+  background:#ff304d;
+}
+
+.toast{
+  position:fixed;
+  z-index:300;
+  left:50%;
+  bottom:85px;
+  transform:translateX(-50%) translateY(20px);
+  max-width:calc(100% - 30px);
+  padding:12px 16px;
+  border-radius:13px;
+  color:#fff;
+  background:#172131;
+  border:1px solid rgba(255,255,255,.1);
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+.toast.warn{
+  background:#45251a;
+}
+
+.hidden{
+  display:none!important;
+}
+
+@media(max-width:520px){
+  .mediaActions{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .locationRow{
+    grid-template-columns:1fr;
+  }
+
+  .hero h1{
+    font-size:25px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header class="header">
+  <div class="logo">
+    <div class="logoIcon">🌐</div>
+    <span>ARWORLD</span>
+  </div>
+
+  <div class="headerActions">
+    <button class="iconBtn" id="gpsBtn">⌖</button>
+    <button class="iconBtn" id="helpBtn">?</button>
+  </div>
+</header>
+
+<main class="main">
+
+<section class="hero">
+  <h1>Real World Search</h1>
+  <p>
+    Fiziki məkana rəqəmsal obyekt, profil, foto, video və məlumat yerləşdir.
+  </p>
+</section>
+
+<section class="card">
+
+  <div class="sectionTitle">📍 Məkan</div>
+
+  <div class="locationRow">
+    <input id="c_lat" type="number" step="any" placeholder="Latitude">
+    <input id="c_lng" type="number" step="any" placeholder="Longitude">
+  </div>
+
+  <div class="status">
+    <span id="gpsDot" class="dot"></span>
+    <span id="c_info">Məkan müəyyən edilməyib</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+    <button class="btn" id="c_cur">⌖ Cari məkan</button>
+    <button class="btn" id="c_pick">🗺️ Xəritədən seç</button>
+  </div>
+
+</section>
+
+<section class="card">
+
+  <div class="sectionTitle">🏷️ Obyekt növü</div>
+
+  <div class="chips" id="c_cats">
+    <button class="chip on" data-cat="profile">👤 Profil</button>
+    <button class="chip" data-cat="business">🏪 Biznes</button>
+    <button class="chip" data-cat="place">📍 Məkan</button>
+    <button class="chip" data-cat="service">🛠️ Xidmət</button>
+    <button class="chip" data-cat="announcement">📢 Elan</button>
+    <button class="chip" data-cat="article">📄 Məqalə</button>
+  </div>
+
+</section>
+
+<section class="card">
+
+  <div class="sectionTitle">📝 Məlumat</div>
+
+  <input id="c_title" placeholder="Başlıq">
+
+  <textarea
+    id="c_text"
+    style="margin-top:9px"
+    placeholder="Bu məkan haqqında məlumat yaz..."
+  ></textarea>
+
+</section>
+
+<section class="card">
+
+  <div class="sectionTitle">📦 Media əlavə et</div>
+
+  <div class="mediaActions">
+
+    <button class="btn" id="c_gal">
+      🖼️
+      <span>Qalereya</span>
+    </button>
+
+    <button class="btn" id="c_selfie">
+      🤳
+      <span>Selfie</span>
+    </button>
+
+    <button class="btn" id="c_photo">
+      📷
+      <span>Foto</span>
+    </button>
+
+    <button class="btn" id="c_video">
+      🎥
+      <span>Video</span>
+    </button>
+
+    <button class="btn" id="c_aud">
+      🎵
+      <span>Audio</span>
+    </button>
+
+    <button class="btn" id="c_voice">
+      🎙️
+      <span>Səs yaz</span>
+    </button>
+
+  </div>
+
+  <div id="mediaList" class="mediaList"></div>
+
+</section>
+
+<section class="card">
+
+  <button class="btn primary full" id="publishBtn">
+    🌐 Dünyaya əlavə et
+  </button>
+
+  <div class="info">
+    Hazırda məlumat brauzerin local yaddaşında saxlanılır.
+    Serverə ehtiyac yoxdur.
+  </div>
+
+</section>
+
+<section class="card">
+
+  <div class="sectionTitle">🌍 Yerləşdirilmiş obyektlər</div>
+  <div id="objects"></div>
+
+</section>
+
+</main>
+
+<button class="fab" id="fab">＋</button>
+
+<nav class="bottom">
+  <div class="bottomInner">
+    <button class="active" id="navWorld">🌍<br><small>Dünya</small></button>
+    <button id="navCreate">＋<br><small>Əlavə et</small></button>
+    <button id="navObjects">📦<br><small>Obyektlər</small></button>
+  </div>
+</nav>
+
+</div>
+
+<!-- COMPOSER -->
+
+<div class="overlay" id="composerOverlay">
+
+  <div class="modal">
+
+    <div class="modalHead">
+      <h2>🌐 ARWORLD obyekt yarat</h2>
+      <button class="close" id="c_x">×</button>
+    </div>
+
+    <div class="sectionTitle">Başlıq</div>
+
+    <input id="c_title2" placeholder="Obyektin adı">
+
+    <div class="sectionTitle" style="margin-top:15px">
+      Məlumat
+    </div>
+
+    <textarea
+      id="c_text2"
+      placeholder="Obyekt haqqında məlumat..."
+    ></textarea>
+
+    <div class="sectionTitle" style="margin-top:15px">
+      Kateqoriya
+    </div>
+
+    <div class="chips" id="modalCats">
+      <button class="chip on" data-cat="profile">👤 Profil</button>
+      <button class="chip" data-cat="business">🏪 Biznes</button>
+      <button class="chip" data-cat="place">📍 Məkan</button>
+      <button class="chip" data-cat="service">🛠️ Xidmət</button>
+      <button class="chip" data-cat="announcement">📢 Elan</button>
+    </div>
+
+    <button class="btn primary full" style="margin-top:18px" id="modalPublish">
+      🌐 Yerləşdir
+    </button>
+
+  </div>
+
+</div>
+
+<!-- MAP -->
+
+<div class="mapOverlay" id="mapOverlay">
+
+  <div class="mapTop">
+    <button id="mapBack">←</button>
+    <button id="mapGps">⌖</button>
+    <button id="mapDone">✓</button>
+  </div>
+
+  <div id="map"></div>
+  <div class="cross"></div>
+
+</div>
+
+<!-- CAMERA -->
+
+<div class="camOverlay" id="camOverlay">
+
+  <video id="camVideo" autoplay playsinline muted></video>
+
+  <div class="camTop">
+    <button class="close" id="camClose">×</button>
+    <button class="close" id="camSwitch">↻</button>
+  </div>
+
+  <div class="camBottom">
+    <button class="camBtn" id="camCapture"></button>
+  </div>
+
+</div>
+
+<input
+  type="file"
+  id="f_gal"
+  accept="image/*,video/*"
+  multiple
+  hidden
+>
+
+<input
+  type="file"
+  id="f_aud"
+  accept="audio/*"
+  hidden
+>
+
+<div id="toast" class="toast"></div>
+
+<script>
+
+"use strict";
+
+/* ================================
+   BASIC HELPERS
+================================ */
+
+const $ = (s,p=document) => p.querySelector(s);
+const $$ = (s,p=document) => [...p.querySelectorAll(s)];
+const $c = (s,p=document) => p.querySelector(s);
+
+function toast(message,type=""){
+  const el=$("#toast");
+  el.textContent=message;
+  el.className="toast show "+type;
+
+  clearTimeout(window.__toastTimer);
+
+  window.__toastTimer=setTimeout(()=>{
+    el.className="toast";
+  },2800);
+}
+
+function t(key){
+  const map={
+    voice:"Səs yaz",
+    cam_fail:"Kamera və ya mikrofon icazəsi yoxdur."
+  };
+
+  return map[key] || key;
+}
+
+/* ================================
+   APP STATE
+================================ */
+
+const C={
+  media:[],
+  cat:"profile",
+  lat:null,
+  lng:null,
+  rec:null
+};
+
+let CUR="world";
+let U={
+  rLat:0,
+  rLng:0
+};
+
+let cameraStream=null;
+let cameraMode="photo";
+let facingMode="environment";
+
+let objects=loadObjects();
+
+/* ================================
+   LOCAL STORAGE
+================================ */
+
+function loadObjects(){
+  try{
+    return JSON.parse(localStorage.getItem("arworld_objects") || "[]");
+  }catch(e){
+    return [];
+  }
+}
+
+function saveObjects(){
+  try{
+    localStorage.setItem(
+      "arworld_objects",
+      JSON.stringify(objects)
+    );
+  }catch(e){
+    toast("Yaddaş xətası","warn");
+  }
+}
+
+/* ================================
+   DISTANCE
+================================ */
+
+function hav(lat1,lon1,lat2,lon2){
+
+  const R=6371000;
+
+  const p1=lat1*Math.PI/180;
+  const p2=lat2*Math.PI/180;
+
+  const dp=(lat2-lat1)*Math.PI/180;
+  const dl=(lon2-lon1)*Math.PI/180;
+
+  const a=
+    Math.sin(dp/2)**2+
+    Math.cos(p1)*
+    Math.cos(p2)*
+    Math.sin(dl/2)**2;
+
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
+function fmtDist(m){
+
+  if(!isFinite(m)) return "—";
+
+  if(m<1000){
+    return Math.round(m)+" m";
+  }
+
+  return (m/1000).toFixed(2)+" km";
+}
+
+/* ================================
+   GEOLOCATION
+================================ */
+
+function P(){
+
+  if(
+    isFinite(U.rLat) &&
+    isFinite(U.rLng) &&
+    U.rLat!==0
+  ){
+    return {
+      lat:U.rLat,
+      lng:U.rLng
+    };
+  }
+
+  return {
+    lat:C.lat ?? 40.4093,
+    lng:C.lng ?? 49.8671
+  };
+}
+
+function getLocation(){
+
+  if(!navigator.geolocation){
+
+    toast(
+      "Bu brauzer GPS-i dəstəkləmir.",
+      "warn"
+    );
+
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+
+    pos=>{
+
+      U.rLat=pos.coords.latitude;
+      U.rLng=pos.coords.longitude;
+
+      C.lat=U.rLat;
+      C.lng=U.rLng;
+
+      syncLoc();
+
+      $("#gpsDot").classList.add("ok");
+
+      toast(
+        "📍 Cari məkan tapıldı"
+      );
+    },
+
+    err=>{
+
+      $("#gpsDot").classList.remove("ok");
+
+      toast(
+        "GPS icazəsi alınmadı.",
+        "warn"
+      );
+
+    },
+
+    {
+      enableHighAccuracy:true,
+      timeout:10000,
+      maximumAge:5000
+    }
+  );
+}
+
+function syncLoc(){
+
+  if(C.lat!=null){
+    $("#c_lat").value=C.lat;
+  }
+
+  if(C.lng!=null){
+    $("#c_lng").value=C.lng;
+  }
+
+  if(
+    isFinite(C.lat) &&
+    isFinite(C.lng) &&
+    isFinite(U.rLat) &&
+    isFinite(U.rLng)
+  ){
+
+    $("#c_info").textContent=
+      "📏 "+
+      fmtDist(
+        hav(
+          U.rLat,
+          U.rLng,
+          C.lat,
+          C.lng
+        )
+      )+
+      " məsafə";
+  }
+}
+
+/* ================================
+   IMAGE COMPRESSION
+================================ */
+
+async function shrinkImage(file){
+
+  return new Promise(resolve=>{
+
+    const img=new Image();
+
+    const url=URL.createObjectURL(file);
+
+    img.onload=()=>{
+
+      const max=1600;
+
+      let w=img.width;
+      let h=img.height;
+
+      if(w>max || h>max){
+
+        const ratio=Math.min(
+          max/w,
+          max/h
+        );
+
+        w=Math.round(w*ratio);
+        h=Math.round(h*ratio);
+      }
+
+      const canvas=document.createElement("canvas");
+
+      canvas.width=w;
+      canvas.height=h;
+
+      const ctx=canvas.getContext("2d");
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        w,
+        h
+      );
+
+      canvas.toBlob(
+        blob=>{
+          URL.revokeObjectURL(url);
+          resolve(blob || file);
+        },
+        "image/jpeg",
+        .82
+      );
+    };
+
+    img.onerror=()=>{
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+
+    img.src=url;
+  });
+}
+
+/* ================================
+   MEDIA
+================================ */
+
+function drawMP(){
+
+  const list=$("#mediaList");
+
+  list.innerHTML="";
+
+  if(!C.media.length){
+
+    list.innerHTML=
+      '<div class="info">Hələ media əlavə edilməyib.</div>';
+
+    return;
+  }
+
+  C.media.forEach((m,i)=>{
+
+    const item=document.createElement("div");
+
+    item.className="mediaItem";
+
+    const preview=document.createElement("div");
+
+    preview.className="mediaPreview";
+
+    if(m.type==="image"){
+
+      const img=document.createElement("img");
+
+      img.src=URL.createObjectURL(m.blob);
+
+      preview.appendChild(img);
+
+    }else if(m.type==="video"){
+
+      const video=document.createElement("video");
+
+      video.src=URL.createObjectURL(m.blob);
+
+      video.muted=true;
+
+      video.playsInline=true;
+
+      preview.appendChild(video);
+
+    }else{
+
+      preview.textContent=
+        m.type==="audio"
+        ? "🎵"
+        : "📄";
+    }
+
+    const info=document.createElement("div");
+
+    info.className="mediaInfo";
+
+    const name=document.createElement("div");
+
+    name.className="mediaName";
+
+    name.textContent=
+      m.name ||
+      (
+        m.type==="audio"
+        ? "Səs faylı"
+        : "Media"
+      );
+
+    const type=document.createElement("div");
+
+    type.className="mediaType";
+
+    type.textContent=
+      m.type.toUpperCase();
+
+    info.appendChild(name);
+    info.appendChild(type);
+
+    const remove=document.createElement("button");
+
+    remove.className="removeBtn";
+
+    remove.textContent="×";
+
+    remove.dataset.rm=i;
+
+    remove.onclick=()=>{
+
+      C.media.splice(
+        Number(remove.dataset.rm),
+        1
+      );
+
+      drawMP();
+    };
+
+    item.appendChild(preview);
+    item.appendChild(info);
+    item.appendChild(remove);
+
+    list.appendChild(item);
+
+  });
+}
+
+drawMP();
+
+function addMedia(m){
+
+  C.media.push(m);
+
+  drawMP();
+
+  toast(
+    "✓ Media əlavə edildi"
+  );
+}
+
+/* ================================
+   FILE INPUTS
+================================ */
+
+$("#c_gal").onclick=()=>{
+  $("#f_gal").click();
+};
+
+$("#f_gal").onchange=async e=>{
+
+  for(
+    const f of [...e.target.files]
+  ){
+
+    if(
+      f.type.startsWith("image/")
+    ){
+
+      const blob=
+        await shrinkImage(f);
+
+      addMedia({
+        type:"image",
+        blob,
+        name:f.name
+      });
+
+    }
+
+    else if(
+      f.type.startsWith("video/")
+    ){
+
+      if(
+        f.size >
+        150*1024*1024
+      ){
+
+        toast(
+          "Video 150MB-dan böyükdür.",
+          "warn"
+        );
+
+        continue;
+      }
+
+      addMedia({
+        type:"video",
+        blob:f,
+        name:f.name
+      });
+    }
+  }
+
+  e.target.value="";
+};
+
+$("#c_aud").onclick=()=>{
+  $("#f_aud").click();
+};
+
+$("#f_aud").onchange=e=>{
+
+  const f=e.target.files[0];
+
+  if(f){
+
+    addMedia({
+      type:"audio",
+      blob:f,
+      name:f.name
+    });
+  }
+
+  e.target.value="";
+};
+
+/* ================================
+   VOICE RECORDING
+================================ */
+
+function recMime(video=false){
+
+  const types=video
+    ? [
+        "video/webm;codecs=vp9,opus",
+        "video/webm",
+        "video/mp4"
+      ]
+    : [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4"
+      ];
+
+  return types.find(
+    x=>
+      window.MediaRecorder &&
+      MediaRecorder.isTypeSupported(x)
+  ) || "";
+}
+
+$("#c_voice").onclick=async()=>{
+
+  const btn=$("#c_voice");
+
+  if(C.rec){
+
+    C.rec.stop();
+
+    return;
+  }
+
+  if(
+    !navigator.mediaDevices ||
+    !window.MediaRecorder
+  ){
+
+    toast(
+      t("cam_fail"),
+      "warn"
+    );
+
+    return;
+  }
+
+  try{
+
+    const stream=
+      await navigator.mediaDevices
+      .getUserMedia({
+        audio:true
+      });
+
+    const mt=recMime(false);
+
+    const mr=
+      new MediaRecorder(
+        stream,
+        mt
+          ? {mimeType:mt}
+          : undefined
+      );
+
+    const chunks=[];
+
+    mr.ondataavailable=e=>{
+
+      if(
+        e.data &&
+        e.data.size
+      ){
+        chunks.push(e.data);
+      }
+    };
+
+    mr.onstop=()=>{
+
+      stream
+        .getTracks()
+        .forEach(x=>x.stop());
+
+      C.rec=null;
+
+      btn.classList.remove("red");
+
+      btn.textContent=
+        "🎙️ "+t("voice");
+
+      if(chunks.length){
+
+        addMedia({
+          type:"audio",
+          blob:new Blob(
+            chunks,
+            {
+              type:
+                mr.mimeType ||
+                mt ||
+                "audio/webm"
+            }
+          ),
+          name:"ARWORLD voice"
+        });
+      }
+    };
+
+    mr.start();
+
+    C.rec=mr;
+
+    btn.classList.add("red");
+
+    btn.textContent=
+      "⏹️ Dayandır";
+
+    toast(
+      "🎙️ Səs yazılır..."
+    );
+
+  }catch(e){
+
+    toast(
+      "Mikrofon icazəsi verilmədi.",
+      "warn"
+    );
+  }
+};
+
+/* ================================
+   CAMERA
+================================ */
+
+async function openCam(mode="photo",callback){
+
+  cameraMode=mode;
+
+  $("#camOverlay").style.display="block";
+
+  try{
+
+    cameraStream=
+      await navigator.mediaDevices.getUserMedia({
+
+        video:{
+          facingMode,
+          width:{
+            ideal:1920
+          },
+          height:{
+            ideal:1080
+          }
+        },
+
+        audio:
+          mode==="video"
+      });
+
+    $("#camVideo").srcObject=
+      cameraStream;
+
+  }catch(e){
+
+    $("#camOverlay").style.display="none";
+
+    toast(
+      "Kamera icazəsi alınmadı.",
+      "warn"
+    );
+
+    return;
+  }
+
+  window.__cameraCallback=callback;
+}
+
+function closeCam(){
+
+  if(cameraStream){
+
+    cameraStream
+      .getTracks()
+      .forEach(
+        t=>t.stop()
+      );
+
+    cameraStream=null;
+  }
+
+  $("#camVideo").srcObject=null;
+
+  $("#camOverlay").style.display="none";
+}
+
+$("#camClose").onclick=
+  closeCam;
+
+$("#camSwitch").onclick=async()=>{
+
+  facingMode=
+    facingMode==="environment"
+    ? "user"
+    : "environment";
+
+  closeCam();
+
+  setTimeout(
+    ()=>openCam(
+      cameraMode,
+      window.__cameraCallback
+    ),
+    100
+  );
+};
+
+$("#camCapture").onclick=async()=>{
+
+  const video=$("#camVideo");
+
+  if(!video.videoWidth){
+
+    toast(
+      "Kamera hazır deyil.",
+      "warn"
+    );
+
+    return;
+  }
+
+  if(cameraMode==="video"){
+
+    const recorder=
+      new MediaRecorder(
+        cameraStream,
+        recMime(true)
+          ? {
+              mimeType:
+                recMime(true)
+            }
+          : undefined
+      );
+
+    const chunks=[];
+
+    recorder.ondataavailable=e=>{
+
+      if(e.data.size){
+        chunks.push(e.data);
+      }
+    };
+
+    recorder.onstop=()=>{
+
+      const blob=
+        new Blob(
+          chunks,
+          {
+            type:
+              recorder.mimeType ||
+              "video/webm"
+          }
+        );
+
+      const cb=
+        window.__cameraCallback;
+
+      closeCam();
+
+      if(cb){
+
+        cb({
+          type:"video",
+          blob,
+          name:"ARWORLD video.webm"
+        });
+      }
+    };
+
+    recorder.start();
+
+    $("#camCapture").classList.add(
+      "record"
+    );
+
+    $("#camCapture").onclick=()=>{
+
+      if(recorder.state==="recording"){
+        recorder.stop();
+      }
+    };
+
+    toast(
+      "🔴 Video yazılır. Düyməyə yenidən bas."
+    );
+
+    return;
+  }
+
+  const canvas=
+    document.createElement("canvas");
+
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+
+  const ctx=
+    canvas.getContext("2d");
+
+  ctx.drawImage(
+    video,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  canvas.toBlob(
+    blob=>{
+
+      const cb=
+        window.__cameraCallback;
+
+      closeCam();
+
+      if(cb){
+
+        cb({
+          type:"image",
+          blob,
+          name:
+            cameraMode==="selfie"
+            ? "ARWORLD selfie.jpg"
+            : "ARWORLD photo.jpg"
+        });
+      }
+
+    },
+    "image/jpeg",
+    .9
+  );
+};
+
+$("#c_selfie").onclick=
+  ()=>openCam(
+    "selfie",
+    addMedia
+  );
+
+$("#c_photo").onclick=
+  ()=>openCam(
+    "photo",
+    addMedia
+  );
+
+$("#c_video").onclick=
+  ()=>openCam(
+    "video",
+    addMedia
+  );
+
+/* ================================
+   CURRENT LOCATION
+================================ */
+
+$("#c_cur").onclick=()=>{
+
+  getLocation();
+};
+
+$("#gpsBtn").onclick=()=>{
+  getLocation();
+};
+
+function validateCoords(){
+
+  const lat=
+    parseFloat(
+      $("#c_lat").value
+    );
+
+  const lng=
+    parseFloat(
+      $("#c_lng").value
+    );
+
+  if(
+    isFinite(lat) &&
+    isFinite(lng) &&
+    Math.abs(lat)<=90 &&
+    Math.abs(lng)<=180
+  ){
+
+    C.lat=lat;
+    C.lng=lng;
+
+    syncLoc();
+
+    return true;
+  }
+
+  toast(
+    "Koordinat düzgün deyil.",
+    "warn"
+  );
+
+  return false;
+}
+
+const onLL=()=>{
+
+  const a=
+    parseFloat(
+      $("#c_lat").value
+    );
+
+  const b=
+    parseFloat(
+      $("#c_lng").value
+    );
+
+  if(
+    isFinite(a) &&
+    isFinite(b) &&
+    Math.abs(a)<=90 &&
+    Math.abs(b)<=180
+  ){
+
+    C.lat=a;
+    C.lng=b;
+
+    if(
+      isFinite(U.rLat) &&
+      isFinite(U.rLng)
+    ){
+
+      $("#c_info").textContent=
+        "📏 "+
+        fmtDist(
+          hav(
+            U.rLat,
+            U.rLng,
+            a,
+            b
+          )
+        );
+    }
+  }
+};
+
+$("#c_lat").oninput=onLL;
+$("#c_lng").oninput=onLL;
+
+/* ================================
+   MAP PICKER
+================================ */
+
+let mapLoaded=false;
+
+function loadMap(){
+
+  if(mapLoaded) return;
+
+  mapLoaded=true;
+
+  const css=
+    document.createElement("link");
+
+  css.rel="stylesheet";
+
+  css.href=
+    "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+
+  document.head.appendChild(css);
+
+  const script=
+    document.createElement("script");
+
+  script.src=
+    "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+
+  script.onload=()=>{
+
+    window.__leafletReady=true;
+
+  };
+
+  document.body.appendChild(script);
+}
+
+loadMap();
+
+let map=null;
+
+function startPick(initial,callback){
+
+  $("#mapOverlay").style.display="block";
+
+  const startLat=
+    isFinite(initial.lat)
+      ? initial.lat
+      : 40.4093;
+
+  const startLng=
+    isFinite(initial.lng)
+      ? initial.lng
+      : 49.8671;
+
+  const wait=()=>{
+
+    if(!window.__leafletReady){
+
+      setTimeout(
+        wait,
+        100
+      );
+
+      return;
+    }
+
+    if(!map){
+
+      map=
+        L.map("map",{
+          zoomControl:false
+        }).setView(
+          [
+            startLat,
+            startLng
+          ],
+          16
+        );
+
+      L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          maxZoom:19,
+          attribution:
+            "© OpenStreetMap"
+        }
+      ).addTo(map);
+
+    }else{
+
+      map.setView(
+        [
+          startLat,
+          startLng
+        ],
+        16
+      );
+
+      setTimeout(
+        ()=>map.invalidateSize(),
+        200
+      );
+    }
+  };
+
+  wait();
+
+  window.__mapCallback=callback;
+}
+
+$("#c_pick").onclick=()=>{
+
+  const back=CUR;
+
+  startPick(
+    {
+      lat:
+        C.lat ||
+        U.rLat ||
+        40.4093,
+
+      lng:
+        C.lng ||
+        U.rLng ||
+        49.8671
+    },
+
+    ll=>{
+
+      if(ll){
+
+        C.lat=ll.lat;
+        C.lng=ll.lng;
+
+        syncLoc();
+      }
+
+      if(back!=="map"){
+        go(back);
+      }
+    }
+  );
+};
+
+$("#mapDone").onclick=()=>{
+
+  if(!map){
+
+    toast(
+      "Xəritə hazır deyil.",
+      "warn"
+    );
+
+    return;
+  }
+
+  const center=
+    map.getCenter();
+
+  const ll={
+    lat:center.lat,
+    lng:center.lng
+  };
+
+  C.lat=ll.lat;
+  C.lng=ll.lng;
+
+  syncLoc();
+
+  $("#mapOverlay").style.display=
+    "none";
+
+  if(window.__mapCallback){
+
+    window.__mapCallback(ll);
+  }
+};
+
+$("#mapBack").onclick=()=>{
+
+  $("#mapOverlay").style.display=
+    "none";
+
+};
+
+$("#mapGps").onclick=()=>{
+
+  if(!navigator.geolocation){
+
+    toast(
+      "GPS yoxdur.",
+      "warn"
+    );
+
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+
+      map.setView(
+        [
+          pos.coords.latitude,
+          pos.coords.longitude
+        ],
+        18
+      );
+    }
+  );
+};
+
+/* ================================
+   CATEGORY
+================================ */
+
+$$(
+  "#c_cats .chip"
+).forEach(btn=>{
+
+  btn.onclick=()=>{
+
+    C.cat=
+      btn.dataset.cat;
+
+    $$("#c_cats .chip")
+      .forEach(
+        x=>
+          x.classList.toggle(
+            "on",
+            x===btn
+          )
+      );
+  };
+});
+
+/* ================================
+   COMPOSER
+================================ */
+
+function closeComposer(){
+
+  $("#composerOverlay")
+    .style.display="none";
+}
+
+$("#c_x").onclick=
+  closeComposer;
+
+function openComposer(){
+
+  $("#composerOverlay")
+    .style.display="block";
+}
+
+$("#fab").onclick=
+  openComposer;
+
+$("#navCreate").onclick=
+  openComposer;
+
+/* ================================
+   MODAL CATEGORY
+================================ */
+
+$$(
+  "#modalCats .chip"
+).forEach(btn=>{
+
+  btn.onclick=()=>{
+
+    C.cat=
+      btn.dataset.cat;
+
+    $$("#modalCats .chip")
+      .forEach(
+        x=>
+          x.classList.toggle(
+            "on",
+            x===btn
+          )
+      );
+  };
+});
+
+/* ================================
+   PUBLISH
+================================ */
+
+async function publish(){
+
+  const title=
+    (
+      $("#c_title").value ||
+      $("#c_title2").value ||
+      "ARWORLD obyekt"
+    ).trim();
+
+  const text=
+    (
+      $("#c_text").value ||
+      $("#c_text2").value ||
+      ""
+    ).trim();
+
+  if(
+    C.lat==null ||
+    C.lng==null
+  ){
+
+    if(!validateCoords()){
+
+      getLocation();
+
+      toast(
+        "Əvvəlcə məkan seç.",
+        "warn"
+      );
+
+      return;
+    }
+  }
+
+  const object={
+
+    id:
+      crypto.randomUUID
+      ? crypto.randomUUID()
+      : String(Date.now()),
+
+    title,
+
+    text,
+
+    cat:C.cat,
+
+    lat:C.lat,
+
+    lng:C.lng,
+
+    created:
+      new Date().toISOString(),
+
+    media:
+      C.media.map(m=>({
+
+        type:m.type,
+
+        name:m.name || ""
+
+      }))
+  };
+
+  objects.unshift(object);
+
+  saveObjects();
+
+  renderObjects();
+
+  C.media=[];
+
+  drawMP();
+
+  $("#c_title").value="";
+  $("#c_text").value="";
+
+  $("#c_title2").value="";
+  $("#c_text2").value="";
+
+  closeComposer();
+
+  toast(
+    "🌐 Obyekt ARWORLD-ə əlavə edildi"
+  );
+}
+
+$("#publishBtn").onclick=
+  publish;
+
+$("#modalPublish").onclick=
+  publish;
+
+/* ================================
+   OBJECT LIST
+================================ */
+
+function renderObjects(){
+
+  const root=
+    $("#objects");
+
+  root.innerHTML="";
+
+  if(!objects.length){
+
+    root.innerHTML=
+      '<div class="info">Hələ obyekt yoxdur.</div>';
+
+    return;
+  }
+
+  objects.forEach(obj=>{
+
+    const card=
+      document.createElement("div");
+
+    card.className="mediaItem";
+
+    const icon=
+      document.createElement("div");
+
+    icon.className=
+      "mediaPreview";
+
+    const icons={
+      profile:"👤",
+      business:"🏪",
+      place:"📍",
+      service:"🛠️",
+      announcement:"📢",
+      article:"📄"
+    };
+
+    icon.textContent=
+      icons[obj.cat] ||
+      "🌐";
+
+    const info=
+      document.createElement("div");
+
+    info.className=
+      "mediaInfo";
+
+    const title=
+      document.createElement("div");
+
+    title.className=
+      "mediaName";
+
+    title.textContent=
+      obj.title;
+
+    const desc=
+      document.createElement("div");
+
+    desc.className=
+      "mediaType";
+
+    desc.textContent=
+      obj.cat+
+      " • "+
+      Number(obj.lat).toFixed(5)+
+      ", "+
+      Number(obj.lng).toFixed(5);
+
+    info.appendChild(title);
+    info.appendChild(desc);
+
+    const del=
+      document.createElement("button");
+
+    del.className=
+      "removeBtn";
+
+    del.textContent="×";
+
+    del.onclick=()=>{
+
+      objects=
+        objects.filter(
+          x=>x.id!==obj.id
+        );
+
+      saveObjects();
+
+      renderObjects();
+
+      toast(
+        "Obyekt silindi"
+      );
+    };
+
+    card.appendChild(icon);
+    card.appendChild(info);
+    card.appendChild(del);
+
+    root.appendChild(card);
+  });
+}
+
+renderObjects();
+
+/* ================================
+   NAVIGATION
+================================ */
+
+function go(page){
+
+  CUR=page;
+
+  $$(".bottom button")
+    .forEach(
+      x=>
+        x.classList.remove(
+          "active"
+        )
+    );
+
+  if(page==="world"){
+    $("#navWorld")
+      .classList.add("active");
+  }
+
+  if(page==="objects"){
+
+    $("#navObjects")
+      .classList.add("active");
+
+    document
+      .getElementById("objects")
+      .scrollIntoView({
+        behavior:"smooth"
+      });
+  }
+
+  if(page==="create"){
+
+    $("#navCreate")
+      .classList.add("active");
+
+    openComposer();
+  }
+}
+
+$("#navWorld").onclick=
+  ()=>go("world");
+
+$("#navObjects").onclick=
+  ()=>go("objects");
+
+/* ================================
+   HELP
+================================ */
+
+$("#helpBtn").onclick=()=>{
+
+  toast(
+    "🌐 ARWORLD: real-world məkana rəqəmsal obyekt yerləşdir."
+  );
+};
+
+/* ================================
+   INITIAL GPS
+================================ */
+
+if(
+  navigator.geolocation
+){
+
+  navigator.geolocation.getCurrentPosition(
+
+    pos=>{
+
+      U.rLat=
+        pos.coords.latitude;
+
+      U.rLng=
+        pos.coords.longitude;
+
+      C.lat=
+        U.rLat;
+
+      C.lng=
+        U.rLng;
+
+      syncLoc();
+
+      $("#gpsDot")
+        .classList.add("ok");
+    },
+
+    ()=>{}
+
+  );
+}
+
+/* ================================
+   ESCAPE
+================================ */
+
+document.addEventListener(
+  "keydown",
+  e=>{
+
+    if(e.key==="Escape"){
+
+      closeComposer();
+      closeCam();
+
+      $("#mapOverlay")
+        .style.display="none";
+    }
+  }
+);
+
+/* ================================
+   PREVENT ACCIDENTAL SUBMIT
+================================ */
+
+document.addEventListener(
+  "submit",
+  e=>e.preventDefault()
+);
+
+</script>
+
+</body>
+          </html>
