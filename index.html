@@ -1,828 +1,393 @@
+
 <!DOCTYPE html>
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<meta name="theme-color" content="#08090c">
-<meta name="description" content="Modern dark music player with admin upload">
-<title>SONORA — Music Hub</title><style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#08090c;
-  --panel:#111319;
-  --panel2:#181a21;
-  --line:#292c35;
-  --text:#f5f7fa;
-  --muted:#9298a6;
-  --accent:#8b5cf6;
-  --accent2:#a78bfa;
-  --danger:#ef4444;
-}
-html{scroll-behavior:smooth}
-body{
-  background:
-    radial-gradient(circle at 20% 0%,rgba(139,92,246,.14),transparent 30%),
-    radial-gradient(circle at 90% 10%,rgba(59,130,246,.09),transparent 25%),
-    var(--bg);
-  color:var(--text);
-  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  min-height:100vh;
-  padding-bottom:145px;
-}
-button,input{font:inherit}
-button{border:0;color:inherit;cursor:pointer}
-a{color:inherit;text-decoration:none}
-
-.header{
-  position:sticky;
-  top:0;
-  z-index:50;
-  height:72px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 5%;
-  background:rgba(8,9,12,.78);
-  backdrop-filter:blur(22px);
-  border-bottom:1px solid rgba(255,255,255,.05);
-}
-.logo{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-size:22px;
-  font-weight:900;
-  letter-spacing:-.8px;
-}
-.logoIcon{
-  width:35px;height:35px;border-radius:11px;
-  display:grid;place-items:center;
-  background:linear-gradient(135deg,#8b5cf6,#ec4899);
-  box-shadow:0 8px 30px rgba(139,92,246,.3);
-}
-.nav{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.nav button,.nav a{
-  background:transparent;
-  padding:9px 13px;
-  color:var(--muted);
-  border-radius:9px;
-  font-size:14px;
-}
-.nav button:hover,.nav a:hover{background:var(--panel2);color:white}
-.upload-btn-nav {
-  background: linear-gradient(135deg,#8b5cf6,#a78bfa) !important;
-  color: white !important;
-  font-weight: 600;
-}
-.search{
-  width:240px;
-  height:40px;
-  border:1px solid var(--line);
-  background:#111319;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  padding:0 12px;
-  gap:8px;
-}
-.search input{
-  width:100%;
-  border:0;
-  outline:0;
-  background:transparent;
-  color:white;
-}
-.search input::placeholder{color:#666b77}
-
-.container{
-  width:min(1180px,90%);
-  margin:auto;
-}
-
-/* Admin Modal Paneli */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(8px); z-index: 1000; display: none;
-  align-items: center; justify-content: center; padding: 20px;
-}
-.modal-overlay.active { display: flex; }
-.modal-card {
-  background: #12151c; border: 1px solid var(--line);
-  width: 100%; max-width: 480px; border-radius: 20px;
-  padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-}
-.modal-card h3 { font-size: 20px; margin-bottom: 16px; color: #fff; }
-.form-group { margin-bottom: 14px; }
-.form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-.form-group input {
-  width: 100%; background: #1a1d26; border: 1px solid var(--line);
-  padding: 10px 14px; border-radius: 10px; color: #fff; outline: none;
-}
-.form-group input:focus { border-color: var(--accent); }
-.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-.modal-actions button { flex: 1; padding: 11px; border-radius: 10px; font-weight: 700; }
-.btn-cancel { background: var(--panel2); color: var(--muted); }
-.btn-save { background: var(--accent); color: #fff; }
-
-.hero{
-  padding:58px 0 34px;
-  display:grid;
-  grid-template-columns:1.2fr .8fr;
-  gap:35px;
-  align-items:center;
-}
-.hero h1{
-  font-size:clamp(42px,6vw,76px);
-  line-height:.94;
-  letter-spacing:-4px;
-  max-width:700px;
-}
-.hero h1 span{
-  background:linear-gradient(90deg,#fff,#a78bfa,#f0abfc);
-  -webkit-background-clip:text;
-  color:transparent;
-}
-.hero p{
-  margin-top:22px;
-  color:var(--muted);
-  max-width:600px;
-  font-size:16px;
-  line-height:1.7;
-}
-.heroActions{
-  display:flex;
-  gap:12px;
-  margin-top:26px;
-  flex-wrap:wrap;
-}
-.primary,.secondary{
-  padding:13px 18px;
-  border-radius:12px;
-  font-weight:750;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-}
-.primary{
-  background:white;
-  color:#090a0d;
-}
-.secondary{
-  background:var(--panel2);
-  border:1px solid var(--line);
-}
-.primary:hover,.secondary:hover{transform:translateY(-1px)}
-
-.heroArt{
-  height:330px;
-  border-radius:25px;
-  overflow:hidden;
-  position:relative;
-  box-shadow:0 30px 90px rgba(0,0,0,.4);
-}
-.heroArt img{
-  width:100%;height:100%;object-fit:cover;
-  filter:saturate(1.15);
-}
-.heroArt:after{
-  content:"";
-  position:absolute;inset:0;
-  background:linear-gradient(0deg,rgba(0,0,0,.65),transparent 60%);
-}
-.heroBadge{
-  position:absolute;
-  left:22px;bottom:20px;
-  z-index:2;
-  font-size:13px;
-  font-weight:700;
-  background:rgba(0,0,0,.45);
-  border:1px solid rgba(255,255,255,.15);
-  backdrop-filter:blur(12px);
-  padding:9px 12px;
-  border-radius:10px;
-}
-
-.sectionHead{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin:35px 0 18px;
-}
-.sectionHead h2{font-size:24px}
-.sectionHead span{color:var(--muted);font-size:13px}
-
-.tracks{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-}
-.track{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  padding:10px;
-  border:1px solid transparent;
-  border-radius:15px;
-  transition:.2s;
-  cursor:pointer;
-  position: relative;
-}
-.track:hover{
-  background:rgba(255,255,255,.035);
-  border-color:var(--line);
-}
-.track.active{
-  background:rgba(139,92,246,.1);
-  border-color:rgba(139,92,246,.35);
-}
-.cover{
-  width:58px;height:58px;
-  flex:none;
-  border-radius:11px;
-  object-fit:cover;
-  box-shadow:0 7px 20px rgba(0,0,0,.35);
-}
-.trackInfo{min-width:0;flex:1}
-.trackTitle{
-  font-weight:750;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.artist{
-  color:var(--muted);
-  font-size:13px;
-  margin-top:4px;
-}
-.duration{
-  color:#777d89;
-  font-size:12px;
-}
-.trackMenu{
-  width:34px;height:34px;
-  border-radius:9px;
-  background:transparent;
-  color:#7e8490;
-}
-.trackMenu:hover{background:var(--panel2);color:white}
-.delete-track {
-  background: transparent; color: var(--danger); font-size: 14px;
-  padding: 6px; border-radius: 6px; margin-left: 5px;
-}
-.delete-track:hover { background: rgba(239, 68, 68, 0.15); }
-
-.empty{
-  display:none;
-  padding:50px;
-  text-align:center;
-  color:var(--muted);
-}
-
-.features{
-  margin:65px 0;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:14px;
-}
-.feature{
-  padding:22px;
-  border:1px solid var(--line);
-  border-radius:17px;
-  background:rgba(17,19,25,.7);
-}
-.featureIcon{
-  font-size:24px;
-  margin-bottom:13px;
-}
-.feature h3{font-size:15px}
-.feature p{
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.6;
-  margin-top:7px;
-}
-
-.footer{
-  padding:35px 0;
-  border-top:1px solid var(--line);
-  color:var(--muted);
-  text-align:center;
-  font-size:13px;
-}
-
-.player{
-  position:fixed;
-  left:14px;
-  right:14px;
-  bottom:14px;
-  z-index:100;
-  min-height:96px;
-  background:rgba(18,19,25,.94);
-  backdrop-filter:blur(25px);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:20px;
-  box-shadow:0 20px 70px rgba(0,0,0,.55);
-  display:grid;
-  grid-template-columns:1fr auto 1fr;
-  align-items:center;
-  gap:20px;
-  padding:13px 17px;
-}
-.now{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-}
-.now img{
-  width:60px;height:60px;
-  border-radius:11px;
-  object-fit:cover;
-}
-.nowText{min-width:0}
-.nowTitle{
-  font-weight:800;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.nowArtist{
-  color:var(--muted);
-  font-size:12px;
-  margin-top:4px;
-}
-.controls{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-}
-.ctrl{
-  width:38px;height:38px;
-  border-radius:50%;
-  background:transparent;
-  color:#c8ccd4;
-  display:grid;
-  place-items:center;
-  font-size:17px;
-}
-.ctrl:hover{background:#292c35;color:white}
-.play{
-  width:47px;height:47px;
-  background:white;
-  color:#08090c;
-  font-size:19px;
-}
-.play:hover{background:#e7e7e7}
-.repeat.active{color:#a78bfa}
-.rightControls{
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  gap:9px;
-}
-.progressWrap{
-  position:absolute;
-  left:18px;
-  right:18px;
-  bottom:4px;
-  height:4px;
-  cursor:pointer;
-}
-.progress{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#8b5cf6,#ec4899);
-  border-radius:10px;
-  position:relative;
-}
-.time{
-  position:absolute;
-  left:20px;
-  right:20px;
-  bottom:9px;
-  display:flex;
-  justify-content:space-between;
-  pointer-events:none;
-  font-size:9px;
-  color:#7e8490;
-  transform:translateY(14px);
-}
-.volume{
-  width:85px;
-  accent-color:#a78bfa;
-}
-.toast{
-  position:fixed;
-  left:50%;
-  bottom:130px;
-  transform:translate(-50%,20px);
-  background:#f4f4f5;
-  color:#101116;
-  padding:11px 16px;
-  border-radius:10px;
-  font-size:13px;
-  font-weight:700;
-  opacity:0;
-  pointer-events:none;
-  transition:.25s;
-  z-index:300;
-}
-.toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
-}
-
-@media(max-width:800px){
-  .header{padding:0 5%;height:64px}
-  .search{width:120px}
-  .hero{
-    grid-template-columns:1fr;
-    padding-top:38px;
-  }
-  .heroArt{height:240px}
-  .tracks{grid-template-columns:1fr}
-  .features{grid-template-columns:1fr}
-  .player{
-    left:7px;right:7px;bottom:7px;
-    min-height:124px;
-    display:grid;
-    grid-template-columns:1fr auto;
-    grid-template-rows:auto auto;
-    gap:5px;
-    padding:11px 12px 16px;
-    border-radius:17px;
-  }
-  .now img{width:48px;height:48px}
-  .controls{
-    grid-column:2;
-    grid-row:1;
-  }
-  .rightControls{
-    grid-column:1 / -1;
-    grid-row:2;
-    justify-content:center;
-    display:none;
-  }
-  .ctrl{width:34px;height:34px}
-  .play{width:42px;height:42px}
-  .volume{display:none}
-  .progressWrap{left:12px;right:12px;bottom:5px}
-  .time{display:none}
-}
-</style></head><body>
-
-<header class="header">
-  <a class="logo" href="#">
-    <span class="logoIcon">♫</span>
-    SONORA
-  </a>
-  <div class="nav">
-    <div class="search">
-      <span>⌕</span>
-      <input id="search" type="search" placeholder="Axtar...">
-    </div>
-    <button class="upload-btn-nav" onclick="openModal()">+ Mahnı Əlavə Et</button>
-    <button onclick="shareSite()">Paylaş</button>
-  </div>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10131b">
+<title>LinguaLink — World Chat</title>
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark;--bg:#10131b;--panel:#191f2b;--line:#303849;--accent:#7969f7;--green:#45d9ad;--muted:#9ba7bb}
+body{margin:0;background:var(--bg);color:#f5f6fc;font:15px system-ui,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{border:0;cursor:pointer;border-radius:12px;background:var(--accent);color:white;padding:12px;font-weight:650}
+button:disabled{opacity:.45}
+input,select,textarea{width:100%;min-width:0;background:#111722;color:white;border:1px solid var(--line);border-radius:11px;padding:12px;outline:none}
+.app{max-width:760px;height:100dvh;margin:auto;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:11px;padding:15px;border-bottom:1px solid var(--line)}
+.logo{width:43px;height:43px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(135deg,#8b75ff,#45d9ad);color:#111722;font-size:23px;font-weight:900}
+.brand{font-size:19px;font-weight:850}.sub,.small{font-size:12px;color:var(--muted)}
+.status{margin-left:auto;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#e5ac4e}.dot.on{background:var(--green)}
+.setup{padding:12px;border-bottom:1px solid var(--line);display:grid;gap:9px}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+#myId{color:var(--green);font-size:12px;overflow-wrap:anywhere}
+#copy{flex:0 0 auto}
+.languages{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.languages label{font-size:11px;color:var(--muted)}
+.languages select{margin-top:5px}
+#chat{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:11px;padding:14px}
+.welcome{text-align:center;margin:auto 12px;line-height:1.8;color:var(--muted);font-size:13px}
+.msg{max-width:88%;align-self:flex-start;padding:11px 13px;border-radius:15px;background:#202735;overflow-wrap:anywhere;white-space:pre-wrap}
+.msg.mine{align-self:flex-end;background:#383166}
+.who{font-size:10px;color:#c4baff;margin-bottom:5px}
+.translation{border-top:1px solid #ffffff25;margin-top:8px;padding-top:8px;color:#9df0d4}
+.time{font-size:10px;color:#aeb8c9;text-align:right;margin-top:7px}
+audio{display:block;width:100%;max-width:260px;margin-top:8px}
+.tools{display:flex;gap:7px;padding:8px 11px;overflow-x:auto}
+.tools button{white-space:nowrap;background:#252d3c;font-size:12px;padding:9px 11px}
+.composer{display:flex;align-items:flex-end;gap:8px;padding:8px 11px}
+#message{flex:1;resize:none;max-height:100px;min-height:45px}
+.icon{width:46px;height:46px;flex-shrink:0;padding:8px;font-size:19px}
+#record.rec{background:#e54864}
+footer{text-align:center;color:#78849a;font-size:10px;padding:3px 8px calc(8px + env(safe-area-inset-bottom))}
+#toast{display:none;position:fixed;z-index:10;bottom:90px;left:50%;transform:translateX(-50%);background:#343d50;color:white;padding:12px 15px;border-radius:12px;width:max-content;max-width:90%;font-size:13px}
+@media(min-width:600px){.setup{padding:15px 22px}#chat{padding:20px}.composer{padding:10px 20px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="logo">文</div>
+ <div><div class="brand">LinguaLink</div><div class="sub">Translate as you chat</div></div>
+ <div class="status"><span class="dot" id="dot"></span><span id="status">Hazırlanır...</span></div>
 </header>
 
-<!-- Admin Yükləmə Paneli Modal -->
-<div class="modal-overlay" id="uploadModal">
-  <div class="modal-card">
-    <h3>Yeni Mahnı Əlavə Et</h3>
-    <div class="form-group">
-      <label>Mahnının Adı</label>
-      <input type="text" id="inputTitle" placeholder="Məs: Phantom in the City">
-    </div>
-    <div class="form-group">
-      <label>İfaçı / Prodüser</label>
-      <input type="text" id="inputArtist" placeholder="Məs: Şamxal Həsənov">
-    </div>
-    <div class="form-group">
-      <label>Qapaq Şəklinin Linki (URL)</label>
-      <input type="text" id="inputCover" placeholder="https://... şəkil linki">
-    </div>
-    <div class="form-group">
-      <label>MP3 Faylın Linki (URL)</label>
-      <input type="text" id="inputAudio" placeholder="https://... mp3 faylın birbaşa linki">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Ləğv et</button>
-      <button class="btn-save" onclick="saveNewTrack()">Əlavə Et</button>
-    </div>
-  </div>
-</div>
+<section class="setup">
+ <div class="small">SƏNİN ID-N</div>
+ <div class="row"><div id="myId">Serverə qoşulur...</div><button id="copy">Kopyala</button></div>
+ <div class="row">
+  <input id="remote" placeholder="Dostunun ID-si">
+  <button id="connect" style="flex:0 0 auto">Qoşul</button>
+ </div>
+ <div class="languages">
+  <label>Sənin danışdığın dil
+   <select id="source">
+    <option value="az">Azərbaycan dili</option>
+    <option value="en">English</option>
+    <option value="ru">Русский</option>
+    <option value="tr">Türkçe</option>
+    <option value="de">Deutsch</option>
+    <option value="fr">Français</option>
+    <option value="es">Español</option>
+    <option value="it">Italiano</option>
+    <option value="pt">Português</option>
+    <option value="ar">العربية</option>
+    <option value="zh-CN">中文</option>
+    <option value="hi">हिन्दी</option>
+   </select>
+  </label>
+  <label>Dostunun dili
+   <select id="target">
+    <option value="de">Deutsch</option>
+    <option value="az">Azərbaycan dili</option>
+    <option value="en">English</option>
+    <option value="ru">Русский</option>
+    <option value="tr">Türkçe</option>
+    <option value="fr">Français</option>
+    <option value="es">Español</option>
+    <option value="it">Italiano</option>
+    <option value="pt">Português</option>
+    <option value="ar">العربية</option>
+    <option value="zh-CN">中文</option>
+    <option value="hi">हिन्दी</option>
+   </select>
+  </label>
+ </div>
+ <div class="small">Hər iki şəxs öz ID-sini paylaşmalıdır. Dostun öz dilini seçsin.</div>
+</section>
 
-<main class="container">  
-  <section class="hero">
-    <div>
-      <h1>Musiqini<br><span>hiss et.</span></h1>
-      <p>
-        Sevdiyin musiqiləri kəşf et, dinlə və öz ritmini yarat.
-        Sadə, sürətli və müasir musiqi platforması.
-      </p>
-      <div class="heroActions">
-        <button class="primary" onclick="playTrack(0)">▶ İndi dinlə</button>
-        <a class="secondary" href="https://www.buymeacoffee.com/" target="_blank" rel="noopener">
-          ☕ Dəstək ol
-        </a>
-      </div>
-    </div>
-
-    <div class="heroArt">
-      <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1000&q=85" alt="Music">
-      <div class="heroBadge">● İndi trenddə</div>
-    </div>
-  </section>  
-
-  <section id="music">
-    <div class="sectionHead">
-      <h2>Mahnılar</h2>
-      <span id="trackCount">0 mahnı</span>
-    </div>
-    <div class="tracks" id="tracks"></div>
-    <div class="empty" id="empty">Mahnı tapılmadı. Zəhmət olmasa yuxarıdan yeni mahnı əlavə edin.</div>
-  </section>  
-
-  <footer class="footer">
-    © 2026 SONORA — Music Platform.
-  </footer>
+<main id="chat">
+ <div class="welcome">🌍 <b>Dil maneəsi olmasın.</b><br>Qoşulmaq üçün dostunun ID-sini daxil et.<br>Mesaj yaz və ya səsli mesaj göndər.</div>
 </main>
 
-<div class="player">  
-  <div class="now">
-    <img id="nowCover" src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=200&q=80" alt="Cover">
-    <div class="nowText">
-      <div class="nowTitle" id="nowTitle">Mahnı seç</div>
-      <div class="nowArtist" id="nowArtist">SONORA</div>
-    </div>
-  </div>  
-  <div class="controls">
-    <button class="ctrl repeat" id="repeatBtn" title="Təkrar">↻</button>
-    <button class="ctrl" id="prevBtn" title="Əvvəlki">⏮</button>
-    <button class="ctrl play" id="playBtn" title="Play/Pause">▶</button>
-    <button class="ctrl" id="nextBtn" title="Növbəti">⏭</button>
-  </div>  
-  <div class="rightControls">
-    <span>🔊</span>
-    <input class="volume" id="volume" type="range" min="0" max="1" step=".01" value=".8">
-  </div>  
-  <div class="progressWrap" id="progressWrap">
-    <div class="progress" id="progress"></div>
-  </div>  
-  <div class="time">
-    <span id="currentTime">0:00</span>
-    <span id="duration">0:00</span>
-  </div>
+<div class="tools">
+ <button id="toggle">🌐 Tərcümə aktivdir</button>
+ <button id="dictate">🎙 Nitqi mətnə çevir</button>
+ <button id="clear">Söhbəti sil</button>
 </div>
-
-<div class="toast" id="toast"></div>
-<audio id="audio" preload="metadata"></audio>
+<div class="composer">
+ <button id="record" class="icon" title="Səsli mesaj">🎤</button>
+ <textarea id="message" rows="1" placeholder="Mesaj yaz..."></textarea>
+ <button id="send" class="icon" title="Göndər">➤</button>
+</div>
+<footer>WebRTC · PeerJS · Mətn və səsli mesaj</footer>
+</div>
+<div id="toast"></div>
 
 <script>
-// Əsas mahnı siyahısı (əgər yaddaşda yoxdursa bunlarla başlayır)
-let tracks = JSON.parse(localStorage.getItem("sonora_tracks")) || [
-  {
-    title:"Midnight Dreams",
-    artist:"Luna Vale",
-    cover:"https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=600&q=85",
-    audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-  },
-  {
-    title:"Neon Nights",
-    artist:"The Midnight",
-    cover:"https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=85",
-    audio:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
-  }
-];
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const chat=$("chat");
+let peer=null,conn=null,translateOn=true;
+let recorder=null,mic=null,isRecording=false,recognition=null;
+let transcript="",voiceBuffer={};
 
-const audio = document.getElementById("audio");
-const tracksEl = document.getElementById("tracks");
-const emptyEl = document.getElementById("empty");
-const searchEl = document.getElementById("search");
-const uploadModal = document.getElementById("uploadModal");
+const langNames={
+ az:"Azərbaycan",en:"English",ru:"Русский",tr:"Türkçe",
+ de:"Deutsch",fr:"Français",es:"Español",it:"Italiano",
+ pt:"Português",ar:"العربية","zh-CN":"中文",hi:"हिन्दी"
+};
+const speechCodes={
+ az:"az-AZ",en:"en-US",ru:"ru-RU",tr:"tr-TR",
+ de:"de-DE",fr:"fr-FR",es:"es-ES",it:"it-IT",
+ pt:"pt-PT",ar:"ar-SA","zh-CN":"zh-CN",hi:"hi-IN"
+};
+function toast(s){
+ const el=$("toast");el.textContent=s;el.style.display="block";
+ clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.style.display="none",3500);
+}
+function status(s,on=false){
+ $("status").textContent=s;$("dot").classList.toggle("on",on);
+}
+function connected(){return !!conn&&conn.open}
+function now(){return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+function addMsg({text="",translated="",audio="",mine=false,label=""}){
+ chat.querySelector(".welcome")?.remove();
+ const b=document.createElement("div");b.className="msg"+(mine?" mine":"");
+ const who=document.createElement("div");who.className="who";
+ who.textContent=label||(mine?"Sən":"Dostun");b.appendChild(who);
+ if(text){const t=document.createElement("div");t.textContent=text;b.appendChild(t)}
+ if(translated){const t=document.createElement("div");t.className="translation";t.textContent="🌐 "+translated;b.appendChild(t)}
+ if(audio){const a=document.createElement("audio");a.controls=true;a.src=audio;b.appendChild(a)}
+ const tm=document.createElement("div");tm.className="time";tm.textContent=now();b.appendChild(tm);
+ chat.appendChild(b);chat.scrollTop=chat.scrollHeight;
+}
+function sendPacket(p){
+ if(!connected()){toast("Dostunla əlaqə yoxdur.");return false}
+ try{conn.send(p);return true}catch(e){toast("Göndərmə xətası.");return false}
+}
 
-const playBtn = document.getElementById("playBtn");
-const prevBtn = document.getElementById("prevBtn");
-const nextBtn = document.getElementById("nextBtn");
-const repeatBtn = document.getElementById("repeatBtn");
-
-const progress = document.getElementById("progress");
-const progressWrap = document.getElementById("progressWrap");
-
-const nowCover = document.getElementById("nowCover");
-const nowTitle = document.getElementById("nowTitle");
-const nowArtist = document.getElementById("nowArtist");
-
-const currentTimeEl = document.getElementById("currentTime");
-const durationEl = document.getElementById("duration");
-const volumeEl = document.getElementById("volume");
-const toast = document.getElementById("toast");
-
-let currentIndex = -1;
-let repeat = false;
-let filteredTracks = [...tracks];
-
-function openModal() { uploadModal.classList.add("active"); }
-function closeModal() { uploadModal.classList.remove("active"); }
-
-function saveNewTrack() {
-  const title = document.getElementById("inputTitle").value.trim();
-  const artist = document.getElementById("inputArtist").value.trim();
-  const cover = document.getElementById("inputCover").value.trim();
-  const audioLink = document.getElementById("inputAudio").value.trim();
-
-  if(!title || !audioLink) {
-    showToast("Zəhmət olmasa mahnı adını və MP3 linkini daxil edin.");
-    return;
-  }
-
-  const newTrack = {
-    title: title,
-    artist: artist || "Bəstəkar",
-    cover: cover || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=85",
-    audio: audioLink
+/* Translate with MyMemory's translation endpoint.
+   The service can impose limits and may not support every language pair. */
+async function translate(text,from,to){
+ if(!translateOn||!text||!from||!to||from===to)return "";
+ try{
+  const url="https://api.mymemory.translated.net/get?q="+
+    encodeURIComponent(text.slice(0,450))+"&langpair="+
+    encodeURIComponent(from+"|"+to);
+  const r=await fetch(url);
+  if(!r.ok)throw Error("HTTP "+r.status);
+  const j=await r.json();
+  if(j.responseStatus!==200)throw Error(j.responseDetails||"Tərcümə xidməti xətası");
+  const result=String(j.responseData?.translatedText||"").trim();
+  if(!result||result.toLowerCase()===text.toLowerCase())return "";
+  return result;
+ }catch(e){
+  console.warn("Translation error",e);
+  toast("Tərcümə xidməti cavab vermədi. Orijinal mesaj saxlanıldı.");
+  return "";
+ }
+}
+async function sendText(){
+ const input=$("message"),text=input.value.trim();
+ if(!text)return;
+ if(!connected())return toast("Əvvəlcə dostuna qoşul.");
+ input.value="";input.style.height="45px";
+ addMsg({text,mine:true});
+ const from=$("source").value,to=$("target").value;
+ sendPacket({type:"text",text,from});
+ if(translateOn){
+  const tr=await translate(text,from,to);
+  if(tr)addMsg({translated:tr,mine:true,label:"Tərcümə"});
+ }
+}
+async function receive(p){
+ if(!p||typeof p!=="object")return;
+ if(p.type==="text"){
+  if(typeof p.text!=="string")return;
+  const tr=await translate(p.text,p.from||"en",$("source").value);
+  addMsg({text:p.text,translated:tr});
+  return;
+ }
+ if(p.type==="voice-start"){
+  voiceBuffer[p.id]={
+   parts:new Array(p.total),received:0,total:p.total,
+   mime:p.mime||"audio/webm"
   };
-
-  tracks.push(newTrack);
-  localStorage.setItem("sonora_tracks", JSON.stringify(tracks));
-  
-  renderTracks(tracks);
-  closeModal();
-  showToast("Mahnı uğurla əlavə olundu ✓");
-
-  // Formu təmizlə
-  document.getElementById("inputTitle").value = "";
-  document.getElementById("inputArtist").value = "";
-  document.getElementById("inputCover").value = "";
-  document.getElementById("inputAudio").value = "";
-}
-
-function deleteTrack(originalIndex, event) {
-  event.stopPropagation();
-  if(confirm("Bu mahnını silmək istədiyinizdən əminsiniz?")) {
-    tracks.splice(originalIndex, 1);
-    localStorage.setItem("sonora_tracks", JSON.stringify(tracks));
-    renderTracks(tracks);
-    showToast("Mahnı silindi.");
+  return;
+ }
+ if(p.type==="voice-chunk"){
+  const v=voiceBuffer[p.id];
+  if(!v||!Number.isInteger(p.index)||p.index<0||p.index>=v.total)return;
+  if(!v.parts[p.index]){
+   v.parts[p.index]=p.chunk;v.received++;
   }
-}
-
-function renderTracks(list = tracks){
-  filteredTracks = list;
-  tracksEl.innerHTML = "";
-  document.getElementById("trackCount").textContent = `${list.length} mahnı`;
-
-  if(!list.length){
-    emptyEl.style.display = "block";
-    return;
-  }
-  emptyEl.style.display = "none";
-
-  list.forEach((track, visibleIndex) => {
-    const originalIndex = tracks.indexOf(track);
-    const el = document.createElement("div");
-    el.className = "track" + (originalIndex === currentIndex ? " active" : "");
-
-    el.innerHTML = `
-      <img class="cover" src="${escapeHTML(track.cover)}" alt="Cover" loading="lazy">
-      <div class="trackInfo">
-        <div class="trackTitle">${escapeHTML(track.title)}</div>
-        <div class="artist">${escapeHTML(track.artist)}</div>
-      </div>
-      <button class="delete-track" title="Sil" onclick="deleteTrack(${originalIndex}, event)">✕</button>
-    `;
-
-    el.addEventListener("click", e => {
-      if(e.target.closest(".delete-track")) return;
-      playTrack(originalIndex);
+  if(v.received===v.total){
+   try{
+    const bytes=v.parts.map(s=>{
+     const bin=atob(s),arr=new Uint8Array(bin.length);
+     for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+     return arr;
     });
-
-    tracksEl.appendChild(el);
-  });
-}
-
-function escapeHTML(value){
-  return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-}
-
-function playTrack(index){
-  if(index < 0 || index >= tracks.length) return;
-  currentIndex = index;
-  const track = tracks[index];
-
-  audio.src = track.audio;
-  audio.load();
-
-  nowCover.src = track.cover;
-  nowTitle.textContent = track.title;
-  nowArtist.textContent = track.artist;
-
-  renderTracks(filteredTracks);
-
-  audio.play()
-    .then(()=> playBtn.textContent = "Ⅱ")
-    .catch(()=> {
-      playBtn.textContent = "▶";
-      showToast("Oynatmaq üçün Play düyməsinə toxun.");
-    });
-}
-
-function togglePlay(){
-  if(currentIndex === -1 && tracks.length > 0){
-    playTrack(0);
-    return;
+    const blob=new Blob(bytes,{type:v.mime});
+    v.url=URL.createObjectURL(blob);
+    v.ready=true;
+    if(v.transcript){
+     const tr=await translate(v.transcript,v.from||"en",$("source").value);
+     addMsg({text:"🎙 "+v.transcript,translated:tr});
+    }
+    addMsg({audio:v.url,label:"Səsli mesaj"});
+   }catch(e){toast("Səsli mesaj açıla bilmədi.");console.error(e)}
   }
-  if(audio.paused){
-    audio.play().then(()=> playBtn.textContent="Ⅱ");
+  return;
+ }
+ if(p.type==="voice-text"){
+  const v=voiceBuffer[p.id];
+  if(v){v.transcript=p.text;v.from=p.from;if(v.ready){
+   const tr=await translate(p.text,p.from||"en",$("source").value);
+   addMsg({text:"🎙 "+p.text,translated:tr});
+  }}
+ }
+}
+function bind(c){
+ conn=c;
+ c.on("open",()=>{
+  status("Birbaşa əlaqə aktivdir",true);
+  $("connect").textContent="Bağlandı";
+  toast("P2P əlaqə quruldu.");
+ });
+ c.on("data",receive);
+ c.on("close",()=>{
+  if(conn===c){conn=null;status("Əlaqə kəsildi");$("connect").textContent="Qoşul"}
+ });
+ c.on("error",e=>{console.error(e);toast("WebRTC bağlantı xətası.")});
+}
+function init(){
+ if(!window.Peer){status("PeerJS yüklənmədi");return toast("İnterneti yoxla və səhifəni yenilə.")}
+ peer=new Peer(undefined,{debug:1});
+ peer.on("open",id=>{$("myId").textContent=id;status("ID hazırdır")});
+ peer.on("connection",bind);
+ peer.on("disconnected",()=>status("Siqnallaşdırma əlaqəsi kəsildi"));
+ peer.on("error",e=>{
+  console.error(e);status("Qoşulma xətası");
+  toast(e.type==="peer-unavailable"?"Dostun onlayn deyil və ya ID səhvdir.":"PeerJS: "+e.type);
+ });
+}
+$("connect").onclick=()=>{
+ const id=$("remote").value.trim();
+ if(!id)return toast("Dostunun ID-sini yaz.");
+ if(!peer||peer.destroyed)return toast("ID hazırlanmasını gözlə.");
+ if(id===$("myId").textContent)return toast("Öz ID-nə qoşula bilməzsən.");
+ try{bind(peer.connect(id,{reliable:true,serialization:"json"}));status("Qoşulur...")}
+ catch(e){toast("Qoşulmaq mümkün olmadı.")}
+};
+$("copy").onclick=async()=>{
+ const id=$("myId").textContent;
+ if(!id||id.includes("..."))return toast("ID hələ hazır deyil.");
+ try{await navigator.clipboard.writeText(id);toast("ID kopyalandı.")}
+ catch(e){toast("ID-ni basıb saxlayaraq kopyala: "+id)}
+};
+$("send").onclick=sendText;
+$("message").addEventListener("keydown",e=>{
+ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendText()}
+});
+$("message").addEventListener("input",e=>{
+ e.target.style.height="45px";
+ e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";
+});
+$("toggle").onclick=()=>{
+ translateOn=!translateOn;
+ $("toggle").textContent="🌐 Tərcümə "+(translateOn?"aktivdir":"sönülüdür");
+};
+$("clear").onclick=()=>{
+ if(confirm("Söhbət ekranını təmizləyək?"))chat.innerHTML="";
+};
+function speechConstructor(){return window.SpeechRecognition||window.webkitSpeechRecognition}
+function startRecognition(){
+ const SR=speechConstructor();
+ if(!SR)return false;
+ try{
+  recognition=new SR();
+  recognition.lang=speechCodes[$("source").value]||"en-US";
+  recognition.continuous=true;
+  recognition.interimResults=true;
+  recognition.onresult=e=>{
+   let finalText="";
+   for(let i=e.resultIndex;i<e.results.length;i++){
+    if(e.results[i].isFinal)finalText+=e.results[i][0].transcript+" ";
+   }
+   transcript+=(finalText||"");
+  };
+  recognition.onerror=e=>console.warn("Speech recognition:",e.error);
+  recognition.start();
+  return true;
+ }catch(e){console.warn(e);recognition=null;return false}
+}
+$("dictate").onclick=()=>{
+ const SR=speechConstructor();
+ if(!SR)return toast("Bu brauzer nitqin tanınmasını dəstəkləmir. Chrome-da yoxla.");
+ try{
+  const r=new SR();r.lang=speechCodes[$("source").value]||"en-US";
+  r.interimResults=false;r.maxAlternatives=1;
+  r.onresult=e=>{$("message").value+=($("message").value?" ":"")+e.results[0][0].transcript};
+  r.onerror=()=>toast("Nitq tanınmadı. Mikrofon və dil parametrlərini yoxla.");
+  r.start();toast("İndi danış...");
+ }catch(e){toast("Nitq tanıma açıla bilmədi.")}
+};
+function b64(bytes){
+ let s="";
+ for(let i=0;i<bytes.length;i+=8192)
+  s+=String.fromCharCode(...bytes.subarray(i,Math.min(i+8192,bytes.length)));
+ return btoa(s);
+}
+async function finishVoice(parts,mime,txt,from){
+ try{
+  const blob=new Blob(parts,{type:mime||"audio/webm"});
+  if(blob.size>2*1024*1024)return toast("Səs 2 MB-dan böyükdür. Daha qısa yaz.");
+  const bytes=new Uint8Array(await blob.arrayBuffer());
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  const size=8000,total=Math.ceil(bytes.length/size);
+  if(!sendPacket({type:"voice-start",id,total,mime:blob.type}))return;
+  for(let i=0;i<total;i++){
+   if(!sendPacket({type:"voice-chunk",id,index:i,chunk:b64(bytes.subarray(i*size,Math.min(bytes.length,(i+1)*size)))}))return;
+  }
+  if(txt)sendPacket({type:"voice-text",id,text:txt,from});
+  addMsg({audio:URL.createObjectURL(blob),mine:true,label:"Sənin səsli mesajın"});
+  if(txt){
+   const tr=await translate(txt,from,$("target").value);
+   if(tr)addMsg({text:"🎙 "+txt,translated:tr,mine:true,label:"Səsin tərcüməsi"});
   }else{
-    audio.pause();
-    playBtn.textContent="▶";
+   toast("Səs göndərildi. Nitq tanınmadığı üçün tərcümə mətni alınmadı.");
   }
+ }catch(e){console.error(e);toast("Səsli mesaj göndərilə bilmədi.")}
 }
-
-function nextTrack(){
-  if(!tracks.length) return;
-  let next = (currentIndex + 1) % tracks.length;
-  playTrack(next);
-}
-
-function prevTrack(){
-  if(!tracks.length) return;
-  if(audio.currentTime > 3){ audio.currentTime = 0; return; }
-  let prev = (currentIndex - 1 + tracks.length) % tracks.length;
-  playTrack(prev);
-}
-
-function toggleRepeat(){
-  repeat = !repeat;
-  repeatBtn.classList.toggle("active", repeat);
-  showToast(repeat ? "Təkrar aktivdir" : "Təkrar söndürüldü");
-}
-
-function formatTime(seconds){
-  if(!Number.isFinite(seconds)) return "0:00";
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${String(secs).padStart(2,"0")}`;
-}
-
-audio.addEventListener("timeupdate",()=>{
-  if(!audio.duration) return;
-  progress.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
-  currentTimeEl.textContent = formatTime(audio.currentTime);
+$("record").onclick=async()=>{
+ if(isRecording){recorder?.stop();return}
+ if(!connected())return toast("Əvvəlcə dostunla əlaqə yarat.");
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)
+  return toast("Bu brauzer səs yazmağı dəstəkləmir.");
+ transcript="";
+ try{
+  mic=await navigator.mediaDevices.getUserMedia({audio:true});
+  const mime=["audio/webm;codecs=opus","audio/webm","audio/mp4"].find(t=>MediaRecorder.isTypeSupported(t));
+  recorder=new MediaRecorder(mic,mime?{mimeType:mime}:{});
+  const parts=[];
+  recorder.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};
+  const recognized=startRecognition();
+  recorder.onstop=()=>{
+   isRecording=false;$("record").classList.remove("rec");$("record").textContent="🎤";
+   mic?.getTracks().forEach(t=>t.stop());mic=null;
+   try{recognition?.stop()}catch(e){}
+   const text=transcript.trim(),from=$("source").value;
+   setTimeout(()=>finishVoice(parts,recorder.mimeType,text,from),700);
+  };
+  recorder.start();isRecording=true;
+  $("record").classList.add("rec");$("record").textContent="■";
+  toast(recognized?"Yazılır. Bitirmək üçün ■ düyməsinə bas.":"Səs yazılır; bu brauzerdə avtomatik nitq tanıma mövcud deyil.");
+ }catch(e){
+  console.error(e);mic?.getTracks().forEach(t=>t.stop());mic=null;
+  toast("Mikrofon icazəsini yoxla.");
+ }
+};
+window.addEventListener("beforeunload",()=>{
+ try{mic?.getTracks().forEach(t=>t.stop());peer?.destroy()}catch(e){}
 });
-
-audio.addEventListener("loadedmetadata",()=>{
-  durationEl.textContent = formatTime(audio.duration);
-});
-
-audio.addEventListener("ended",()=>{
-  if(repeat){ audio.currentTime = 0; audio.play(); }
-  else { nextTrack(); }
-});
-
-progressWrap.addEventListener("click",(e)=>{
-  if(!audio.duration) return;
-  const rect = progressWrap.getBoundingClientRect();
-  audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-});
-
-volumeEl.addEventListener("input",()=> audio.volume = Number(volumeEl.value));
-
-playBtn.addEventListener("click",togglePlay);
-prevBtn.addEventListener("click",prevTrack);
-nextBtn.addEventListener("click",nextTrack);
-repeatBtn.addEventListener("click",toggleRepeat);
-
-searchEl.addEventListener("input",()=>{
-  const q = searchEl.value.trim().toLowerCase();
-  const result = tracks.filter(t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
-  renderTracks(result);
-});
-
-async function shareSite(){
-  try{
-    if(navigator.share){ await navigator.share({title:"SONORA", url:window.location.href}); }
-    else{ await navigator.clipboard.writeText(window.location.href); showToast("Link kopyalandı ✓"); }
-  }catch(e){}
-}
-
-let toastTimer;
-function showToast(msg){
-  clearTimeout(toastTimer);
-  toast.textContent = msg;
-  toast.classList.add("show");
-  toastTimer = setTimeout(()=> toast.classList.remove("show"), 2200);
-}
-
-audio.volume = .8;
-renderTracks();
+init();
+})();
 </script>
 </body>
 </html>
