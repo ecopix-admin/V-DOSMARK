@@ -1,393 +1,1088 @@
-
+```html
 <!DOCTYPE html>
-<html lang="az">
+<html lang="az" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#10131b">
-<title>LinguaLink — World Chat</title>
-<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-<style>
-*{box-sizing:border-box}
-:root{color-scheme:dark;--bg:#10131b;--panel:#191f2b;--line:#303849;--accent:#7969f7;--green:#45d9ad;--muted:#9ba7bb}
-body{margin:0;background:var(--bg);color:#f5f6fc;font:15px system-ui,Arial,sans-serif}
-button,input,select,textarea{font:inherit}
-button{border:0;cursor:pointer;border-radius:12px;background:var(--accent);color:white;padding:12px;font-weight:650}
-button:disabled{opacity:.45}
-input,select,textarea{width:100%;min-width:0;background:#111722;color:white;border:1px solid var(--line);border-radius:11px;padding:12px;outline:none}
-.app{max-width:760px;height:100dvh;margin:auto;display:flex;flex-direction:column}
-header{display:flex;align-items:center;gap:11px;padding:15px;border-bottom:1px solid var(--line)}
-.logo{width:43px;height:43px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(135deg,#8b75ff,#45d9ad);color:#111722;font-size:23px;font-weight:900}
-.brand{font-size:19px;font-weight:850}.sub,.small{font-size:12px;color:var(--muted)}
-.status{margin-left:auto;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
-.dot{width:8px;height:8px;border-radius:50%;background:#e5ac4e}.dot.on{background:var(--green)}
-.setup{padding:12px;border-bottom:1px solid var(--line);display:grid;gap:9px}
-.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
-#myId{color:var(--green);font-size:12px;overflow-wrap:anywhere}
-#copy{flex:0 0 auto}
-.languages{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.languages label{font-size:11px;color:var(--muted)}
-.languages select{margin-top:5px}
-#chat{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:11px;padding:14px}
-.welcome{text-align:center;margin:auto 12px;line-height:1.8;color:var(--muted);font-size:13px}
-.msg{max-width:88%;align-self:flex-start;padding:11px 13px;border-radius:15px;background:#202735;overflow-wrap:anywhere;white-space:pre-wrap}
-.msg.mine{align-self:flex-end;background:#383166}
-.who{font-size:10px;color:#c4baff;margin-bottom:5px}
-.translation{border-top:1px solid #ffffff25;margin-top:8px;padding-top:8px;color:#9df0d4}
-.time{font-size:10px;color:#aeb8c9;text-align:right;margin-top:7px}
-audio{display:block;width:100%;max-width:260px;margin-top:8px}
-.tools{display:flex;gap:7px;padding:8px 11px;overflow-x:auto}
-.tools button{white-space:nowrap;background:#252d3c;font-size:12px;padding:9px 11px}
-.composer{display:flex;align-items:flex-end;gap:8px;padding:8px 11px}
-#message{flex:1;resize:none;max-height:100px;min-height:45px}
-.icon{width:46px;height:46px;flex-shrink:0;padding:8px;font-size:19px}
-#record.rec{background:#e54864}
-footer{text-align:center;color:#78849a;font-size:10px;padding:3px 8px calc(8px + env(safe-area-inset-bottom))}
-#toast{display:none;position:fixed;z-index:10;bottom:90px;left:50%;transform:translateX(-50%);background:#343d50;color:white;padding:12px 15px;border-radius:12px;width:max-content;max-width:90%;font-size:13px}
-@media(min-width:600px){.setup{padding:15px 22px}#chat{padding:20px}.composer{padding:10px 20px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ARWORLD Network - Zero-Server P2P Radar & Live PK</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            cyan: '#00f2fe',
+                            purple: '#7928ca',
+                            pink: '#ff0080',
+                            dark: '#0a0a10',
+                            card: 'rgba(18, 18, 28, 0.75)',
+                            border: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 2s infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'radar-sweep': 'radarSweep 4s linear infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 15px rgba(0, 242, 254, 0.5)' },
+                            '50%': { boxShadow: '0 0 30px rgba(255, 0, 128, 0.8)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        radarSweep: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #050508;
+            color: #f1f5f9;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        /* Glassmorphism card effects */
+        .glass-panel {
+            background: rgba(15, 15, 26, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        .glass-button {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,242,254,0.3); border-radius: 4px; }
+
+        /* Floating Gift Animation Canvas */
+        #giftCanvas {
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            z-index: 40;
+        }
+    </style>
 </head>
-<body>
-<div class="app">
-<header>
- <div class="logo">文</div>
- <div><div class="brand">LinguaLink</div><div class="sub">Translate as you chat</div></div>
- <div class="status"><span class="dot" id="dot"></span><span id="status">Hazırlanır...</span></div>
-</header>
+<body class="h-screen w-screen flex flex-col justify-between overflow-hidden bg-black text-slate-100">
 
-<section class="setup">
- <div class="small">SƏNİN ID-N</div>
- <div class="row"><div id="myId">Serverə qoşulur...</div><button id="copy">Kopyala</button></div>
- <div class="row">
-  <input id="remote" placeholder="Dostunun ID-si">
-  <button id="connect" style="flex:0 0 auto">Qoşul</button>
- </div>
- <div class="languages">
-  <label>Sənin danışdığın dil
-   <select id="source">
-    <option value="az">Azərbaycan dili</option>
-    <option value="en">English</option>
-    <option value="ru">Русский</option>
-    <option value="tr">Türkçe</option>
-    <option value="de">Deutsch</option>
-    <option value="fr">Français</option>
-    <option value="es">Español</option>
-    <option value="it">Italiano</option>
-    <option value="pt">Português</option>
-    <option value="ar">العربية</option>
-    <option value="zh-CN">中文</option>
-    <option value="hi">हिन्दी</option>
-   </select>
-  </label>
-  <label>Dostunun dili
-   <select id="target">
-    <option value="de">Deutsch</option>
-    <option value="az">Azərbaycan dili</option>
-    <option value="en">English</option>
-    <option value="ru">Русский</option>
-    <option value="tr">Türkçe</option>
-    <option value="fr">Français</option>
-    <option value="es">Español</option>
-    <option value="it">Italiano</option>
-    <option value="pt">Português</option>
-    <option value="ar">العربية</option>
-    <option value="zh-CN">中文</option>
-    <option value="hi">हिन्दी</option>
-   </select>
-  </label>
- </div>
- <div class="small">Hər iki şəxs öz ID-sini paylaşmalıdır. Dostun öz dilini seçsin.</div>
-</section>
+    <!-- Top Futuristic Header -->
+    <header class="glass-panel z-30 px-4 py-2.5 flex items-center justify-between border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-cyan to-brand-purple flex items-center justify-center shadow-lg shadow-brand-cyan/20">
+                <i class="fa-solid fa-satellite-dish text-white text-sm animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="orbitron font-extrabold text-base tracking-wider bg-gradient-to-r from-brand-cyan via-white to-brand-pink bg-clip-text text-transparent">
+                    ARWORLD
+                </h1>
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span id="p2pStatusText" class="font-semibold text-emerald-400">P2P MESH ACTIVE</span>
+                </div>
+            </div>
+        </div>
 
-<main id="chat">
- <div class="welcome">🌍 <b>Dil maneəsi olmasın.</b><br>Qoşulmaq üçün dostunun ID-sini daxil et.<br>Mesaj yaz və ya səsli mesaj göndər.</div>
-</main>
+        <!-- Controls & Language -->
+        <div class="flex items-center gap-2">
+            <!-- Sound FX Toggle -->
+            <button id="soundToggleBtn" onclick="toggleSound()" class="glass-button w-8 h-8 rounded-full flex items-center justify-center text-xs text-brand-cyan">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
 
-<div class="tools">
- <button id="toggle">🌐 Tərcümə aktivdir</button>
- <button id="dictate">🎙 Nitqi mətnə çevir</button>
- <button id="clear">Söhbəti sil</button>
-</div>
-<div class="composer">
- <button id="record" class="icon" title="Səsli mesaj">🎤</button>
- <textarea id="message" rows="1" placeholder="Mesaj yaz..."></textarea>
- <button id="send" class="icon" title="Göndər">➤</button>
-</div>
-<footer>WebRTC · PeerJS · Mətn və səsli mesaj</footer>
-</div>
-<div id="toast"></div>
+            <!-- Language Dropdown -->
+            <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-black/60 border border-white/15 rounded-lg px-2 py-1 text-xs text-slate-200 outline-none cursor-pointer">
+                <option value="az">🇦🇿 AZ</option>
+                <option value="en">🇬🇧 EN</option>
+                <option value="ru">🇷🇺 RU</option>
+            </select>
 
-<script>
-(()=>{
-"use strict";
-const $=id=>document.getElementById(id);
-const chat=$("chat");
-let peer=null,conn=null,translateOn=true;
-let recorder=null,mic=null,isRecording=false,recognition=null;
-let transcript="",voiceBuffer={};
+            <!-- Quick Wallet/Balance -->
+            <div class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full">
+                <i class="fa-solid fa-gem text-amber-400 text-xs"></i>
+                <span id="diamondBalance" class="text-xs font-bold text-amber-300 orbitron">1,250</span>
+            </div>
+        </div>
+    </header>
 
-const langNames={
- az:"Azərbaycan",en:"English",ru:"Русский",tr:"Türkçe",
- de:"Deutsch",fr:"Français",es:"Español",it:"Italiano",
- pt:"Português",ar:"العربية","zh-CN":"中文",hi:"हिन्दी"
-};
-const speechCodes={
- az:"az-AZ",en:"en-US",ru:"ru-RU",tr:"tr-TR",
- de:"de-DE",fr:"fr-FR",es:"es-ES",it:"it-IT",
- pt:"pt-PT",ar:"ar-SA","zh-CN":"zh-CN",hi:"hi-IN"
-};
-function toast(s){
- const el=$("toast");el.textContent=s;el.style.display="block";
- clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.style.display="none",3500);
-}
-function status(s,on=false){
- $("status").textContent=s;$("dot").classList.toggle("on",on);
-}
-function connected(){return !!conn&&conn.open}
-function now(){return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
-function addMsg({text="",translated="",audio="",mine=false,label=""}){
- chat.querySelector(".welcome")?.remove();
- const b=document.createElement("div");b.className="msg"+(mine?" mine":"");
- const who=document.createElement("div");who.className="who";
- who.textContent=label||(mine?"Sən":"Dostun");b.appendChild(who);
- if(text){const t=document.createElement("div");t.textContent=text;b.appendChild(t)}
- if(translated){const t=document.createElement("div");t.className="translation";t.textContent="🌐 "+translated;b.appendChild(t)}
- if(audio){const a=document.createElement("audio");a.controls=true;a.src=audio;b.appendChild(a)}
- const tm=document.createElement("div");tm.className="time";tm.textContent=now();b.appendChild(tm);
- chat.appendChild(b);chat.scrollTop=chat.scrollHeight;
-}
-function sendPacket(p){
- if(!connected()){toast("Dostunla əlaqə yoxdur.");return false}
- try{conn.send(p);return true}catch(e){toast("Göndərmə xətası.");return false}
-}
+    <!-- MAIN INTERACTIVE CONTAINER -->
+    <main class="relative flex-1 w-full h-full overflow-hidden bg-slate-950">
 
-/* Translate with MyMemory's translation endpoint.
-   The service can impose limits and may not support every language pair. */
-async function translate(text,from,to){
- if(!translateOn||!text||!from||!to||from===to)return "";
- try{
-  const url="https://api.mymemory.translated.net/get?q="+
-    encodeURIComponent(text.slice(0,450))+"&langpair="+
-    encodeURIComponent(from+"|"+to);
-  const r=await fetch(url);
-  if(!r.ok)throw Error("HTTP "+r.status);
-  const j=await r.json();
-  if(j.responseStatus!==200)throw Error(j.responseDetails||"Tərcümə xidməti xətası");
-  const result=String(j.responseData?.translatedText||"").trim();
-  if(!result||result.toLowerCase()===text.toLowerCase())return "";
-  return result;
- }catch(e){
-  console.warn("Translation error",e);
-  toast("Tərcümə xidməti cavab vermədi. Orijinal mesaj saxlanıldı.");
-  return "";
- }
-}
-async function sendText(){
- const input=$("message"),text=input.value.trim();
- if(!text)return;
- if(!connected())return toast("Əvvəlcə dostuna qoşul.");
- input.value="";input.style.height="45px";
- addMsg({text,mine:true});
- const from=$("source").value,to=$("target").value;
- sendPacket({type:"text",text,from});
- if(translateOn){
-  const tr=await translate(text,from,to);
-  if(tr)addMsg({translated:tr,mine:true,label:"Tərcümə"});
- }
-}
-async function receive(p){
- if(!p||typeof p!=="object")return;
- if(p.type==="text"){
-  if(typeof p.text!=="string")return;
-  const tr=await translate(p.text,p.from||"en",$("source").value);
-  addMsg({text:p.text,translated:tr});
-  return;
- }
- if(p.type==="voice-start"){
-  voiceBuffer[p.id]={
-   parts:new Array(p.total),received:0,total:p.total,
-   mime:p.mime||"audio/webm"
-  };
-  return;
- }
- if(p.type==="voice-chunk"){
-  const v=voiceBuffer[p.id];
-  if(!v||!Number.isInteger(p.index)||p.index<0||p.index>=v.total)return;
-  if(!v.parts[p.index]){
-   v.parts[p.index]=p.chunk;v.received++;
-  }
-  if(v.received===v.total){
-   try{
-    const bytes=v.parts.map(s=>{
-     const bin=atob(s),arr=new Uint8Array(bin.length);
-     for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
-     return arr;
-    });
-    const blob=new Blob(bytes,{type:v.mime});
-    v.url=URL.createObjectURL(blob);
-    v.ready=true;
-    if(v.transcript){
-     const tr=await translate(v.transcript,v.from||"en",$("source").value);
-     addMsg({text:"🎙 "+v.transcript,translated:tr});
-    }
-    addMsg({audio:v.url,label:"Səsli mesaj"});
-   }catch(e){toast("Səsli mesaj açıla bilmədi.");console.error(e)}
-  }
-  return;
- }
- if(p.type==="voice-text"){
-  const v=voiceBuffer[p.id];
-  if(v){v.transcript=p.text;v.from=p.from;if(v.ready){
-   const tr=await translate(p.text,p.from||"en",$("source").value);
-   addMsg({text:"🎙 "+p.text,translated:tr});
-  }}
- }
-}
-function bind(c){
- conn=c;
- c.on("open",()=>{
-  status("Birbaşa əlaqə aktivdir",true);
-  $("connect").textContent="Bağlandı";
-  toast("P2P əlaqə quruldu.");
- });
- c.on("data",receive);
- c.on("close",()=>{
-  if(conn===c){conn=null;status("Əlaqə kəsildi");$("connect").textContent="Qoşul"}
- });
- c.on("error",e=>{console.error(e);toast("WebRTC bağlantı xətası.")});
-}
-function init(){
- if(!window.Peer){status("PeerJS yüklənmədi");return toast("İnterneti yoxla və səhifəni yenilə.")}
- peer=new Peer(undefined,{debug:1});
- peer.on("open",id=>{$("myId").textContent=id;status("ID hazırdır")});
- peer.on("connection",bind);
- peer.on("disconnected",()=>status("Siqnallaşdırma əlaqəsi kəsildi"));
- peer.on("error",e=>{
-  console.error(e);status("Qoşulma xətası");
-  toast(e.type==="peer-unavailable"?"Dostun onlayn deyil və ya ID səhvdir.":"PeerJS: "+e.type);
- });
-}
-$("connect").onclick=()=>{
- const id=$("remote").value.trim();
- if(!id)return toast("Dostunun ID-sini yaz.");
- if(!peer||peer.destroyed)return toast("ID hazırlanmasını gözlə.");
- if(id===$("myId").textContent)return toast("Öz ID-nə qoşula bilməzsən.");
- try{bind(peer.connect(id,{reliable:true,serialization:"json"}));status("Qoşulur...")}
- catch(e){toast("Qoşulmaq mümkün olmadı.")}
-};
-$("copy").onclick=async()=>{
- const id=$("myId").textContent;
- if(!id||id.includes("..."))return toast("ID hələ hazır deyil.");
- try{await navigator.clipboard.writeText(id);toast("ID kopyalandı.")}
- catch(e){toast("ID-ni basıb saxlayaraq kopyala: "+id)}
-};
-$("send").onclick=sendText;
-$("message").addEventListener("keydown",e=>{
- if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendText()}
-});
-$("message").addEventListener("input",e=>{
- e.target.style.height="45px";
- e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";
-});
-$("toggle").onclick=()=>{
- translateOn=!translateOn;
- $("toggle").textContent="🌐 Tərcümə "+(translateOn?"aktivdir":"sönülüdür");
-};
-$("clear").onclick=()=>{
- if(confirm("Söhbət ekranını təmizləyək?"))chat.innerHTML="";
-};
-function speechConstructor(){return window.SpeechRecognition||window.webkitSpeechRecognition}
-function startRecognition(){
- const SR=speechConstructor();
- if(!SR)return false;
- try{
-  recognition=new SR();
-  recognition.lang=speechCodes[$("source").value]||"en-US";
-  recognition.continuous=true;
-  recognition.interimResults=true;
-  recognition.onresult=e=>{
-   let finalText="";
-   for(let i=e.resultIndex;i<e.results.length;i++){
-    if(e.results[i].isFinal)finalText+=e.results[i][0].transcript+" ";
-   }
-   transcript+=(finalText||"");
-  };
-  recognition.onerror=e=>console.warn("Speech recognition:",e.error);
-  recognition.start();
-  return true;
- }catch(e){console.warn(e);recognition=null;return false}
-}
-$("dictate").onclick=()=>{
- const SR=speechConstructor();
- if(!SR)return toast("Bu brauzer nitqin tanınmasını dəstəkləmir. Chrome-da yoxla.");
- try{
-  const r=new SR();r.lang=speechCodes[$("source").value]||"en-US";
-  r.interimResults=false;r.maxAlternatives=1;
-  r.onresult=e=>{$("message").value+=($("message").value?" ":"")+e.results[0][0].transcript};
-  r.onerror=()=>toast("Nitq tanınmadı. Mikrofon və dil parametrlərini yoxla.");
-  r.start();toast("İndi danış...");
- }catch(e){toast("Nitq tanıma açıla bilmədi.")}
-};
-function b64(bytes){
- let s="";
- for(let i=0;i<bytes.length;i+=8192)
-  s+=String.fromCharCode(...bytes.subarray(i,Math.min(i+8192,bytes.length)));
- return btoa(s);
-}
-async function finishVoice(parts,mime,txt,from){
- try{
-  const blob=new Blob(parts,{type:mime||"audio/webm"});
-  if(blob.size>2*1024*1024)return toast("Səs 2 MB-dan böyükdür. Daha qısa yaz.");
-  const bytes=new Uint8Array(await blob.arrayBuffer());
-  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  const size=8000,total=Math.ceil(bytes.length/size);
-  if(!sendPacket({type:"voice-start",id,total,mime:blob.type}))return;
-  for(let i=0;i<total;i++){
-   if(!sendPacket({type:"voice-chunk",id,index:i,chunk:b64(bytes.subarray(i*size,Math.min(bytes.length,(i+1)*size)))}))return;
-  }
-  if(txt)sendPacket({type:"voice-text",id,text:txt,from});
-  addMsg({audio:URL.createObjectURL(blob),mine:true,label:"Sənin səsli mesajın"});
-  if(txt){
-   const tr=await translate(txt,from,$("target").value);
-   if(tr)addMsg({text:"🎙 "+txt,translated:tr,mine:true,label:"Səsin tərcüməsi"});
-  }else{
-   toast("Səs göndərildi. Nitq tanınmadığı üçün tərcümə mətni alınmadı.");
-  }
- }catch(e){console.error(e);toast("Səsli mesaj göndərilə bilmədi.")}
-}
-$("record").onclick=async()=>{
- if(isRecording){recorder?.stop();return}
- if(!connected())return toast("Əvvəlcə dostunla əlaqə yarat.");
- if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)
-  return toast("Bu brauzer səs yazmağı dəstəkləmir.");
- transcript="";
- try{
-  mic=await navigator.mediaDevices.getUserMedia({audio:true});
-  const mime=["audio/webm;codecs=opus","audio/webm","audio/mp4"].find(t=>MediaRecorder.isTypeSupported(t));
-  recorder=new MediaRecorder(mic,mime?{mimeType:mime}:{});
-  const parts=[];
-  recorder.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};
-  const recognized=startRecognition();
-  recorder.onstop=()=>{
-   isRecording=false;$("record").classList.remove("rec");$("record").textContent="🎤";
-   mic?.getTracks().forEach(t=>t.stop());mic=null;
-   try{recognition?.stop()}catch(e){}
-   const text=transcript.trim(),from=$("source").value;
-   setTimeout(()=>finishVoice(parts,recorder.mimeType,text,from),700);
-  };
-  recorder.start();isRecording=true;
-  $("record").classList.add("rec");$("record").textContent="■";
-  toast(recognized?"Yazılır. Bitirmək üçün ■ düyməsinə bas.":"Səs yazılır; bu brauzerdə avtomatik nitq tanıma mövcud deyil.");
- }catch(e){
-  console.error(e);mic?.getTracks().forEach(t=>t.stop());mic=null;
-  toast("Mikrofon icazəsini yoxla.");
- }
-};
-window.addEventListener("beforeunload",()=>{
- try{mic?.getTracks().forEach(t=>t.stop());peer?.destroy()}catch(e){}
-});
-init();
-})();
-</script>
+        <!-- ================= PAGE 1: GEO RADAR ================= -->
+        <section id="page-radar" class="tab-page absolute inset-0 flex flex-col active">
+            <!-- Radar Canvas Map Overlay -->
+            <div class="relative flex-1 w-full h-full overflow-hidden flex items-center justify-center bg-slate-950">
+                
+                <!-- Simulated Cyber Map Background Grid -->
+                <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+                
+                <!-- Interactive Canvas for Radar Sweep & Nodes -->
+                <canvas id="radarCanvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
+
+                <!-- Floating Controls on Map -->
+                <div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                    <button onclick="relocateGeo()" class="glass-button px-3 py-2 rounded-xl text-xs flex items-center gap-2 text-brand-cyan hover:bg-brand-cyan/10">
+                        <i class="fa-solid fa-location-crosshairs"></i> <span data-i18n="recenter">Yenilə / Məkan</span>
+                    </button>
+                    <button onclick="toggleRadarMode()" class="glass-button px-3 py-2 rounded-xl text-xs flex items-center gap-2 text-purple-400 hover:bg-purple-500/10">
+                        <i class="fa-solid fa-[#filter]"></i> <span id="radarFilterText" data-i18n="allUsers">Hər Kəs (Aktiv)</span>
+                    </button>
+                </div>
+
+                <!-- Radar Stats Badge -->
+                <div class="absolute top-4 right-4 z-10 glass-panel px-3 py-1.5 rounded-xl text-right border-brand-cyan/30">
+                    <div class="text-[10px] text-slate-400 uppercase tracking-widest" data-i18n="p2pNodes">Ərazidə P2P Düyünlər</div>
+                    <div id="activeNodesCount" class="orbitron text-base font-bold text-brand-cyan">14 İstifadəçi</div>
+                </div>
+
+                <!-- Selected Peer Quick Card Modal (Over Canvas) -->
+                <div id="peerQuickModal" class="hidden absolute bottom-6 left-4 right-4 z-20 glass-panel p-4 rounded-2xl border border-brand-cyan/40 animate-fade-in shadow-2xl max-w-md mx-auto">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <img id="modalAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-12 h-12 rounded-full object-cover border-2 border-brand-cyan">
+                                <span id="modalVerified" class="absolute -bottom-1 -right-1 bg-amber-500 text-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">✓</span>
+                            </div>
+                            <div>
+                                <h3 id="modalName" class="font-bold text-sm text-white flex items-center gap-1.5">
+                                    Leyla Əliyeva
+                                </h3>
+                                <p id="modalBio" class="text-xs text-slate-300">Dizayner / Freelancer</p>
+                                <p id="modalDistance" class="text-[10px] text-brand-cyan font-mono mt-0.5"><i class="fa-solid fa-route"></i> 250 Metr aralıda</p>
+                            </div>
+                        </div>
+                        <button onclick="closePeerModal()" class="text-slate-400 hover:text-white p-1">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <button onclick="startP2PCallFromModal()" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
+                            <i class="fa-solid fa-phone"></i> <span data-i18n="p2pCall">P2P Zəng Et</span>
+                        </button>
+                        <button onclick="startP2PChatFromModal()" class="bg-gradient-to-r from-brand-cyan to-blue-600 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-brand-cyan/20 active:scale-95 transition-all">
+                            <i class="fa-solid fa-message"></i> <span data-i18n="p2pMessage">Mesaj Yaz</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: TIKTOK-STYLE LIVE STREAM & PK BATTLE ================= -->
+        <section id="page-live" class="tab-page absolute inset-0 hidden flex-col bg-slate-950">
+            <!-- Fullscreen Live Container -->
+            <div class="relative flex-1 w-full h-full overflow-hidden bg-black">
+
+                <!-- Dynamic Gift Floating Layer Canvas -->
+                <canvas id="giftCanvas"></canvas>
+
+                <!-- Live Stream Video Canvas/Feed -->
+                <div id="streamViewport" class="absolute inset-0 w-full h-full flex flex-col md:flex-row">
+                    <!-- Stream Host A (Red Team) -->
+                    <div id="hostAContainer" class="relative flex-1 h-1/2 md:h-full w-full bg-slate-900 overflow-hidden border-b md:border-b-0 md:border-r border-brand-pink/30">
+                        <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+                        <div id="hostAFallback" class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-purple-950 via-slate-900 to-black relative">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500" class="w-24 h-24 rounded-full object-cover border-4 border-brand-pink animate-pulse-glow">
+                            <span class="orbitron text-xs text-brand-pink mt-3 font-bold">@Leyla_Live (PK Red)</span>
+                            <span class="text-[10px] text-slate-400 mt-0.5">Bakı, Azərbaycan</span>
+                        </div>
+                        <!-- PK Score Indicator -->
+                        <div class="absolute top-3 left-3 bg-red-600/80 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-white orbitron">
+                            🔴 RED: <span id="scoreRed">4,250</span>
+                        </div>
+                    </div>
+
+                    <!-- Stream Host B (Blue Team - PK Match) -->
+                    <div id="hostBContainer" class="relative flex-1 h-1/2 md:h-full w-full bg-slate-900 overflow-hidden">
+                        <div id="hostBFallback" class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-blue-950 via-slate-900 to-black relative">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500" class="w-24 h-24 rounded-full object-cover border-4 border-brand-cyan">
+                            <span class="orbitron text-xs text-brand-cyan mt-3 font-bold">@Rashad_Tech (PK Blue)</span>
+                            <span class="text-[10px] text-slate-400 mt-0.5">Gəncə, Azərbaycan</span>
+                        </div>
+                        <!-- PK Score Indicator -->
+                        <div class="absolute top-3 right-3 bg-blue-600/80 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-white orbitron">
+                            🔵 BLUE: <span id="scoreBlue">3,890</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PK Battle Progress Bar Top -->
+                <div class="absolute top-2 left-4 right-4 z-20 flex flex-col gap-1">
+                    <div class="flex justify-between text-[11px] font-bold orbitron text-white drop-shadow">
+                        <span class="text-red-400">PK BATTLE REMAINING: <span id="pkTimer">02:45</span></span>
+                        <span id="pkStatusBadge" class="text-amber-400 animate-pulse">🔥 MULTIPLIER x2</span>
+                    </div>
+                    <div class="w-full h-3 bg-slate-800/90 rounded-full overflow-hidden p-0.5 flex border border-white/20 shadow-lg">
+                        <div id="barRed" class="h-full bg-gradient-to-r from-red-600 to-brand-pink rounded-l-full transition-all duration-500" style="width: 52%;"></div>
+                        <div id="barBlue" class="h-full bg-gradient-to-r from-brand-cyan to-blue-600 rounded-r-full transition-all duration-500" style="width: 48%;"></div>
+                    </div>
+                </div>
+
+                <!-- Overlay Controls Right Side -->
+                <div class="absolute right-3 top-20 z-30 flex flex-col gap-3">
+                    <button onclick="triggerPKBattle()" class="w-10 h-10 rounded-full glass-button flex flex-col items-center justify-center text-amber-400 hover:scale-110 transition-all">
+                        <i class="fa-solid fa-trophy text-sm"></i>
+                        <span class="text-[8px] font-bold mt-0.5">PK</span>
+                    </button>
+                    <button onclick="toggleCamera()" class="w-10 h-10 rounded-full glass-button flex flex-col items-center justify-center text-brand-cyan hover:scale-110 transition-all">
+                        <i id="camIcon" class="fa-solid fa-video text-sm"></i>
+                        <span class="text-[8px] font-bold mt-0.5" data-i18n="cam">Kamera</span>
+                    </button>
+                    <button onclick="openGiftModal()" class="w-10 h-10 rounded-full bg-gradient-to-r from-brand-pink to-purple-600 flex flex-col items-center justify-center text-white shadow-lg shadow-brand-pink/50 hover:scale-110 transition-all animate-bounce">
+                        <i class="fa-solid fa-gift text-sm"></i>
+                        <span class="text-[8px] font-bold mt-0.5" data-i18n="gift">Hədiyyə</span>
+                    </button>
+                </div>
+
+                <!-- Live Chat Stream Overlay Bottom Left -->
+                <div class="absolute bottom-16 left-3 right-16 z-20 max-h-48 flex flex-col justify-end pointer-events-none">
+                    <div id="liveChatBox" class="overflow-y-auto space-y-1.5 p-2 pointer-events-auto max-h-40 text-xs">
+                        <!-- Chat messages injected dynamically -->
+                        <div class="glass-panel p-1.5 rounded-lg max-w-[85%] border-l-2 border-brand-cyan inline-block">
+                            <span class="font-bold text-brand-cyan">@Elvin_Usta:</span> Uğurlar canlı yayımda! 🚀
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Input Bar for Stream Chat -->
+                <div class="absolute bottom-2 left-3 right-3 z-30 flex items-center gap-2">
+                    <input id="streamChatInput" type="text" placeholder="Canlı çata yaz..." class="flex-1 bg-black/60 border border-white/20 rounded-full px-4 py-2 text-xs text-white outline-none focus:border-brand-cyan backdrop-blur-md" onkeypress="handleStreamChatKey(event)">
+                    <button onclick="sendStreamComment()" class="w-9 h-9 rounded-full bg-brand-cyan text-black flex items-center justify-center font-bold text-xs shadow-lg">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: P2P MESH CHAT ================= -->
+        <section id="page-chat" class="tab-page absolute inset-0 hidden flex-col bg-slate-950 p-4">
+            <div class="glass-panel flex-1 rounded-2xl flex flex-col overflow-hidden border border-white/10">
+                <!-- Chat Header -->
+                <div class="p-3 bg-black/40 border-b border-white/10 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div id="activeChatAvatar" class="w-9 h-9 rounded-full bg-brand-cyan/20 border border-brand-cyan flex items-center justify-center text-brand-cyan font-bold orbitron">
+                            P2P
+                        </div>
+                        <div>
+                            <h3 id="activeChatTitle" class="font-bold text-sm text-white">Qlobal P2P Şəbəkəsi (Canlı Mesh)</h3>
+                            <p class="text-[10px] text-emerald-400 font-mono"><i class="fa-solid fa-lock"></i> End-to-End Encrypted (Serverssiz)</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan px-2 py-0.5 rounded-full font-mono">BROADCAST</span>
+                </div>
+
+                <!-- Messages Container -->
+                <div id="chatMessages" class="flex-1 p-3 overflow-y-auto space-y-3 font-sans">
+                    <div class="text-center my-2">
+                        <span class="text-[10px] bg-white/5 border border-white/10 px-3 py-1 rounded-full text-slate-400 font-mono">
+                            🔒 Məlumatlar heç bir serverə getmir. Birbaşa brauzerlər arası ötürülür.
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Message Input -->
+                <div class="p-2.5 bg-black/60 border-t border-white/10 flex items-center gap-2">
+                    <input id="chatInput" type="text" placeholder="Şifrələnmiş P2P mesaj yaz..." class="flex-1 bg-slate-900 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-brand-cyan" onkeypress="handleP2PChatKey(event)">
+                    <button onclick="sendP2PMessage()" class="glass-button px-4 py-2 rounded-xl text-brand-cyan font-bold text-xs flex items-center gap-1.5 hover:bg-brand-cyan/20">
+                        <span>Göndər</span> <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 4: MY PROFILE ================= -->
+        <section id="page-profile" class="tab-page absolute inset-0 hidden flex-col bg-slate-950 p-4 overflow-y-auto">
+            <div class="max-w-md mx-auto w-full space-y-4 pb-20">
+                
+                <!-- Profile Card -->
+                <div class="glass-panel p-5 rounded-2xl border border-white/10 text-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-16 bg-gradient-to-r from-brand-cyan via-brand-purple to-brand-pink opacity-30"></div>
+                    
+                    <div class="relative z-10 mt-4">
+                        <div class="relative w-20 h-20 mx-auto mb-3">
+                            <img id="myAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200" class="w-full h-full rounded-full object-cover border-2 border-brand-cyan shadow-xl">
+                            <button onclick="changeAvatar()" class="absolute bottom-0 right-0 bg-brand-cyan text-black w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-center gap-1.5">
+                            <input id="inputMyName" type="text" value="Samir Məmmədov" class="bg-transparent text-center font-extrabold text-base text-white border-b border-transparent hover:border-white/20 focus:border-brand-cyan outline-none px-2 py-0.5">
+                            <span id="myVerifiedBadge" class="bg-amber-500 text-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">✓</span>
+                        </div>
+
+                        <input id="inputMyBio" type="text" value="Elektrik & Smart Home Mütəxəssisi" class="bg-transparent text-center text-xs text-slate-400 border-b border-transparent hover:border-white/20 focus:border-brand-cyan outline-none w-full mt-1">
+
+                        <!-- Distance / Mesh Status -->
+                        <div class="mt-4 flex items-center justify-center gap-4 text-xs font-mono text-slate-300">
+                            <div class="bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+                                <span class="text-slate-400 block text-[10px]">P2P ID</span>
+                                <span id="myP2pId" class="text-brand-cyan font-bold">NODE-AZ-889</span>
+                            </div>
+                            <div class="bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+                                <span class="text-slate-400 block text-[10px]">RADAR STATUS</span>
+                                <span class="text-emerald-400 font-bold">GÖRÜNÜR</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Master Status Toggle -->
+                <div class="glass-panel p-4 rounded-2xl border border-white/10 flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-xs text-white flex items-center gap-1.5">
+                            <i class="fa-solid fa-briefcase text-amber-400"></i> <span data-i18n="proMode">Peşəkar / Usta Rejimi</span>
+                        </h4>
+                        <p class="text-[10px] text-slate-400" data-i18n="proModeDesc">Xəritədə xidmət təklifi edən mütəxəssis kimi görün</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="proToggle" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-cyan"></div>
+                    </label>
+                </div>
+
+                <!-- Save Profile Button -->
+                <button onclick="saveProfileSettings()" class="w-full bg-gradient-to-r from-brand-cyan to-blue-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg shadow-brand-cyan/20 active:scale-95 transition-all">
+                    Profil Dəyişikliklərini Yadda Saxla
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 5: VIP & MONETIZATION ================= -->
+        <section id="page-vip" class="tab-page absolute inset-0 hidden flex-col bg-slate-950 p-4 overflow-y-auto">
+            <div class="max-w-md mx-auto w-full space-y-4 pb-20">
+                <div class="text-center my-2">
+                    <h2 class="orbitron text-lg font-black bg-gradient-to-r from-amber-300 via-amber-500 to-amber-200 bg-clip-text text-transparent">
+                        👑 VIP & VIP RADAR MONETİZASİYA
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Xəritədə 1-ci sıraya çıxın və xidmətlərinizi daha tez satın</p>
+                </div>
+
+                <!-- Tier 1: Promoted Pin -->
+                <div class="glass-panel p-4 rounded-2xl border border-amber-500/30 relative overflow-hidden">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="bg-amber-500/20 text-amber-300 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-500/40">MƏŞHUR</span>
+                            <h3 class="font-bold text-sm text-white mt-1">Qızılı Xəritə İkonu (Promoted Pin)</h3>
+                            <p class="text-xs text-slate-300 mt-1">Xəritədə profiliniz böyük qızılı çərçivə ilə parıldayır.</p>
+                        </div>
+                        <span class="orbitron font-extrabold text-amber-400 text-sm">5 AZN / ay</span>
+                    </div>
+                    <button onclick="simulateBuyVIP('Promoted Pin')" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-amber-700 text-black font-extrabold py-2 rounded-xl text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all">
+                        İndi Aktivləşdir
+                    </button>
+                </div>
+
+                <!-- Tier 2: Master Verification -->
+                <div class="glass-panel p-4 rounded-2xl border border-brand-cyan/30 relative overflow-hidden">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="bg-brand-cyan/20 text-brand-cyan text-[9px] font-bold px-2 py-0.5 rounded-full border border-brand-cyan/40">RƏSMİ TƏSDİQ</span>
+                            <h3 class="font-bold text-sm text-white mt-1">Təsdiqlənmiş Mavi Nişan (Verified Badge)</h3>
+                            <p class="text-xs text-slate-300 mt-1">Sənədləri təsdiqlənmiş peşəkar kimi müştərilərə etibar verin.</p>
+                        </div>
+                        <span class="orbitron font-extrabold text-brand-cyan text-sm">10 AZN / birdəfəlik</span>
+                    </div>
+                    <button onclick="simulateBuyVIP('Verified Badge')" class="w-full mt-3 bg-gradient-to-r from-brand-cyan to-blue-600 text-white font-extrabold py-2 rounded-xl text-xs shadow-lg shadow-brand-cyan/20 active:scale-95 transition-all">
+                        Təsdiq Nişanı Al
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FLOATING P2P VOICE CALL OVERLAY MODAL -->
+    <div id="p2pCallModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-between p-8 animate-fade-in">
+        <!-- Call Header -->
+        <div class="text-center mt-6">
+            <span class="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full text-xs font-mono animate-pulse">
+                🔒 P2P DIRECT ENCRYPTED CALL
+            </span>
+            <h2 id="callPeerName" class="orbitron text-xl font-bold text-white mt-4">Leyla Əliyeva</h2>
+            <p id="callStatusText" class="text-xs text-brand-cyan mt-1">Zəng edilir (P2P Handshake)...</p>
+        </div>
+
+        <!-- Avatar Pulsing Visualizer -->
+        <div class="relative my-auto">
+            <div class="w-32 h-32 rounded-full bg-brand-cyan/20 animate-ping absolute inset-0"></div>
+            <img id="callPeerAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300" class="w-32 h-32 rounded-full object-cover border-4 border-brand-cyan relative z-10 shadow-2xl">
+        </div>
+
+        <!-- Call Actions -->
+        <div class="flex items-center gap-6 mb-8">
+            <button onclick="toggleMuteCall()" id="muteCallBtn" class="w-14 h-14 rounded-full glass-button flex items-center justify-center text-white text-lg">
+                <i class="fa-solid fa-microphone-slash"></i>
+            </button>
+            <button onclick="endP2PCall()" class="w-16 h-16 rounded-full bg-red-600 text-white flex items-center justify-center text-xl shadow-lg shadow-red-600/50 hover:scale-110 active:scale-95 transition-all">
+                <i class="fa-solid fa-phone-slash"></i>
+            </button>
+            <button onclick="toggleSpeakerCall()" class="w-14 h-14 rounded-full glass-button flex items-center justify-center text-white text-lg">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- GIFT SELECTION MODAL (TIKTOK STYLE) -->
+    <div id="giftModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col justify-end">
+        <div class="glass-panel p-4 rounded-t-3xl border-t border-white/20 max-w-md mx-auto w-full animate-slide-up">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-xs text-white orbitron flex items-center gap-1.5">
+                    <i class="fa-solid fa-gift text-brand-pink"></i> HƏDİYYƏ GÖNDƏR (LIVE PK)
+                </h3>
+                <button onclick="closeGiftModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Gift Grid -->
+            <div class="grid grid-cols-4 gap-2 my-3">
+                <button onclick="sendGift('Rose', 10, '🌹')" class="glass-button p-2.5 rounded-xl flex flex-col items-center hover:border-brand-pink">
+                    <span class="text-2xl">🌹</span>
+                    <span class="text-[10px] font-bold text-white mt-1">Qızıl Gül</span>
+                    <span class="text-[9px] text-amber-400 font-mono">10 Gem</span>
+                </button>
+                <button onclick="sendGift('Diamond', 100, '💎')" class="glass-button p-2.5 rounded-xl flex flex-col items-center hover:border-brand-cyan">
+                    <span class="text-2xl">💎</span>
+                    <span class="text-[10px] font-bold text-white mt-1">Brilliant</span>
+                    <span class="text-[9px] text-amber-400 font-mono">100 Gem</span>
+                </button>
+                <button onclick="sendGift('Rocket', 500, '🚀')" class="glass-button p-2.5 rounded-xl flex flex-col items-center hover:border-purple-500">
+                    <span class="text-2xl">🚀</span>
+                    <span class="text-[10px] font-bold text-white mt-1">Raket</span>
+                    <span class="text-[9px] text-amber-400 font-mono">500 Gem</span>
+                </button>
+                <button onclick="sendGift('Lion', 1000, '🦁')" class="glass-button p-2.5 rounded-xl flex flex-col items-center hover:border-amber-400">
+                    <span class="text-2xl">🦁</span>
+                    <span class="text-[10px] font-bold text-white mt-1">Şir (Lion)</span>
+                    <span class="text-[9px] text-amber-400 font-mono">1000 Gem</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="glass-panel z-30 border-t border-white/10 px-2 py-2 shrink-0">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+            <button onclick="switchTab('radar')" id="nav-radar" class="nav-btn flex flex-col items-center text-brand-cyan active">
+                <i class="fa-solid fa-radar text-base"></i>
+                <span class="text-[9px] font-bold mt-1" data-i18n="navRadar">Geo Radar</span>
+            </button>
+            <button onclick="switchTab('live')" id="nav-live" class="nav-btn flex flex-col items-center text-slate-400 hover:text-white">
+                <div class="relative">
+                    <i class="fa-solid fa-circle-play text-base text-brand-pink"></i>
+                    <span class="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                </div>
+                <span class="text-[9px] font-bold mt-1" data-i18n="navLive">Canlı PK</span>
+            </button>
+            <button onclick="switchTab('chat')" id="nav-chat" class="nav-btn flex flex-col items-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-comments text-base"></i>
+                <span class="text-[9px] font-bold mt-1" data-i18n="navMesh">P2P Çat</span>
+            </button>
+            <button onclick="switchTab('profile')" id="nav-profile" class="nav-btn flex flex-col items-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-user text-base"></i>
+                <span class="text-[9px] font-bold mt-1" data-i18n="navProfile">Profilim</span>
+            </button>
+            <button onclick="switchTab('vip')" id="nav-vip" class="nav-btn flex flex-col items-center text-amber-400">
+                <i class="fa-solid fa-crown text-base"></i>
+                <span class="text-[9px] font-bold mt-1">VIP Radar</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- GLOBAL APPLICATION JAVASCRIPT LOGIC -->
+    <script>
+        /* ==========================================================================
+           1. GLOBAL STATE & DICTIONARIES
+           ========================================================================== */
+        const state = {
+            soundEnabled: true,
+            currentLang: 'az',
+            balance: 1250,
+            myProfile: {
+                id: 'NODE-' + Math.floor(100 + Math.random() * 900),
+                name: 'Samir Məmmədov',
+                bio: 'Elektrik & Smart Home Mütəxəssisi',
+                avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200',
+                isPro: true,
+                isVerified: true,
+                lat: 40.4093,
+                lng: 49.8671
+            },
+            peers: [
+                { id: 'p1', name: 'Leyla Əliyeva', bio: 'İnteryer Dizayner', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200', x: 0.35, y: 0.4, dist: '250m', isVerified: true },
+                { id: 'p2', name: 'Rəşad Həsənov', bio: 'Kombi & İstilik Ustası', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200', x: 0.65, y: 0.3, dist: '500m', isVerified: true },
+                { id: 'p3', name: 'Nərmin M.', bio: 'Fotoqraf / Vlogger', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200', x: 0.5, y: 0.65, dist: '800m', isVerified: false },
+                { id: 'p4', name: 'Kənan Usta', bio: 'Avto Elektrik', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200', x: 0.25, y: 0.7, dist: '1.2km', isVerified: true }
+            ],
+            selectedPeer: null,
+            activeCall: null,
+            audioCtx: null,
+            broadcastChannel: null,
+            pkScores: { red: 4250, blue: 3890 }
+        };
+
+        const i18n = {
+            az: {
+                recenter: "Yenilə / Məkan",
+                allUsers: "Hər Kəs (Aktiv)",
+                p2pNodes: "Ərazidə P2P Düyünlər",
+                p2pCall: "P2P Zəng Et",
+                p2pMessage: "Mesaj Yaz",
+                cam: "Kamera",
+                gift: "Hədiyyə",
+                proMode: "Peşəkar / Usta Rejimi",
+                proModeDesc: "Xəritədə xidmət təklifi edən mütəxəssis kimi görün",
+                navRadar: "Geo Radar",
+                navLive: "Canlı PK",
+                navMesh: "P2P Çat",
+                navProfile: "Profilim"
+            },
+            en: {
+                recenter: "Recenter / GPS",
+                allUsers: "All Users (Active)",
+                p2pNodes: "Nearby P2P Nodes",
+                p2pCall: "P2P Call",
+                p2pMessage: "Send Message",
+                cam: "Camera",
+                gift: "Gift",
+                proMode: "Pro / Master Mode",
+                proModeDesc: "Appear on radar map as a verified specialist",
+                navRadar: "Geo Radar",
+                navLive: "Live PK",
+                navMesh: "P2P Chat",
+                navProfile: "My Profile"
+            },
+            ru: {
+                recenter: "Обновить / GPS",
+                allUsers: "Все (Активные)",
+                p2pNodes: "P2P Узлы Рядом",
+                p2pCall: "P2P Звонок",
+                p2pMessage: "Сообщение",
+                cam: "Камера",
+                gift: "Подарок",
+                proMode: "Режим Мастера",
+                proModeDesc: "Отображаться на карте как специалист",
+                navRadar: "Гео Радар",
+                navLive: "Лайв ПК",
+                navMesh: "P2P Чат",
+                navProfile: "Профиль"
+            }
+        };
+
+        /* ==========================================================================
+           2. WEB AUDIO SYNTHESIZER (ZERO EXTERNAL SOUND ASSETS)
+           ========================================================================== */
+        function initAudioContext() {
+            if (!state.audioCtx) {
+                state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSoundFx(type) {
+            if (!state.soundEnabled) return;
+            initAudioContext();
+            const ctx = state.audioCtx;
+
+            if (type === 'click') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.05);
+            } else if (type === 'gift') {
+                const now = ctx.currentTime;
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    gain.gain.setValueAtTime(0.15, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.3);
+                });
+            } else if (type === 'ringtone') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.4);
+            }
+        }
+
+        function toggleSound() {
+            state.soundEnabled = !state.soundEnabled;
+            const btn = document.getElementById('soundToggleBtn');
+            btn.innerHTML = state.soundEnabled ? 
+                '<i class="fa-solid fa-volume-high"></i>' : 
+                '<i class="fa-solid fa-volume-xmark text-red-400"></i>';
+        }
+
+        /* ==========================================================================
+           3. RADAR CANVAS INTERACTIVE ENGINE
+           ========================================================================== */
+        let radarAngle = 0;
+        let radarCanvas, radarCtx;
+
+        function initRadarCanvas() {
+            radarCanvas = document.getElementById('radarCanvas');
+            radarCtx = radarCanvas.getContext('2d');
+            resizeRadarCanvas();
+            window.addEventListener('resize', resizeRadarCanvas);
+
+            // Handle Canvas Node Clicks
+            radarCanvas.addEventListener('click', (e) => {
+                const rect = radarCanvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+
+                // Check distance to peer nodes
+                state.peers.forEach(peer => {
+                    const px = peer.x * radarCanvas.width;
+                    const py = peer.y * radarCanvas.height;
+                    const dist = Math.hypot(clickX - px, clickY - py);
+
+                    if (dist < 25) {
+                        openPeerModal(peer);
+                        playSoundFx('click');
+                    }
+                });
+            });
+
+            requestAnimationFrame(renderRadarFrame);
+        }
+
+        function resizeRadarCanvas() {
+            if (!radarCanvas) return;
+            radarCanvas.width = radarCanvas.parentElement.clientWidth;
+            radarCanvas.height = radarCanvas.parentElement.clientHeight;
+        }
+
+        function renderRadarFrame() {
+            if (!radarCtx) return;
+            const width = radarCanvas.width;
+            const height = radarCanvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const maxRadius = Math.min(width, height) * 0.42;
+
+            radarCtx.clearRect(0, 0, width, height);
+
+            // 1. Draw Concentric Radar Rings
+            radarCtx.strokeStyle = 'rgba(0, 242, 254, 0.15)';
+            radarCtx.lineWidth = 1;
+            for (let i = 1; i <= 3; i++) {
+                radarCtx.beginPath();
+                radarCtx.arc(centerX, centerY, (maxRadius / 3) * i, 0, Math.PI * 2);
+                radarCtx.stroke();
+            }
+
+            // Crosshair lines
+            radarCtx.beginPath();
+            radarCtx.moveTo(centerX - maxRadius, centerY);
+            radarCtx.lineTo(centerX + maxRadius, centerY);
+            radarCtx.moveTo(centerX, centerY - maxRadius);
+            radarCtx.lineTo(centerX, centerY + maxRadius);
+            radarCtx.stroke();
+
+            // 2. Draw Radar Sweeping Gradient Beam
+            radarAngle += 0.015;
+            radarCtx.save();
+            radarCtx.translate(centerX, centerY);
+            radarCtx.beginPath();
+            radarCtx.moveTo(0, 0);
+            radarCtx.arc(0, 0, maxRadius, radarAngle, radarAngle + 0.4);
+            radarCtx.closePath();
+            const sweepGrad = radarCtx.createRadialGradient(0, 0, 0, 0, 0, maxRadius);
+            sweepGrad.addColorStop(0, 'rgba(0, 242, 254, 0.3)');
+            sweepGrad.addColorStop(1, 'rgba(0, 242, 254, 0.0)');
+            radarCtx.fillStyle = sweepGrad;
+            radarCtx.fill();
+            radarCtx.restore();
+
+            // 3. Draw Local User Node (Center)
+            radarCtx.save();
+            radarCtx.beginPath();
+            radarCtx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+            radarCtx.fillStyle = '#00f2fe';
+            radarCtx.shadowColor = '#00f2fe';
+            radarCtx.shadowBlur = 15;
+            radarCtx.fill();
+            radarCtx.restore();
+
+            // 4. Draw Peer Nodes with Images & Badges
+            state.peers.forEach(peer => {
+                const px = peer.x * width;
+                const py = peer.y * height;
+
+                // Pulsing outer aura
+                radarCtx.beginPath();
+                radarCtx.arc(px, py, 18, 0, Math.PI * 2);
+                radarCtx.fillStyle = peer.isVerified ? 'rgba(245, 158, 11, 0.2)' : 'rgba(0, 242, 254, 0.15)';
+                radarCtx.fill();
+
+                // Draw Avatar Border Circle
+                radarCtx.beginPath();
+                radarCtx.arc(px, py, 14, 0, Math.PI * 2);
+                radarCtx.strokeStyle = peer.isVerified ? '#f59e0b' : '#00f2fe';
+                radarCtx.lineWidth = 2;
+                radarCtx.stroke();
+
+                // Peer Name Label
+                radarCtx.fillStyle = '#ffffff';
+                radarCtx.font = '10px Rajdhani';
+                radarCtx.textAlign = 'center';
+                radarCtx.fillText(peer.name, px, py + 26);
+            });
+
+            requestAnimationFrame(renderRadarFrame);
+        }
+
+        /* ==========================================================================
+           4. MODALS & P2P CALL CONTROLS
+           ========================================================================== */
+        function openPeerModal(peer) {
+            state.selectedPeer = peer;
+            document.getElementById('modalName').innerText = peer.name;
+            document.getElementById('modalBio').innerText = peer.bio;
+            document.getElementById('modalAvatar').src = peer.avatar;
+            document.getElementById('modalDistance').innerHTML = `<i class="fa-solid fa-route"></i> ${peer.dist} aralıda`;
+            document.getElementById('modalVerified').style.display = peer.isVerified ? 'flex' : 'none';
+            document.getElementById('peerQuickModal').classList.remove('hidden');
+        }
+
+        function closePeerModal() {
+            document.getElementById('peerQuickModal').classList.add('hidden');
+        }
+
+        function startP2PCallFromModal() {
+            if (!state.selectedPeer) return;
+            closePeerModal();
+            
+            document.getElementById('callPeerName').innerText = state.selectedPeer.name;
+            document.getElementById('callPeerAvatar').src = state.selectedPeer.avatar;
+            document.getElementById('p2pCallModal').classList.remove('hidden');
+            
+            playSoundFx('ringtone');
+            const ringInterval = setInterval(() => {
+                if (document.getElementById('p2pCallModal').classList.contains('hidden')) {
+                    clearInterval(ringInterval);
+                } else {
+                    playSoundFx('ringtone');
+                }
+            }, 1200);
+
+            setTimeout(() => {
+                document.getElementById('callStatusText').innerText = "Əlaqə Quruldu (00:01)";
+                document.getElementById('callStatusText').className = "text-xs text-emerald-400 font-bold mt-1";
+            }, 3000);
+        }
+
+        function endP2PCall() {
+            playSoundFx('click');
+            document.getElementById('p2pCallModal').classList.add('hidden');
+            document.getElementById('callStatusText').innerText = "Zəng edilir (P2P Handshake)...";
+            document.getElementById('callStatusText').className = "text-xs text-brand-cyan mt-1";
+        }
+
+        function startP2PChatFromModal() {
+            if (!state.selectedPeer) return;
+            closePeerModal();
+            switchTab('chat');
+            document.getElementById('activeChatTitle').innerText = state.selectedPeer.name + " (Direct P2P)";
+            document.getElementById('activeChatAvatar').innerText = state.selectedPeer.name.charAt(0);
+        }
+
+        /* ==========================================================================
+           5. TIKTOK LIVE & PK GIFT PARTICLES SYSTEM
+           ========================================================================== */
+        let giftCanvas, giftCtx;
+        let giftParticles = [];
+
+        function initGiftCanvas() {
+            giftCanvas = document.getElementById('giftCanvas');
+            giftCtx = giftCanvas.getContext('2d');
+            giftCanvas.width = giftCanvas.parentElement.clientWidth;
+            giftCanvas.height = giftCanvas.parentElement.clientHeight;
+            requestAnimationFrame(renderGiftsFrame);
+        }
+
+        function sendGift(name, cost, emoji) {
+            if (state.balance < cost) {
+                alert("Kifayət qədər Gem yoxdur!");
+                return;
+            }
+            state.balance -= cost;
+            document.getElementById('diamondBalance').innerText = state.balance.toLocaleString();
+            playSoundFx('gift');
+            closeGiftModal();
+
+            // PK Score Boost for Red
+            state.pkScores.red += cost * 2;
+            updatePKBar();
+
+            // Spawn floating gift particles
+            for (let i = 0; i < 8; i++) {
+                giftParticles.push({
+                    x: giftCanvas.width / 2 + (Math.random() * 80 - 40),
+                    y: giftCanvas.height - 100,
+                    emoji: emoji,
+                    size: 24 + Math.random() * 20,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: -4 - Math.random() * 4,
+                    alpha: 1.0
+                });
+            }
+
+            // Stream Overlay Alert
+            addStreamChatMessage(`🎁 @Sən tərəfindən ${name} (${emoji}) hədiyyə edildi!`, true);
+        }
+
+        function renderGiftsFrame() {
+            if (!giftCtx) return;
+            giftCtx.clearRect(0, 0, giftCanvas.width, giftCanvas.height);
+
+            for (let i = giftParticles.length - 1; i >= 0; i--) {
+                const p = giftParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.015;
+
+                giftCtx.globalAlpha = Math.max(0, p.alpha);
+                giftCtx.font = `${p.size}px serif`;
+                giftCtx.fillText(p.emoji, p.x, p.y);
+
+                if (p.alpha <= 0) {
+                    giftParticles.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(renderGiftsFrame);
+        }
+
+        function updatePKBar() {
+            const total = state.pkScores.red + state.pkScores.blue;
+            const redPct = Math.round((state.pkScores.red / total) * 100);
+            const bluePct = 100 - redPct;
+
+            document.getElementById('scoreRed').innerText = state.pkScores.red.toLocaleString();
+            document.getElementById('scoreBlue').innerText = state.pkScores.blue.toLocaleString();
+            document.getElementById('barRed').style.width = redPct + '%';
+            document.getElementById('barBlue').style.width = bluePct + '%';
+        }
+
+        function openGiftModal() {
+            playSoundFx('click');
+            document.getElementById('giftModal').classList.remove('hidden');
+        }
+
+        function closeGiftModal() {
+            document.getElementById('giftModal').classList.add('hidden');
+        }
+
+        function toggleCamera() {
+            playSoundFx('click');
+            const video = document.getElementById('localVideo');
+            const fallback = document.getElementById('hostAFallback');
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+                    video.srcObject = stream;
+                    video.classList.remove('hidden');
+                    fallback.classList.add('hidden');
+                }).catch(() => {
+                    alert("Kamera icazəsi verilmədi və ya kamera tapılmadı.");
+                });
+            }
+        }
+
+        function addStreamChatMessage(msg, isHighlight = false) {
+            const box = document.getElementById('liveChatBox');
+            const el = document.createElement('div');
+            el.className = `glass-panel p-1.5 rounded-lg max-w-[90%] inline-block ${isHighlight ? 'border-l-2 border-amber-400 text-amber-300 font-bold' : ''}`;
+            el.innerHTML = msg;
+            box.appendChild(el);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function handleStreamChatKey(e) {
+            if (e.key === 'Enter') sendStreamComment();
+        }
+
+        function sendStreamComment() {
+            const input = document.getElementById('streamChatInput');
+            if (!input.value.trim()) return;
+            addStreamChatMessage(`<span class="font-bold text-brand-cyan">@Sən:</span> ${input.value}`);
+            input.value = '';
+            playSoundFx('click');
+        }
+
+        /* ==========================================================================
+           6. P2P MESH BROADCAST MESSAGING
+           ========================================================================== */
+        function initP2PMeshBroadcaster() {
+            if ('BroadcastChannel' in window) {
+                state.broadcastChannel = new BroadcastChannel('arworld_p2p_mesh');
+                state.broadcastChannel.onmessage = (e) => {
+                    appendP2PMessage(e.data.sender, e.data.text, false);
+                };
+            }
+        }
+
+        function handleP2PChatKey(e) {
+            if (e.key === 'Enter') sendP2PMessage();
+        }
+
+        function sendP2PMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            appendP2PMessage(state.myProfile.name, text, true);
+
+            if (state.broadcastChannel) {
+                state.broadcastChannel.postMessage({
+                    sender: state.myProfile.name,
+                    text: text
+                });
+            }
+
+            input.value = '';
+            playSoundFx('click');
+        }
+
+        function appendP2PMessage(sender, text, isSelf) {
+            const box = document.getElementById('chatMessages');
+            const msgEl = document.createElement('div');
+            msgEl.className = `flex flex-col ${isSelf ? 'items-end' : 'items-start'}`;
+            msgEl.innerHTML = `
+                <div class="text-[10px] text-slate-400 mb-0.5">${sender}</div>
+                <div class="${isSelf ? 'bg-gradient-to-r from-brand-cyan to-blue-600 text-white' : 'bg-slate-800 text-slate-200 border border-white/10'} px-3 py-2 rounded-2xl max-w-[80%] text-xs shadow-md">
+                    ${text}
+                </div>
+            `;
+            box.appendChild(msgEl);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        /* ==========================================================================
+           7. NAVIGATION & PROFILE SETTINGS
+           ========================================================================== */
+        function switchTab(tabId) {
+            playSoundFx('click');
+            document.querySelectorAll('.tab-page').forEach(page => page.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.className = 'nav-btn flex flex-col items-center text-slate-400 hover:text-white');
+
+            document.getElementById(`page-${tabId}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabId}`).className = 'nav-btn flex flex-col items-center text-brand-cyan active';
+
+            if (tabId === 'live') {
+                initGiftCanvas();
+            }
+        }
+
+        function changeLanguage(lang) {
+            state.currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang] && i18n[lang][key]) {
+                    el.innerText = i18n[lang][key];
+                }
+            });
+        }
+
+        function saveProfileSettings() {
+            playSoundFx('click');
+            state.myProfile.name = document.getElementById('inputMyName').value;
+            state.myProfile.bio = document.getElementById('inputMyBio').value;
+            alert("Profil parametrləri saxlanıldı!");
+        }
+
+        function simulateBuyVIP(type) {
+            playSoundFx('gift');
+            alert(`Təbrik edirik! ${type} uğurla aktiv edildi.`);
+        }
+
+        function relocateGeo() {
+            playSoundFx('click');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    state.myProfile.lat = pos.coords.latitude;
+                    state.myProfile.lng = pos.coords.longitude;
+                    alert("GPS Məkanınız Yeniləndi!");
+                }, () => {
+                    alert("GPS Məkanı götürülə bilmədi (Simulyasiya rejimi aktivdir).");
+                });
+            }
+        }
+
+        /* ==========================================================================
+           8. INITIALIZATION ON WINDOW LOAD
+           ========================================================================== */
+        window.onload = function () {
+            initRadarCanvas();
+            initP2PMeshBroadcaster();
+
+            // Simulate incoming random live chat comments
+            const sampleComments = [
+                " @Xəyal_99: Qardaş qiymətlər neçəyədir?",
+                " @Gunel_Design: Super canlı yayımdır! 🔥",
+                " @Tural_Usta: P2P zəng sisteminiz çox sürətlidir!"
+            ];
+            setInterval(() => {
+                if (!document.getElementById('page-live').classList.contains('hidden')) {
+                    const randomCmt = sampleComments[Math.floor(Math.random() * sampleComments.length)];
+                    addStreamChatMessage(randomCmt);
+                }
+            }, 4000);
+        };
+    </script>
 </body>
 </html>
+```
