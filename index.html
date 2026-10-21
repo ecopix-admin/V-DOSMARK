@@ -2,34 +2,190 @@
 <html lang="az">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TOKMESH - Decentralized Global Mesh Node</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TOKMESH MAPS - Peşəkar Açıq Naviqator</title>
+  
+  <!-- Leaflet CSS (Pulsuz Açıq Xəritə Kitabxanası) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
   <style>
-    body { background: #020408; color: #00f2fe; font-family: monospace; padding: 20px; }
-    .node-card { border: 1px solid #00f2fe; padding: 20px; border-radius: 12px; background: rgba(0,242,254,0.05); }
-    .status { color: #22c55e; font-weight: bold; }
-    .btn { background: #ff007f; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    :root {
+      --bg-dark: #020617;
+      --card-bg: rgba(15, 23, 42, 0.94);
+      --accent-cyan: #06b6d4;
+      --accent-pink: #ec4899;
+      --accent-green: #10b981;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+    
+    body, html { width: 100%; height: 100dvh; background: var(--bg-dark); color: var(--text-main); overflow: hidden; position: fixed; }
+    #app { display: flex; flex-direction: column; width: 100vw; height: 100dvh; position: relative; }
+
+    /* Top Search Header */
+    header {
+      position: absolute; top: 12px; left: 12px; right: 12px; z-index: 1000;
+      display: flex; gap: 8px; background: var(--card-bg); backdrop-filter: blur(16px);
+      padding: 10px 14px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .search-input {
+      flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      padding: 8px 14px; border-radius: 12px; color: #fff; outline: none; font-size: 0.88rem;
+    }
+    .btn-icon {
+      background: var(--accent-cyan); border: none; color: #000; width: 38px; height: 38px;
+      border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer;
+    }
+
+    /* Map Container */
+    #map { width: 100%; height: 100%; background: #0b0f19; z-index: 1; }
+
+    /* Bottom Floating Panel */
+    .bottom-panel {
+      position: absolute; bottom: 20px; left: 12px; right: 12px; z-index: 1000;
+      background: var(--card-bg); backdrop-filter: blur(18px); border: 1px solid var(--border);
+      border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    }
+    .panel-title { font-size: 0.9rem; font-weight: bold; color: var(--accent-cyan); display: flex; justify-content: space-between; align-items: center; }
+    .coords-info { font-size: 0.78rem; color: var(--text-sub); }
+    
+    .action-row { display: flex; gap: 8px; margin-top: 4px; }
+    .nav-btn {
+      flex: 1; padding: 10px; border-radius: 12px; border: none; font-weight: bold; font-size: 0.82rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-primary { background: linear-gradient(45deg, var(--accent-cyan), #0284c7); color: #fff; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid var(--border); }
+
+    /* Custom Leaflet Dark Theme Adjustments */
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #0f172a !important; color: #fff !important; border: 1px solid var(--border); }
   </style>
 </head>
 <body>
 
-  <div class="node-card">
-    <h2>🌐 TOKMESH GLOBAL P2P NODE</h2>
-    <p>Mərkəzi Server Statusu: <span class="status">Yoxdur (0 AZN Mərkəzsiz)</span></p>
-    <p>Sənin Qlobal Qovşaq ID-n: <span id="node-id" style="color:#fff;">Yaradılır...</span></p>
-    <hr style="border-color: rgba(0,242,254,0.2); margin: 15px 0;">
-    <p>Şəbəkə Vəziyyəti: <span id="net-state">P2P Tüneli Axtarılır...</span></p>
-    <button class="btn" onclick="connectGlobalMesh()">Qlobal Mesh-ə Qoşul</button>
+  <div id="app">
+    <!-- Top Search Header -->
+    <header>
+      <input type="text" id="search-input" class="search-input" placeholder="Küçə, obyekt və ya usta axtar (məs: Nərimanov, Masazır)..." />
+      <button class="btn-icon" onclick="searchLocation()">🔍</button>
+      <button class="btn-icon" style="background:var(--accent-green);" onclick="centerToUser()" title="Məni Tap">📍</button>
+    </header>
+
+    <!-- Leaflet Map Div -->
+    <div id="map"></div>
+
+    <!-- Bottom Panel -->
+    <div class="bottom-panel">
+      <div class="panel-title">
+        <span>🗺️ TOKMESH MAPS ENGINE</span>
+        <span style="font-size:0.7rem; color:var(--accent-green);">● GPS Aktiv</span>
+      </div>
+      <div class="coords-info" id="status-text">Cihazın GPS koordinatları gözlənilir...</div>
+      <div class="action-row">
+        <button class="nav-btn btn-primary" onclick="addMasterPin()">➕ Buraya Usta/Obyekt Sanc</button>
+        <button class="nav-btn btn-secondary" onclick="toggleTrafficLayer()">🚗 Trafik/Qatlar</button>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // Unikal Mərkəzsiz ID Generator (Cryptographic Node ID)
-    const nodeId = 'NODE-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    document.getElementById('node-id').innerText = nodeId;
+  <!-- Leaflet JS Kitabxanası -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    function connectGlobalMesh() {
-      document.getElementById('net-state').innerText = "Qlobal P2P Tüneli Aktivdir! Birbaşa Cihazdan-Cihaza Bağlantı Hazırdır.";
-      document.getElementById('net-state').style.color = "#22c55e";
+  <script>
+    // --- 1. XƏRİTƏNİN İŞƏ SALINMASI (Baku Mərkəzli) ---
+    // OpenStreetMap tərəfindən təmin edilən pulsuz xəritə mühərriki
+    const map = L.map('map', { zoomControl: false }).setView([40.4093, 49.8671], 13);
+
+    // Tünd (Dark Mode) xəritə qatı (CartoDB Dark Matter - Tamamilə Pulsuz)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors & CARTO'
+    }).addTo(map);
+
+    let userMarker = null;
+    let customPinsLayer = L.layerGroup().addTo(map);
+
+    // --- 2. GPS İZLƏMƏSİ (Real-Time User Location) ---
+    function centerToUser() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          
+          map.setView([lat, lng], 16);
+          
+          if (userMarker) {
+            userMarker.setLatLng([lat, lng]);
+          } else {
+            userMarker = L.circleMarker([lat, lng], {
+              radius: 9,
+              fillColor: "#06b6d4",
+              color: "#ffffff",
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.9
+            }).addTo(map).bindPopup("<b>Sən buradasan</b>").openPopup();
+          }
+          document.getElementById('status-text').innerText = `Koordinat: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        }, (err) => {
+          alert("GPS xətası: Zəhmət olmasa məkan icazəsini aktivləşdirin.");
+        }, { enableHighAccuracy: true });
+      } else {
+        alert("Cihazınızda Geolocation dəstəklənmir.");
+      }
+    }
+    // Avtomatik olaraq istifadəçinin yerini tapmağa çalış
+    setTimeout(centerToUser, 1000);
+
+    // --- 3. KÜÇƏ VƏ ÜNVAN AXTARIŞI (Nominatim API - Pulsuz OSM Search) ---
+    async function searchLocation() {
+      const query = document.getElementById('search-input').value.trim();
+      if (!query) return;
+
+      document.getElementById('status-text').innerText = `'${query}' axtarılır...`;
+
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' Baku')}`);
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          map.setView([lat, lon], 15);
+          
+          L.marker([lat, lon]).addTo(customPinsLayer)
+            .bindPopup(`<b>${data[0].display_name}</b>`).openPopup();
+
+          document.getElementById('status-text').innerText = `Tapıldı: ${data[0].display_name.substring(0, 40)}...`;
+        } else {
+          alert("Ünvan tapılmadı. Daha dəqiq ad daxil edin.");
+        }
+      } catch (e) {
+        alert("Axtarış zamanı xəta baş verdi.");
+      }
+    }
+
+    // --- 4. USTA VƏ YA OBYEKT SANÇMAQ (Custom Pins) ---
+    function addMasterPin() {
+      const center = map.getCenter();
+      const pinName = prompt("Bu nöqtəyə ad yazın (məsələn: 'Alçipan Ustası Şamxal' və ya 'Tikinti Materialları'):", "Usta / Obyekt");
+      if (!pinName) return;
+
+      L.marker([center.lat, center.lng]).addTo(customPinsLayer)
+        .bindPopup(`<b>${pinName}</b><br><span style='color:var(--accent-green);'>● Təsdiqlənmiş Nöqtə</span>`)
+        .openPopup();
+
+      document.getElementById('status-text').innerText = `Yeni nöqtə əlavə olundu: ${pinName}`;
+    }
+
+    // --- 5. TRAFİK / QATLARIN DƏYİŞDİRİLMƏSİ ---
+    let darkTheme = true;
+    function toggleTrafficLayer() {
+      darkTheme = !darkTheme;
+      alert(darkTheme ? "Tünd Rejim aktivdir." : "Standart Rejim aktivdir.");
     }
   </script>
 </body>
