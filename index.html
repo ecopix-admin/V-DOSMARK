@@ -1,221 +1,1447 @@
+
 <!DOCTYPE html>
 <html lang="az">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>TOKMESH NAVIGATOR - Peşəkar Səsli Naviqator</title>
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Leaflet Routing Machine CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101923">
+<meta name="description" content="TOKMESH Navigator — GPS, marşrut, usta və obyekt xəritəsi">
+<title>TOKMESH NAVIGATOR</title>
 
-  <style>
-    :root {
-      --bg-dark: #020617;
-      --card-bg: rgba(15, 23, 42, 0.95);
-      --accent-cyan: #06b6d4;
-      --accent-green: #10b981;
-      --accent-pink: #ec4899;
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
-      --border: rgba(255, 255, 255, 0.12);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-    
-    body, html { width: 100%; height: 100dvh; background: var(--bg-dark); color: var(--text-main); overflow: hidden; position: fixed; }
-    #app { display: flex; flex-direction: column; width: 100vw; height: 100dvh; position: relative; }
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-    /* Top Navigation Bar (Waze Style) */
-    .top-nav-card {
-      position: absolute; top: 12px; left: 12px; right: 12px; z-index: 1000;
-      background: var(--card-bg); backdrop-filter: blur(16px);
-      padding: 12px 16px; border-radius: 18px; border: 1px solid var(--border);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 8px;
-    }
-    .search-row { display: flex; gap: 8px; }
-    .search-input {
-      flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border);
-      padding: 10px 14px; border-radius: 12px; color: #fff; outline: none; font-size: 0.88rem;
-    }
-    .btn-action {
-      background: var(--accent-cyan); border: none; color: #000; padding: 0 16px;
-      border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 0.85rem;
-    }
-
-    /* Map Div */
-    #map { width: 100%; height: 100%; z-index: 1; }
-
-    /* Bottom Waze-Style Trip Info Panel */
-    .trip-panel {
-      position: absolute; bottom: 20px; left: 12px; right: 12px; z-index: 1000;
-      background: var(--card-bg); backdrop-filter: blur(18px); border: 1px solid var(--border);
-      border-radius: 22px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    }
-    .trip-metric { display: flex; flex-direction: column; align-items: center; }
-    .metric-value { font-size: 1.4rem; font-weight: 900; color: var(--accent-cyan); }
-    .metric-label { font-size: 0.72rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
-    
-    .btn-voice {
-      background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-green); color: var(--accent-green);
-      padding: 10px 14px; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 0.8rem;
-      display: flex; align-items: center; gap: 6px;
-    }
-
-    /* Leaflet Routing Machine gizlədilməsi (özəl təmiz dizayn üçün) */
-    .leaflet-routing-container { display: none !important; }
-  </style>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#101923;--panel:rgba(20,31,44,.94);
+  --glass:rgba(27,43,59,.92);--line:#35495b;
+  --text:#edf5fc;--muted:#9fb2c4;
+  --cyan:#06b6d4;--blue:#3b82f6;
+  --red:#fb5252;--green:#36d399;
+  --radius:17px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden}
+body{background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;color:var(--text);border:1px solid var(--line);background:#223346;border-radius:11px;padding:10px 12px;min-height:40px;touch-action:manipulation}
+button:active{transform:scale(.98)}
+button.primary{background:#087f99;border-color:#08b7d4}
+button.good{background:#17694f}
+button.danger{background:#782d37}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{width:100%;min-width:0;color:var(--text);background:#101c29;border:1px solid var(--line);border-radius:10px;padding:11px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan)}
+label{display:block;color:var(--muted);font-size:12px;margin:9px 0 5px}
+h1,h2,h3,p{margin-top:0}
+h2{font-size:16px;margin-bottom:10px}
+small,.muted{color:var(--muted)}
+#app{height:100%;height:100dvh;display:flex;flex-direction:column}
+header{z-index:800;display:flex;align-items:center;gap:10px;padding:10px 12px;background:#101923;border-bottom:1px solid #304253}
+.brand{font-weight:900;letter-spacing:1px;font-size:15px}
+.brand span{color:var(--cyan)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:7px}
+.pill{border:1px solid var(--line);border-radius:99px;padding:5px 8px;font-size:11px;color:var(--muted)}
+#offline{display:none;background:#78321f;padding:7px 12px;font-size:12px}
+#offline.show{display:block}
+#workspace{position:relative;flex:1;min-height:0;overflow:hidden}
+#map{position:absolute;inset:0;background:#152231;z-index:1}
+.leaflet-container{font-family:inherit;background:#152231}
+.leaflet-control-attribution{font-size:9px!important}
+.leaflet-control-zoom a{background:#1c2b3a!important;color:white!important;border-color:#445567!important}
+.top-tools{position:absolute;z-index:500;top:10px;left:10px;right:10px;display:flex;gap:7px;align-items:flex-start;pointer-events:none}
+.top-tools>*{pointer-events:auto}
+.searchbox{flex:1;display:flex;gap:5px;padding:6px;background:var(--panel);border:1px solid #43566a;border-radius:14px;backdrop-filter:blur(15px);box-shadow:0 5px 20px #0004;min-width:0}
+.searchbox input{border:0;background:transparent;padding:8px;min-width:0}
+.iconbtn{padding:8px;min-width:40px}
+#results{position:absolute;top:61px;left:0;right:0;max-height:34vh;overflow:auto;background:var(--panel);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:13px;display:none}
+.result{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:0;border-bottom:1px solid #334353;padding:12px;min-height:0}
+.result:last-child{border-bottom:0}
+.bottom-panel{position:absolute;z-index:500;left:10px;right:10px;bottom:10px;display:flex;gap:8px;align-items:flex-end;pointer-events:none}
+.bottom-panel>*{pointer-events:auto}
+.glass{background:var(--panel);backdrop-filter:blur(17px);border:1px solid #43566a;border-radius:var(--radius);box-shadow:0 6px 25px #0004}
+.stats{padding:10px;flex:1;min-width:0}
+.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.stat{min-width:0;background:#ffffff08;padding:8px;border-radius:10px}
+.stat b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat span{display:block;font-size:10px;color:var(--muted)}
+#speedValue.over{color:var(--red)}
+.actions{display:flex;flex-direction:column;gap:7px}
+.actions button{width:48px;height:46px;padding:6px;font-size:19px}
+#drawer{position:absolute;z-index:700;top:0;right:0;bottom:0;width:min(390px,94vw);overflow:auto;background:var(--panel);backdrop-filter:blur(18px);border-left:1px solid var(--line);padding:14px;transform:translateX(105%);transition:transform .22s ease}
+#drawer.open{transform:translateX(0)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:-14px;background:var(--panel);padding:10px 0;z-index:2}
+.section{padding:13px 0;border-bottom:1px solid #35495b}
+.row{display:flex;gap:7px;align-items:center}
+.row>*{flex:1}
+.wrap{display:flex;gap:7px;flex-wrap:wrap}
+.wrap button{flex:1}
+.item{padding:10px;margin:7px 0;border:1px solid var(--line);border-radius:12px;background:#ffffff06}
+.item-title{font-weight:700;overflow-wrap:anywhere}
+.item-actions{display:flex;gap:5px;margin-top:8px}
+.item-actions button{flex:1;padding:7px;font-size:12px;min-height:35px}
+#toast{position:absolute;z-index:1200;top:75px;left:50%;transform:translateX(-50%);width:max-content;max-width:90%;padding:11px 15px;background:#122b39;border:1px solid #0ea5b7;border-radius:12px;box-shadow:0 5px 25px #0008;display:none}
+#toast.show{display:block}
+#voiceWave{display:flex;align-items:center;justify-content:center;gap:4px;height:28px}
+#voiceWave i{display:block;width:4px;height:8px;background:var(--cyan);border-radius:9px}
+#voiceWave.active i{animation:wave .55s infinite alternate}
+#voiceWave i:nth-child(2n){animation-delay:.15s}
+#voiceWave i:nth-child(3n){animation-delay:.3s}
+@keyframes wave{to{height:24px}}
+#north{position:absolute;right:14px;top:82px;z-index:450;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--line);font-size:20px}
+#compassArrow{color:#ff6666}
+#turnCard{display:none;position:absolute;z-index:450;left:10px;right:65px;top:78px;padding:12px;background:var(--panel);border:1px solid var(--cyan);border-radius:14px;backdrop-filter:blur(15px)}
+#turnCard b{font-size:16px}
+#turnCard small{display:block;margin-top:4px}
+.custom-pin{background:transparent;border:0}
+.pin-dot{width:29px;height:29px;display:flex;align-items:center;justify-content:center;border:2px solid white;border-radius:50%;background:#087f99;box-shadow:0 2px 10px #0008;font-size:14px}
+#modal{position:absolute;inset:0;z-index:1000;background:#0009;display:none;align-items:center;justify-content:center;padding:16px}
+#modal.show{display:flex}
+.modal-card{width:min(420px,100%);max-height:85%;overflow:auto;padding:17px;background:#172535;border:1px solid var(--line);border-radius:18px}
+.modal-card h2{margin-bottom:5px}
+.notice{padding:10px;background:#1b3547;border-radius:10px;color:#c4eaff;font-size:12px;margin:8px 0}
+#directions{max-height:220px;overflow:auto}
+.direction{padding:9px 0;border-bottom:1px solid #344657}
+#savedRouteStatus{font-size:11px;color:var(--muted)}
+.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-pane,.leaflet-tile{will-change:transform}
+@media(max-width:430px){
+ .brand{font-size:13px;letter-spacing:.5px}
+ header{padding:8px}
+ .header-right .pill{display:none}
+ .bottom-panel{left:7px;right:7px;bottom:7px;gap:6px}
+ .stats{padding:8px}
+ .stat{padding:6px}
+ .stat b{font-size:15px}
+ .actions button{width:43px;height:43px}
+ .top-tools{left:7px;right:7px;top:7px}
+ #north{right:10px;top:70px}
+ #turnCard{top:70px;left:8px;right:60px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
 </head>
 <body>
+<div id="app">
+  <header>
+    <div aria-hidden="true">🧭</div>
+    <div class="brand">TOKMESH <span>NAVIGATOR</span></div>
+    <div class="header-right">
+      <span class="pill" id="gpsBadge">GPS: gözləyir</span>
+      <button id="menuBtn" class="iconbtn" aria-label="Menyu">☰</button>
+    </div>
+  </header>
+  <div id="offline">⚠ İnternet bağlantısı yoxdur. Xəritə və marşrut serverləri işləməyə bilər.</div>
 
-  <div id="app">
-    <!-- Top Search Bar -->
-    <div class="top-nav-card">
-      <div class="search-row">
-        <input type="text" id="dest-input" class="search-input" placeholder="Haraya getmək istəyirsən? (məs: Gənclik, Nərimanov)..." />
-        <button class="btn-action" onclick="setDestinationBySearch()">Get</button>
-      </div>
-      <div style="font-size:0.75rem; color:var(--text-sub); display:flex; justify-content:space-between;">
-        <span id="nav-status">📍 GPS aktivdir. Məkan gözlənilir...</span>
-        <span style="color:var(--accent-green);">● 0 AZN Open-Route</span>
+  <main id="workspace">
+    <div id="map" aria-label="Naviqasiya xəritəsi"></div>
+
+    <div class="top-tools">
+      <div class="searchbox">
+        <input id="searchInput" type="search" placeholder="Ünvan, küçə və ya şəhər..." autocomplete="off">
+        <button id="micBtn" class="iconbtn" title="Səslə axtar">🎙</button>
+        <button id="searchBtn" class="primary iconbtn" title="Axtar">⌕</button>
+        <div id="results"></div>
       </div>
     </div>
 
-    <!-- Map Container -->
-    <div id="map"></div>
+    <div id="north" title="Şimal istiqaməti"><span id="compassArrow">▲</span></div>
 
-    <!-- Bottom Trip Info Panel -->
-    <div class="trip-panel">
-      <div class="trip-metric">
-        <span class="metric-value" id="trip-time">-- dəq</span>
-        <span class="metric-label">Qalan Vaxt</span>
+    <div id="turnCard">
+      <b id="turnText">Təyinat yeri seçin</b>
+      <small id="turnDistance">Xəritədə nöqtəyə toxunun və ya ünvan axtarın.</small>
+    </div>
+
+    <div class="bottom-panel">
+      <div class="glass stats">
+        <div class="stats-grid">
+          <div class="stat"><b id="speedValue">0</b><span>SÜRƏT km/saat</span></div>
+          <div class="stat"><b id="distanceValue">—</b><span>MƏSAFƏ</span></div>
+          <div class="stat"><b id="etaValue">—</b><span>TƏXMİNİ VAXT</span></div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <small id="accuracyValue">GPS dəqiqliyi: —</small>
+          <small id="savedRouteStatus" style="text-align:right">Marşrut yoxdur</small>
+        </div>
       </div>
-      <div class="trip-metric">
-        <span class="metric-value" id="trip-dist">-- km</span>
-        <span class="metric-label">Məsafə</span>
+      <div class="actions">
+        <button id="locateBtn" title="Məni tap">◎</button>
+        <button id="voiceBtn" title="Səsli bələdçi">🔊</button>
+        <button id="routeBtn" class="primary" title="Marşrut qur">➤</button>
       </div>
-      <button class="btn-voice" onclick="speakInstruction('Naviqasiya aktivdir. Yolunuza davam edin.')">
-        🔊 Səs
-      </button>
+    </div>
+
+    <aside id="drawer">
+      <div class="drawer-head">
+        <h2 style="margin:0">İdarəetmə paneli</h2>
+        <button id="closeDrawer" aria-label="Bağla">✕</button>
+      </div>
+
+      <div class="section">
+        <h2>Marşrut planlaşdırma</h2>
+        <label for="destinationInput">Təyinat ünvanı</label>
+        <input id="destinationInput" placeholder="Məsələn: İçərişəhər, Bakı">
+        <div class="row" style="margin-top:8px">
+          <button id="destinationSearchBtn" class="primary">Ünvanı tap</button>
+          <button id="clearRouteBtn">Marşrutu sil</button>
+        </div>
+        <label for="travelMode">Hərəkət növü</label>
+        <select id="travelMode">
+          <option value="driving">Avtomobil (OSRM)</option>
+          <option value="walking">Piyada — uyğun server tələb olunur</option>
+        </select>
+        <label for="areaMode">Səyahət növü</label>
+        <select id="areaMode">
+          <option value="city">Şəhərdaxili</option>
+          <option value="intercity">Şəhərlərarası</option>
+        </select>
+        <div class="notice">İctimai OSRM serveri standart olaraq avtomobil marşrutunu hesablayır. Piyada seçimi bu serverdə dəstəklənməyə bilər; tətbiq bunu ayrıca bildirəcək.</div>
+        <div id="directions"></div>
+      </div>
+
+      <div class="section">
+        <h2>Səsli bələdçi</h2>
+        <div class="row">
+          <button id="repeatVoiceBtn">Son göstərişi təkrar et</button>
+          <button id="testVoiceBtn">Səsi yoxla</button>
+        </div>
+        <div id="voiceWave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <label for="voiceRate">Danışıq sürəti</label>
+        <input id="voiceRate" type="range" min="0.7" max="1.2" step="0.1" value="0.95">
+        <label for="voiceVolume">Səs səviyyəsi</label>
+        <input id="voiceVolume" type="range" min="0" max="1" step="0.1" value="1">
+        <label for="voiceFrequency">Səs göstərişlərinin tezliyi</label>
+        <select id="voiceFrequency">
+          <option value="100">Hər yeniləmədə deyil — standart</option>
+          <option value="60">Daha tez-tez</option>
+          <option value="180">Daha seyrək</option>
+        </select>
+        <p class="muted" id="voiceStatus">Səsli bələdçi hazırdır.</p>
+      </div>
+
+      <div class="section">
+        <h2>Xəritə görünüşü</h2>
+        <div class="wrap">
+          <button id="darkMapBtn">Tünd xəritə</button>
+          <button id="lightMapBtn">Açıq xəritə</button>
+        </div>
+        <div class="wrap" style="margin-top:7px">
+          <button id="tiltBtn">Əyilmə effekti</button>
+          <button id="trafficBtn">Tıxac simulyasiyası</button>
+        </div>
+        <label for="speedLimit">Sürət xəbərdarlığı (km/saat)</label>
+        <input id="speedLimit" type="number" min="5" max="250" value="60">
+        <div class="wrap" style="margin-top:7px">
+          <button id="wakeBtn">Ekranı oyaq saxla</button>
+          <button id="compassBtn">Kompas yenilə</button>
+        </div>
+        <div class="notice">Əyilmə effekti yalnız vizualdır; real 3D bina modeli deyil. Tıxac qırmızı xətti də simulyasiyadır, canlı trafik məlumatı deyil.</div>
+      </div>
+
+      <div class="section">
+        <h2>Usta və obyekt nişanı əlavə et</h2>
+        <label for="pinName">Ad</label>
+        <input id="pinName" placeholder="Məsələn: Alçipan ustası">
+        <label for="pinCategory">Kateqoriya</label>
+        <select id="pinCategory">
+          <option value="usta">🔧 Usta</option>
+          <option value="material">🧱 Tikinti materialları</option>
+          <option value="shop">🏪 Mağaza</option>
+          <option value="object">📍 Obyekt</option>
+          <option value="danger">⚠ Təhlükə</option>
+        </select>
+        <label for="pinNote">Əlavə məlumat</label>
+        <textarea id="pinNote" rows="2" placeholder="Telefon, iş saatı və ya qeyd"></textarea>
+        <button id="addPinBtn" class="primary" style="width:100%;margin-top:8px">Xəritədə nöqtə seç</button>
+        <p class="muted">Düyməyə basın, sonra xəritədə istədiyiniz yerə toxunun.</p>
+        <label for="pinFilter">Obyekt filtri</label>
+        <select id="pinFilter">
+          <option value="all">Bütün kateqoriyalar</option>
+          <option value="usta">Ustalar</option>
+          <option value="material">Tikinti materialları</option>
+          <option value="shop">Mağazalar</option>
+          <option value="object">Obyektlər</option>
+          <option value="danger">Təhlükələr</option>
+        </select>
+        <div id="pinList"></div>
+      </div>
+
+      <div class="section">
+        <h2>Sevimlilər və tarixçə</h2>
+        <button id="favoriteCurrentBtn" style="width:100%">Cari təyinatı sevimlilərə əlavə et</button>
+        <h3 style="font-size:13px;margin:14px 0 5px">Sevimli ünvanlar</h3>
+        <div id="favoritesList"></div>
+        <h3 style="font-size:13px;margin:14px 0 5px">Son axtarışlar</h3>
+        <div id="historyList"></div>
+      </div>
+
+      <div class="section">
+        <h2>Məlumatların idarə olunması</h2>
+        <div class="wrap">
+          <button id="exportBtn">JSON yüklə</button>
+          <button id="importBtn">JSON idxal et</button>
+        </div>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+        <button id="clearDataBtn" class="danger" style="width:100%;margin-top:8px">Yerli məlumatları sil</button>
+        <p class="muted">Nişanlar, sevimlilər, tarixçə və son marşrut bu brauzerdə saxlanılır. Bu, başqa istifadəçilərə avtomatik ötürülmür.</p>
+      </div>
+
+      <div class="section">
+        <h2>Admin paneli</h2>
+        <p class="muted">PIN ilə yerli idarəetmə. Bu, server səviyyəsində qorunan hesab deyil.</p>
+        <button id="adminBtn" style="width:100%">Admin panelini aç</button>
+        <div id="adminArea" hidden>
+          <label for="adminName">Qlobal nişanın adı</label>
+          <input id="adminName" placeholder="Nişan adı">
+          <label for="adminCategory">Kateqoriya</label>
+          <select id="adminCategory">
+            <option value="object">Obyekt</option>
+            <option value="usta">Usta</option>
+            <option value="material">Tikinti materialları</option>
+            <option value="danger">Təhlükə</option>
+          </select>
+          <button id="adminPinBtn" class="primary" style="width:100%;margin-top:8px">Xəritədə admin nişanı seç</button>
+          <p class="muted">“Qlobal” nişan bu tək cihazda saxlanılır; həqiqi qlobal paylaşım üçün backend lazımdır.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Sistem məlumatı</h2>
+        <p id="systemStatus" class="muted">Sistem hazırlanır...</p>
+        <p class="muted">Xəritə: OpenStreetMap / CARTO. Ünvan axtarışı: Nominatim. Marşrut: OSRM. İctimai serverlərin əlçatanlığına zəmanət verilmir.</p>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="modal">
+  <div class="modal-card">
+    <h2 id="modalTitle">Məlumat</h2>
+    <p id="modalText" class="muted"></p>
+    <div id="modalContent"></div>
+    <div class="row" style="margin-top:13px">
+      <button id="modalCancel">Bağla</button>
+      <button id="modalOk" class="primary">Təsdiq et</button>
     </div>
   </div>
+</div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Leaflet Routing Machine JS -->
-  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+"use strict";
 
-  <script>
-    // --- 1. XƏRİTƏNİN İŞƏ SALINMASI (Baku Mərkəz) ---
-    const map = L.map('map', { zoomControl: false }).setView([40.4093, 49.8671], 14);
+/* TOKMESH NAVIGATOR
+   Single-file front end.
+   Third-party public services have their own usage policies.
+*/
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = "tokmesh_navigator_v1";
+const ADMIN_PIN_KEY = "tokmesh_admin_pin_v1";
 
-    // Tünd qaranlıq Waze/CartoDB Stili (Tamamilə Pulsuz)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap'
+const DEFAULTS = {
+  pins: [],
+  favorites: [],
+  history: [],
+  settings: {
+    mapStyle: "dark",
+    speedLimit: 60,
+    voiceEnabled: true,
+    voiceRate: 0.95,
+    voiceVolume: 1,
+    voiceFrequency: 100,
+    travelMode: "driving",
+    areaMode: "city"
+  },
+  route: null
+};
+
+let state = loadState();
+let map = null;
+let darkLayer = null;
+let lightLayer = null;
+let userMarker = null;
+let accuracyCircle = null;
+let destinationMarker = null;
+let routeLine = null;
+let trafficLine = null;
+let pinLayer = null;
+let routeData = null;
+let gpsWatchId = null;
+let lastPosition = null;
+let currentDestination = null;
+let selectingPin = false;
+let pendingPin = null;
+let adminPinMode = false;
+let mapIsTilted = false;
+let wakeLock = null;
+let recognition = null;
+let lastSpoken = "";
+let lastVoiceAt = 0;
+let lastManeuverIndex = -1;
+let lastRerouteAt = 0;
+let gpsErrors = 0;
+let speechAvailable = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+let lastNearestRoutePoint = null;
+let lastRouteDistance = null;
+let toastTimer = null;
+let modalResolve = null;
+let destinationSearchResults = [];
+let markerById = new Map();
+
+function safe(fn, fallback = null) {
+  try { return fn(); }
+  catch (error) {
+    console.error("TOKMESH xətası:", error);
+    showToast("Əməliyyat zamanı xəta baş verdi.");
+    return fallback;
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredCloneSafe(DEFAULTS);
+    const parsed = JSON.parse(raw);
+    return {
+      ...structuredCloneSafe(DEFAULTS),
+      ...parsed,
+      settings: {...DEFAULTS.settings, ...(parsed.settings || {})},
+      pins: Array.isArray(parsed.pins) ? parsed.pins : [],
+      favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
+      history: Array.isArray(parsed.history) ? parsed.history : []
+    };
+  } catch (error) {
+    console.warn("Yaddaş oxunmadı:", error);
+    return structuredCloneSafe(DEFAULTS);
+  }
+}
+function structuredCloneSafe(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    $("savedRouteStatus").textContent = state.route ? "Marşrut saxlanıb" : "Marşrut yoxdur";
+  } catch (error) {
+    showToast("Yaddaş dolu ola bilər. Məlumatı JSON kimi yükləyin.");
+  }
+}
+function showToast(message, duration = 2800) {
+  const el = $("toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), duration);
+}
+function vibrate(ms = 12) {
+  try { if ("vibrate" in navigator) navigator.vibrate(ms); } catch (_) {}
+}
+function buttonFeedback() {
+  document.addEventListener("click", event => {
+    if (event.target.closest("button")) vibrate(9);
+  }, {passive:true});
+}
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  })[char]);
+}
+function distanceMeters(a, b) {
+  const rad = x => x * Math.PI / 180;
+  const R = 6371000;
+  const dLat = rad(b.lat - a.lat);
+  const dLon = rad(b.lng - a.lng);
+  const lat1 = rad(a.lat);
+  const lat2 = rad(b.lat);
+  const h = Math.sin(dLat/2)**2 +
+    Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+function formatDistance(meters) {
+  if (!Number.isFinite(meters)) return "—";
+  return meters >= 1000 ? (meters/1000).toFixed(1) + " km" : Math.round(meters) + " m";
+}
+function formatDuration(seconds) {
+  if (!Number.isFinite(seconds)) return "—";
+  const minutes = Math.max(0, Math.round(seconds/60));
+  if (minutes < 60) return minutes + " dəq";
+  const hours = Math.floor(minutes/60);
+  const remaining = minutes%60;
+  return hours + " saat " + remaining + " dəq";
+}
+function makeId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+function validCoords(lat, lng) {
+  return Number.isFinite(lat) && Number.isFinite(lng) &&
+    lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
+
+function initMap() {
+  if (!window.L) {
+    showToast("Xəritə kitabxanası yüklənmədi. İnterneti yoxlayın.", 6000);
+    $("systemStatus").textContent = "Leaflet yüklənmədi.";
+    return;
+  }
+
+  map = L.map("map", {
+    zoomControl:false,
+    preferCanvas:true,
+    zoomAnimation:true,
+    fadeAnimation:true,
+    markerZoomAnimation:true,
+    inertia:true
+  }).setView([40.4093,49.8671], 12);
+
+  darkLayer = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    {subdomains:"abcd", maxZoom:20, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}
+  );
+  lightLayer = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    {subdomains:"abcd", maxZoom:20, attribution:'&copy; OpenStreetMap &copy; CARTO'}
+  );
+  (state.settings.mapStyle === "light" ? lightLayer : darkLayer).addTo(map);
+  L.control.zoom({position:"bottomright"}).addTo(map);
+  pinLayer = L.layerGroup().addTo(map);
+
+  map.on("click", event => {
+    if (selectingPin) {
+      selectingPin = false;
+      if (adminPinMode) {
+        adminPinMode = false;
+        createPinAt(event.latlng, $("adminName").value.trim(), $("adminCategory").value, "Admin nişanı");
+      } else {
+        createPinAt(event.latlng, $("pinName").value.trim(), $("pinCategory").value, $("pinNote").value.trim());
+      }
+      return;
+    }
+    setDestination(event.latlng, "Xəritədə seçilmiş yer");
+  });
+
+  map.on("moveend", checkUserOutsideView);
+  renderPins();
+  restoreSavedRoute();
+  $("systemStatus").textContent = "Xəritə hazırdır. GPS üçün icazə verin.";
+}
+
+function setMapStyle(style) {
+  if (!map) return;
+  try {
+    if (style === "light") {
+      map.removeLayer(darkLayer);
+      lightLayer.addTo(map);
+    } else {
+      map.removeLayer(lightLayer);
+      darkLayer.addTo(map);
+    }
+    state.settings.mapStyle = style;
+    saveState();
+  } catch (error) { console.error(error); }
+}
+
+function initGPS() {
+  if (!("geolocation" in navigator)) {
+    setGPSStatus("GPS dəstəklənmir");
+    showToast("Bu brauzer geolokasiyanı dəstəkləmir.");
+    return;
+  }
+  if (gpsWatchId !== null) navigator.geolocation.clearWatch(gpsWatchId);
+
+  gpsWatchId = navigator.geolocation.watchPosition(
+    onPosition,
+    onPositionError,
+    {enableHighAccuracy:true, maximumAge:1000, timeout:15000}
+  );
+}
+function onPosition(position) {
+  try {
+    const c = position.coords;
+    if (!validCoords(c.latitude,c.longitude)) return;
+    const current = {
+      lat:c.latitude, lng:c.longitude,
+      accuracy:Number.isFinite(c.accuracy) ? c.accuracy : null,
+      speed:Number.isFinite(c.speed) && c.speed >= 0 ? c.speed : null,
+      heading:Number.isFinite(c.heading) ? c.heading : null,
+      timestamp:position.timestamp
+    };
+
+    if (current.accuracy !== null && current.accuracy > 150) {
+      setGPSStatus("Siqnal zəifdir");
+      $("accuracyValue").textContent = "GPS dəqiqliyi: ±" + Math.round(current.accuracy) + " m";
+    } else {
+      setGPSStatus("GPS aktiv");
+      $("accuracyValue").textContent = current.accuracy === null ?
+        "GPS dəqiqliyi: —" : "GPS dəqiqliyi: ±" + Math.round(current.accuracy) + " m";
+    }
+
+    if (lastPosition) {
+      const jump = distanceMeters(lastPosition,current);
+      const elapsed = Math.max(0.1,(current.timestamp-lastPosition.timestamp)/1000);
+      // GPS sıçrayışlarını və qeyri-mümkün sürətləri rədd et.
+      if (jump > 1000 && elapsed < 3 && current.accuracy > 40) {
+        return;
+      }
+    }
+
+    lastPosition = current;
+    gpsErrors = 0;
+
+    const speedKmh = current.speed !== null ? current.speed*3.6 : estimateSpeed(current);
+    updateSpeed(speedKmh);
+    updateUserMarker(current);
+
+    if (current.heading !== null && current.speed !== null && current.speed > 1.2) {
+      $("compassArrow").style.transform = "rotate(" + current.heading + "deg)";
+    }
+
+    if (currentDestination && routeData) updateNavigation(current);
+  } catch (error) {
+    console.error("GPS emalı xətası", error);
+  }
+}
+function estimateSpeed(current) {
+  if (!lastPosition || !current.timestamp || !lastPosition.timestamp) return 0;
+  const d = distanceMeters(lastPosition,current);
+  const dt = (current.timestamp-lastPosition.timestamp)/1000;
+  return dt > 0 ? Math.min(250,d/dt*3.6) : 0;
+}
+function updateUserMarker(position) {
+  if (!map) return;
+  const latlng = [position.lat,position.lng];
+  if (!userMarker) {
+    userMarker = L.circleMarker(latlng,{
+      radius:8,color:"#ffffff",weight:3,fillColor:"#06b6d4",fillOpacity:1
+    }).addTo(map).bindTooltip("Siz buradasınız");
+    accuracyCircle = L.circle(latlng,{
+      radius:Math.min(position.accuracy || 20,500),
+      color:"#06b6d4",weight:1,fillOpacity:.08
     }).addTo(map);
+    map.setView(latlng,16);
+  } else {
+    userMarker.setLatLng(latlng);
+    accuracyCircle.setLatLng(latlng);
+    accuracyCircle.setRadius(Math.min(position.accuracy || 20,500));
+  }
+}
+function updateSpeed(speedKmh) {
+  const value = Number.isFinite(speedKmh) ? Math.max(0,speedKmh) : 0;
+  $("speedValue").textContent = Math.round(value);
+  $("speedValue").classList.toggle("over", value > Number(state.settings.speedLimit || 60));
+  if (value > Number(state.settings.speedLimit || 60)) {
+    setGPSStatus("Sürət həddi aşılıb");
+  }
+}
+function setGPSStatus(text) {
+  $("gpsBadge").textContent = text;
+}
+function onPositionError(error) {
+  gpsErrors++;
+  const messages = {
+    1:"Məkan icazəsi rədd edildi. Brauzer ayarlarından yer məlumatına icazə verin.",
+    2:"GPS mövqeyi tapılmadı. Açıq havada yenidən yoxlayın.",
+    3:"GPS sorğusu vaxtı bitdi. Bir az sonra yenidən cəhd edin."
+  };
+  setGPSStatus("GPS xətası");
+  $("systemStatus").textContent = messages[error.code] || "GPS xətası.";
+  if (gpsErrors === 1 || error.code === 1) showToast(messages[error.code] || "GPS işləmədi.", 5000);
+}
+function locateUser() {
+  if (!lastPosition) {
+    initGPS();
+    showToast("GPS mövqeyi gözlənilir. Məkan icazəsini yoxlayın.");
+    return;
+  }
+  map.setView([lastPosition.lat,lastPosition.lng],17,{animate:true});
+}
 
-    let userLat = 40.4093;
-    let userLng = 49.8671;
-    let routingControl = null;
-    let userMarker = null;
+async function searchAddress(query) {
+  query = String(query || "").trim();
+  if (query.length < 2) {
+    showToast("Axtarış üçün ünvan yazın.");
+    return;
+  }
+  if (!navigator.onLine) {
+    showToast("Ünvan axtarışı üçün internet lazımdır.");
+    return;
+  }
 
-    // --- 2. SƏSLİ BİLDİRİŞ MÜHƏRRİKİ (Web Speech API) ---
-    function speakInstruction(text) {
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'az-AZ'; // Azərbaycan dili dəstəyi
-        utterance.rate = 1.0;
-        window.speechSynthesis.speak(utterance);
+  $("results").style.display = "block";
+  $("results").innerHTML = '<div class="result">Ünvan axtarılır...</div>';
+  try {
+    const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=az&q=" + encodeURIComponent(query);
+    const response = await fetch(url,{headers:{"Accept":"application/json"}});
+    if (!response.ok) throw new Error("Axtarış serveri: " + response.status);
+    const data = await response.json();
+    destinationSearchResults = Array.isArray(data) ? data : [];
+    if (!destinationSearchResults.length) {
+      $("results").innerHTML = '<div class="result">Nəticə tapılmadı. Başqa yazılış sınayın.</div>';
+      return;
+    }
+    $("results").innerHTML = "";
+    destinationSearchResults.forEach((item,index) => {
+      const button = document.createElement("button");
+      button.className = "result";
+      button.textContent = item.display_name;
+      button.addEventListener("click",() => {
+        const lat = Number(item.lat), lng = Number(item.lon);
+        if (!validCoords(lat,lng)) return;
+        setDestination({lat,lng},item.display_name);
+        map.setView([lat,lng],16);
+        $("results").style.display = "none";
+        $("searchInput").value = item.display_name;
+        $("destinationInput").value = item.display_name;
+        addHistory(item.display_name,lat,lng);
+      });
+      $("results").appendChild(button);
+    });
+  } catch (error) {
+    console.error(error);
+    $("results").innerHTML = '<div class="result">Axtarış alınmadı. İnterneti və server əlçatanlığını yoxlayın.</div>';
+  }
+}
+
+function setDestination(latlng, name = "Təyinat") {
+  if (!validCoords(Number(latlng.lat),Number(latlng.lng))) {
+    showToast("Təyinat koordinatları düzgün deyil.");
+    return;
+  }
+  currentDestination = {lat:Number(latlng.lat),lng:Number(latlng.lng),name};
+  if (destinationMarker) map.removeLayer(destinationMarker);
+  destinationMarker = L.marker([currentDestination.lat,currentDestination.lng],{
+    title:"Təyinat",icon:L.divIcon({
+      className:"custom-pin",
+      html:'<div class="pin-dot" style="background:#db4355">🏁</div>',
+      iconSize:[32,32],iconAnchor:[16,16]
+    })
+  }).addTo(map).bindPopup(escapeHTML(name));
+  $("turnText").textContent = "Təyinat seçildi";
+  $("turnDistance").textContent = name;
+  $("turnCard").style.display = "block";
+  $("savedRouteStatus").textContent = "Marşrut qurulmayıb";
+  showToast("Təyinat seçildi. Marşrut düyməsinə basın.");
+}
+
+async function buildRoute() {
+  if (!lastPosition) {
+    showToast("Əvvəlcə GPS mövqeyi tapılmalıdır.");
+    initGPS();
+    return;
+  }
+  if (!currentDestination) {
+    showToast("Əvvəlcə xəritədə və ya axtarışda təyinat seçin.");
+    return;
+  }
+  if ($("travelMode").value === "walking") {
+    showToast("İctimai OSRM marşrut xidməti avtomobil üçündür. Piyada marşrutu üçün piyada profilli server lazımdır.",6000);
+    return;
+  }
+  if (!navigator.onLine) {
+    showToast("Yeni marşrut hesablamaq üçün internet lazımdır.");
+    return;
+  }
+
+  $("routeBtn").disabled = true;
+  $("turnText").textContent = "Marşrut hesablanır...";
+  try {
+    const start = lastPosition.lng + "," + lastPosition.lat;
+    const end = currentDestination.lng + "," + currentDestination.lat;
+    const url = "https://router.project-osrm.org/route/v1/driving/" +
+      start + ";" + end + "?overview=full&geometries=geojson&steps=true&alternatives=true";
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("OSRM: " + response.status);
+    const data = await response.json();
+    if (data.code !== "Ok" || !data.routes || !data.routes.length) {
+      throw new Error("Uyğun marşrut tapılmadı.");
+    }
+    routeData = data.routes[0];
+    lastManeuverIndex = -1;
+    lastRouteDistance = routeData.distance;
+    drawRoute(routeData);
+    renderDirections(routeData);
+    $("distanceValue").textContent = formatDistance(routeData.distance);
+    $("etaValue").textContent = formatDuration(routeData.duration);
+    $("turnText").textContent = "Marşrut hazırdır";
+    $("turnDistance").textContent = "İlkin məsafə: " + formatDistance(routeData.distance);
+    $("savedRouteStatus").textContent = "Marşrut hesablandı";
+    state.route = {
+      destination:currentDestination,
+      geometry:routeData.geometry,
+      distance:routeData.distance,
+      duration:routeData.duration,
+      steps:(routeData.legs?.[0]?.steps || []).map(s=>({
+        name:s.name || "", distance:s.distance, duration:s.duration,
+        maneuver:s.maneuver
+      })),
+      savedAt:new Date().toISOString()
+    };
+    saveState();
+    speak("Marşrut quruldu. Məsafə " + formatDistance(routeData.distance) +
+      ". Təxmini vaxt " + formatDuration(routeData.duration) + ".");
+    if (routeLine) map.fitBounds(routeLine.getBounds(),{padding:[50,50]});
+    showToast("Marşrut uğurla hesablandı.");
+  } catch (error) {
+    console.error(error);
+    $("turnText").textContent = "Marşrut alınmadı";
+    showToast("Marşrut qurulmadı. İnterneti və OSRM serverini yoxlayın.",5000);
+  } finally {
+    $("routeBtn").disabled = false;
+  }
+}
+
+function drawRoute(route) {
+  if (routeLine) map.removeLayer(routeLine);
+  if (trafficLine) map.removeLayer(trafficLine);
+  const latlngs = route.geometry.coordinates.map(point=>[point[1],point[0]]);
+  routeLine = L.polyline(latlngs,{color:"#06b6d4",weight:7,opacity:.95,lineCap:"round"}).addTo(map);
+  if ($("trafficBtn").dataset.active === "true") drawTrafficSimulation(latlngs);
+}
+function drawTrafficSimulation(latlngs) {
+  if (trafficLine) map.removeLayer(trafficLine);
+  // Bu qırmızı xətt real trafik məlumatı deyil; yalnız vizual simulyasiyadır.
+  trafficLine = L.polyline(latlngs,{
+    color:"#ff3434",weight:3,opacity:.72,dashArray:"7 12",lineCap:"round"
+  }).addTo(map);
+}
+function renderDirections(route) {
+  const target = $("directions");
+  target.innerHTML = "";
+  const steps = route.legs?.[0]?.steps || [];
+  if (!steps.length) {
+    target.textContent = "Dönüş göstərişləri mövcud deyil.";
+    return;
+  }
+  steps.forEach((step,index)=>{
+    const type = step.maneuver?.type || "davam";
+    const modifier = step.maneuver?.modifier || "";
+    let text = "Davam edin";
+    if (type === "turn") {
+      text = modifier.includes("left") ? "Sola dönün" :
+        modifier.includes("right") ? "Sağa dönün" : "Dönüş edin";
+    } else if (type === "arrive") text = "Təyinat yerinə çatdınız";
+    else if (type === "depart") text = "Hərəkətə başlayın";
+    else if (type === "roundabout" || type === "rotary") text = "Dairəvi hərəkətə daxil olun";
+    else if (type === "merge") text = "Yola birləşin";
+    else if (type === "fork") text = "Yol ayrıcında istiqaməti seçin";
+    else if (type === "end of road") text = "Yolun sonunda dönün";
+    const el = document.createElement("div");
+    el.className = "direction";
+    el.innerHTML = "<b>" + (index+1) + ". " + escapeHTML(text) + "</b><br><small>" +
+      escapeHTML(step.name || "Adsız yol") + " · " + formatDistance(step.distance) + "</small>";
+    target.appendChild(el);
+  });
+}
+
+function updateNavigation(position) {
+  if (!routeData || !currentDestination) return;
+  const remaining = distanceMeters(position,currentDestination);
+  $("distanceValue").textContent = formatDistance(remaining);
+  const currentSpeed = position.speed && position.speed > 0.5 ? position.speed : 8;
+  $("etaValue").textContent = formatDuration(remaining/currentSpeed);
+
+  if (remaining < 35) {
+    $("turnText").textContent = "Təyinat yerinə çatdınız";
+    $("turnDistance").textContent = currentDestination.name;
+    speak("Təyinat yerinə çatdınız.");
+    showToast("Təyinat yerinə çatdınız!",5000);
+    currentDestination = null;
+    return;
+  }
+
+  const steps = routeData.legs?.[0]?.steps || [];
+  let nearestIndex = -1;
+  let nearestDistance = Infinity;
+  for (let i=0;i<steps.length;i++) {
+    const loc = steps[i].maneuver?.location;
+    if (!loc) continue;
+    const d = distanceMeters(position,{lat:loc[1],lng:loc[0]});
+    if (d < nearestDistance) {
+      nearestDistance = d;
+      nearestIndex = i;
+    }
+  }
+
+  if (nearestIndex >= 0) {
+    const step = steps[nearestIndex];
+    const type = step.maneuver?.type || "";
+    const modifier = step.maneuver?.modifier || "";
+    let instruction = "Marşrutla davam edin";
+    if (type === "turn") instruction = modifier.includes("left") ? "Sola dönün" :
+      modifier.includes("right") ? "Sağa dönün" : "Dönüş edin";
+    if (type === "roundabout" || type === "rotary") instruction = "Dairəvi hərəkətə daxil olun";
+    if (type === "arrive") instruction = "Təyinat yerinə yaxınlaşırsınız";
+
+    $("turnText").textContent = instruction;
+    $("turnDistance").textContent = formatDistance(nearestDistance) +
+      (step.name ? " · " + step.name : "");
+
+    if (nearestDistance <= 110 && nearestIndex !== lastManeuverIndex) {
+      speak(formatDistance(nearestDistance) + " sonra " + instruction.toLowerCase());
+      lastManeuverIndex = nearestIndex;
+    }
+  }
+
+  // Marşrutdan kənara çıxma üçün sadə yenidən hesablama.
+  const nearestRoute = nearestPointOnRoute(position,routeData.geometry.coordinates);
+  if (nearestRoute.distance > 80 && Date.now()-lastRerouteAt > 20000 && navigator.onLine) {
+    lastRerouteAt = Date.now();
+    showToast("Marşrutdan uzaqlaşdınız. Yeni marşrut hesablanır.");
+    buildRoute();
+  }
+}
+function nearestPointOnRoute(position, coordinates) {
+  let best = {distance:Infinity,point:null};
+  // Marşrut həddindən artıq uzun olarsa hesablamanı seyrəlt.
+  const stride = Math.max(1,Math.floor(coordinates.length/1500));
+  for (let i=0;i<coordinates.length;i+=stride) {
+    const p = {lat:coordinates[i][1],lng:coordinates[i][0]};
+    const d = distanceMeters(position,p);
+    if (d < best.distance) best = {distance:d,point:p};
+  }
+  return best;
+}
+
+function clearRoute() {
+  if (routeLine && map) map.removeLayer(routeLine);
+  if (trafficLine && map) map.removeLayer(trafficLine);
+  if (destinationMarker && map) map.removeLayer(destinationMarker);
+  routeLine = trafficLine = destinationMarker = null;
+  routeData = null;
+  currentDestination = null;
+  lastRouteDistance = null;
+  state.route = null;
+  saveState();
+  $("distanceValue").textContent = "—";
+  $("etaValue").textContent = "—";
+  $("turnText").textContent = "Təyinat yeri seçin";
+  $("turnDistance").textContent = "Xəritədə nöqtəyə toxunun və ya ünvan axtarın.";
+  $("turnCard").style.display = "none";
+  $("directions").innerHTML = "";
+  showToast("Marşrut təmizləndi.");
+}
+function restoreSavedRoute() {
+  if (!state.route || !state.route.destination) return;
+  const saved = state.route;
+  if (saved.geometry && Array.isArray(saved.geometry.coordinates) && saved.geometry.coordinates.length) {
+    currentDestination = saved.destination;
+    if (validCoords(currentDestination.lat,currentDestination.lng)) {
+      destinationMarker = L.marker([currentDestination.lat,currentDestination.lng]).addTo(map);
+      routeLine = L.polyline(saved.geometry.coordinates.map(p=>[p[1],p[0]]),{
+        color:"#06b6d4",weight:7,opacity:.9
+      }).addTo(map);
+      $("distanceValue").textContent = formatDistance(saved.distance);
+      $("etaValue").textContent = formatDuration(saved.duration);
+      $("turnText").textContent = "Yadda saxlanmış marşrut";
+      $("turnDistance").textContent = saved.destination.name || "";
+      $("turnCard").style.display = "block";
+      map.fitBounds(routeLine.getBounds(),{padding:[45,45]});
+    }
+  }
+}
+
+function speak(text) {
+  lastSpoken = String(text || "");
+  $("voiceStatus").textContent = lastSpoken;
+  if (!state.settings.voiceEnabled || !speechAvailable) {
+    if (!speechAvailable) $("voiceStatus").textContent += " (brauzer səsi dəstəkləmir)";
+    return;
+  }
+  try {
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(lastSpoken);
+    utterance.lang = "az-AZ";
+    utterance.rate = Number(state.settings.voiceRate || .95);
+    utterance.pitch = 1;
+    utterance.volume = Number(state.settings.voiceVolume ?? 1);
+    utterance.onstart = () => $("voiceWave").classList.add("active");
+    utterance.onend = () => $("voiceWave").classList.remove("active");
+    utterance.onerror = () => {
+      $("voiceWave").classList.remove("active");
+      $("voiceStatus").textContent = lastSpoken + " (səsli oxuma mümkün olmadı)";
+    };
+    speechSynthesis.speak(utterance);
+    lastVoiceAt = Date.now();
+  } catch (error) {
+    $("voiceWave").classList.remove("active");
+    $("voiceStatus").textContent = lastSpoken;
+  }
+}
+function toggleVoice() {
+  state.settings.voiceEnabled = !state.settings.voiceEnabled;
+  $("voiceBtn").textContent = state.settings.voiceEnabled ? "🔊" : "🔇";
+  saveState();
+  if (!state.settings.voiceEnabled && speechAvailable) speechSynthesis.cancel();
+  showToast(state.settings.voiceEnabled ? "Səsli bələdçi aktivdir." : "Səsli bələdçi söndürülüb.");
+}
+function startVoiceSearch() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast("Bu brauzerdə mikrofonla axtarış dəstəklənmir. Ünvanı yazın.",5000);
+    return;
+  }
+  try {
+    if (recognition) recognition.abort();
+    recognition = new SpeechRecognition();
+    recognition.lang = "az-AZ";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+    $("micBtn").textContent = "🎙…";
+    recognition.onresult = event => {
+      const transcript = event.results?.[0]?.[0]?.transcript || "";
+      $("searchInput").value = transcript;
+      $("destinationInput").value = transcript;
+      searchAddress(transcript);
+    };
+    recognition.onerror = () => showToast("Mikrofon işləmədi. İcazəni və interneti yoxlayın.");
+    recognition.onend = () => $("micBtn").textContent = "🎙";
+    recognition.start();
+  } catch (error) {
+    $("micBtn").textContent = "🎙";
+    showToast("Mikrofon başlatmaq mümkün olmadı.");
+  }
+}
+function playBeep() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const context = new AudioContextClass();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.value = 880;
+    gain.gain.value = .08;
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + .12);
+    oscillator.onended = () => context.close();
+  } catch (_) {}
+}
+
+const CATEGORY = {
+  usta:{icon:"🔧",label:"Usta",color:"#087f99"},
+  material:{icon:"🧱",label:"Tikinti materialları",color:"#a86b2d"},
+  shop:{icon:"🏪",label:"Mağaza",color:"#2b8a57"},
+  object:{icon:"📍",label:"Obyekt",color:"#7556c8"},
+  danger:{icon:"⚠",label:"Təhlükə",color:"#c23e45"}
+};
+function createPinAt(latlng,name,category,note) {
+  if (!validCoords(Number(latlng.lat),Number(latlng.lng))) return;
+  if (!name) name = CATEGORY[category]?.label || "Yeni nişan";
+  const pin = {
+    id:makeId(), name:name.slice(0,120), category:CATEGORY[category]?category:"object",
+    note:String(note || "").slice(0,500),
+    lat:Number(latlng.lat),lng:Number(latlng.lng),
+    createdAt:new Date().toISOString()
+  };
+  state.pins.push(pin);
+  saveState();
+  renderPins();
+  renderPinList();
+  showToast("Nişan saxlanıldı.");
+  if ($("drawer").classList.contains("open")) map.panTo([pin.lat,pin.lng]);
+}
+function pinIcon(category) {
+  const data = CATEGORY[category] || CATEGORY.object;
+  return L.divIcon({
+    className:"custom-pin",
+    html:'<div class="pin-dot" style="background:'+data.color+'">'+data.icon+'</div>',
+    iconSize:[32,32],iconAnchor:[16,16]
+  });
+}
+function renderPins() {
+  if (!pinLayer) return;
+  pinLayer.clearLayers();
+  markerById.clear();
+  const filter = $("pinFilter")?.value || "all";
+  state.pins.forEach(pin=>{
+    if (!validCoords(pin.lat,pin.lng)) return;
+    if (filter !== "all" && pin.category !== filter) return;
+    const marker = L.marker([pin.lat,pin.lng],{icon:pinIcon(pin.category),title:pin.name});
+    marker.bindPopup("<b>"+escapeHTML(pin.name)+"</b><br>"+escapeHTML(pin.note || CATEGORY[pin.category]?.label || ""));
+    marker.on("click",()=>{pendingPin=pin;});
+    marker.addTo(pinLayer);
+    markerById.set(pin.id,marker);
+  });
+}
+function renderPinList() {
+  const list = $("pinList");
+  list.innerHTML = "";
+  const filter = $("pinFilter").value;
+  const pins = state.pins.filter(pin=>filter==="all"||pin.category===filter);
+  if (!pins.length) {
+    list.innerHTML = '<p class="muted">Bu kateqoriyada nişan yoxdur.</p>';
+    return;
+  }
+  pins.forEach(pin=>{
+    const el = document.createElement("div");
+    el.className = "item";
+    el.innerHTML = '<div class="item-title">'+escapeHTML(CATEGORY[pin.category]?.icon||"📍")+
+      " "+escapeHTML(pin.name)+'</div><small>'+escapeHTML(pin.note || CATEGORY[pin.category]?.label || "")+
+      '</small><div class="item-actions"><button data-action="show">Xəritədə göstər</button><button data-action="edit">Redaktə</button><button data-action="delete" class="danger">Sil</button></div>';
+    el.querySelector('[data-action="show"]').onclick = ()=>{
+      map.setView([pin.lat,pin.lng],17);
+      const marker=markerById.get(pin.id);
+      if(marker) marker.openPopup();
+    };
+    el.querySelector('[data-action="edit"]').onclick = ()=>editPin(pin);
+    el.querySelector('[data-action="delete"]').onclick = ()=>deletePin(pin.id);
+    list.appendChild(el);
+  });
+}
+function editPin(pin) {
+  showModal("Nişanı redaktə et","Ad və qeyd məlumatını yeniləyin.",`
+    <label>Ad</label><input id="editPinName" value="${escapeHTML(pin.name)}">
+    <label>Kateqoriya</label><select id="editPinCategory">
+      ${Object.keys(CATEGORY).map(key=>'<option value="'+key+'" '+(pin.category===key?'selected':'')+'>'+CATEGORY[key].label+'</option>').join("")}
+    </select>
+    <label>Qeyd</label><textarea id="editPinNote" rows="3">${escapeHTML(pin.note)}</textarea>`,
+    ()=>{
+      const name=$("editPinName").value.trim();
+      if(!name){showToast("Ad boş ola bilməz.");return false;}
+      pin.name=name.slice(0,120);
+      pin.category=$("editPinCategory").value;
+      pin.note=$("editPinNote").value.slice(0,500);
+      saveState();renderPins();renderPinList();
+      showToast("Nişan yeniləndi.");
+      return true;
+    });
+}
+function deletePin(id) {
+  showModal("Nişanı silmək","Bu nişan yerli yaddaşdan silinəcək.", "",
+    ()=>{
+      state.pins=state.pins.filter(pin=>pin.id!==id);
+      saveState();renderPins();renderPinList();
+      showToast("Nişan silindi.");
+      return true;
+    });
+}
+function addHistory(name,lat,lng) {
+  state.history.unshift({id:makeId(),name,lat,lng,at:new Date().toISOString()});
+  state.history=state.history.slice(0,20);
+  saveState();renderHistory();
+}
+function renderHistory() {
+  const history=$("historyList");
+  history.innerHTML="";
+  if(!state.history.length){history.innerHTML='<p class="muted">Axtarış tarixçəsi boşdur.</p>';return;}
+  state.history.forEach(item=>{
+    const button=document.createElement("button");
+    button.className="result";
+    button.textContent=item.name;
+    button.onclick=()=>{
+      setDestination({lat:item.lat,lng:item.lng},item.name);
+      map.setView([item.lat,item.lng],16);
+      $("drawer").classList.remove("open");
+    };
+    history.appendChild(button);
+  });
+}
+function addFavorite() {
+  if(!currentDestination){showToast("Əvvəlcə təyinat seçin.");return;}
+  const d=currentDestination;
+  if(state.favorites.some(f=>Math.abs(f.lat-d.lat)<.00001&&Math.abs(f.lng-d.lng)<.00001)){
+    showToast("Bu ünvan artıq sevimlilərdədir.");return;
+  }
+  state.favorites.unshift({id:makeId(),name:d.name,lat:d.lat,lng:d.lng});
+  saveState();renderFavorites();showToast("Sevimli ünvan saxlanıldı.");
+}
+function renderFavorites() {
+  const list=$("favoritesList");
+  list.innerHTML="";
+  if(!state.favorites.length){list.innerHTML='<p class="muted">Sevimli ünvan yoxdur.</p>';return;}
+  state.favorites.forEach(item=>{
+    const el=document.createElement("div");
+    el.className="item";
+    el.innerHTML='<div class="item-title">'+escapeHTML(item.name)+'</div><div class="item-actions"><button data-action="go">Seç</button><button data-action="remove" class="danger">Sil</button></div>';
+    el.querySelector('[data-action="go"]').onclick=()=>{
+      setDestination({lat:item.lat,lng:item.lng},item.name);
+      map.setView([item.lat,item.lng],16);
+      $("drawer").classList.remove("open");
+    };
+    el.querySelector('[data-action="remove"]').onclick=()=>{
+      state.favorites=state.favorites.filter(f=>f.id!==item.id);
+      saveState();renderFavorites();
+    };
+    list.appendChild(el);
+  });
+}
+
+function showModal(title,text,html,onConfirm) {
+  $("modalTitle").textContent=title;
+  $("modalText").textContent=text;
+  $("modalContent").innerHTML=html || "";
+  $("modal").classList.add("show");
+  $("modalOk").style.display=onConfirm?"":"none";
+  modalResolve=onConfirm || null;
+}
+function closeModal() {
+  $("modal").classList.remove("show");
+  modalResolve=null;
+}
+function handleModalConfirm() {
+  if(!modalResolve){closeModal();return;}
+  try {
+    const result=modalResolve();
+    if(result!==false) closeModal();
+  } catch(error) {
+    console.error(error);
+    showToast("Əməliyyat tamamlanmadı.");
+  }
+}
+
+function exportData() {
+  try {
+    const payload={
+      application:"TOKMESH NAVIGATOR",
+      schemaVersion:1,
+      exportedAt:new Date().toISOString(),
+      data:state
+    };
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download="tokmesh-navigator-backup.json";
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    showToast("JSON faylı hazırlanır.");
+  } catch(error){showToast("JSON ixracı alınmadı.");}
+}
+function importData(file) {
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try {
+      const parsed=JSON.parse(String(reader.result||""));
+      const incoming=parsed.data || parsed;
+      if(!incoming || typeof incoming!=="object") throw new Error("Format düzgün deyil.");
+      if(!Array.isArray(incoming.pins)||!Array.isArray(incoming.favorites)||!Array.isArray(incoming.history)){
+        throw new Error("JSON məlumat strukturu uyğun deyil.");
       }
-    }
-
-    // --- 3. REAL-TIME GPS İZLƏMƏSİ ---
-    if (navigator.geolocation) {
-      navigator.geolocation.watchPosition((pos) => {
-        userLat = pos.coords.latitude;
-        userLng = pos.coords.longitude;
-
-        document.getElementById('nav-status').innerText = `Məkan yeniləndi: ${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
-
-        if (userMarker) {
-          userMarker.setLatLng([userLat, userLng]);
-        } else {
-          userMarker = L.circleMarker([userLat, userLng], {
-            radius: 10,
-            fillColor: "#06b6d4",
-            color: "#ffffff",
-            weight: 3,
-            fillOpacity: 1
-          }).addTo(map).bindPopup("Sən buradasan").openPopup();
-          
-          map.setView([userLat, userLng], 15);
-        }
-      }, (err) => {
-        document.getElementById('nav-status').innerText = "GPS xətası: Məkan ala bilmədi.";
-      }, { enableHighAccuracy: true });
-    }
-
-    // --- 4. TƏYİNAT MƏNTƏQƏSİNƏ MARŞRUT VƏ HESABLAMA (OSRM Routing) ---
-    async function setDestinationBySearch() {
-      const query = document.getElementById('dest-input').value.trim();
-      if (!query) return alert("Zəhmət olmasa ünvan daxil edin!");
-
-      document.getElementById('nav-status').innerText = `'${query}' axtarılır və yol çəkilir...`;
-
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' Baku')}`);
-        const data = await res.json();
-
-        if (data && data.length > 0) {
-          const destLat = parseFloat(data[0].lat);
-          const destLng = parseFloat(data[0].lon);
-
-          // Əgər əvvəlki marşrut varsa təmizlə
-          if (routingControl) {
-            map.removeControl(routingControl);
-          }
-
-          // Göy rəngli Waze tipli marşrut xətti və real vaxt hesablanması
-          routingControl = L.Routing.control({
-            waypoints: [
-              L.latLng(userLat, userLng),
-              L.latLng(destLat, destLng)
-            ],
-            routeWhileDragging: false,
-            addWaypoints: false,
-            fitSelectedRoutes: true,
-            lineOptions: {
-              styles: [{ color: '#06b6d4', opacity: 0.85, weight: 6 }] // Göy Waze zolağı
-            },
-            createMarker: function(i, wp, nWps) {
-              return i === nWps - 1 ? L.marker(wp.latLng).bindPopup("Təyinat nöqtəsi") : null;
-            }
-          }).addTo(map);
-
-          // Marşrut hesablananda məsafə və vaxtı paneldə göstər
-          routingControl.on('routesfound', function(e) {
-            const routes = e.routes;
-            const summary = routes[0].summary;
-            const distKm = (summary.totalDistance / 1000).toFixed(1);
-            const timeMin = Math.round(summary.totalTime / 60);
-
-            document.getElementById('trip-dist').innerText = `${distKm} km`;
-            document.getElementById('trip-time').innerText = `${timeMin} dəq`;
-            document.getElementById('nav-status').innerText = `Marşrut quruldu: ${data[0].display_name.substring(0, 30)}...`;
-
-            // Səsli xəbərdarlıq
-            speakInstruction(`Marşrut quruldu. Məsafə ${distKm kilometr}, təxmini vaxt ${timeMin} dəqiqə.`);
-          });
-
-        } else {
-          alert("Ünvan tapılmadı.");
-        }
-      } catch (e) {
-        alert("Marşrut qurularkən xəta baş verdi.");
+      const validPins=incoming.pins.filter(p=>p&&validCoords(Number(p.lat),Number(p.lng))&&typeof p.name==="string");
+      const validFavorites=incoming.favorites.filter(p=>p&&validCoords(Number(p.lat),Number(p.lng))&&typeof p.name==="string");
+      const validHistory=incoming.history.filter(p=>p&&validCoords(Number(p.lat),Number(p.lng))&&typeof p.name==="string");
+      state.pins=validPins;
+      state.favorites=validFavorites;
+      state.history=validHistory;
+      state.settings={...DEFAULTS.settings,...(incoming.settings||{})};
+      state.route=incoming.route||null;
+      saveState();renderPins();renderPinList();renderFavorites();renderHistory();
+      showToast("JSON məlumatları idxal edildi.");
+      if(state.route) {
+        if(routeLine)map.removeLayer(routeLine);
+        if(destinationMarker)map.removeLayer(destinationMarker);
+        restoreSavedRoute();
       }
+    } catch(error) {
+      console.error(error);
+      showToast("JSON faylı etibarlı TOKMESH məlumatı deyil.",5000);
     }
-  </script>
+  };
+  reader.onerror=()=>showToast("Fayl oxunmadı.");
+  reader.readAsText(file);
+}
+
+async function toggleWakeLock() {
+  if(!("wakeLock" in navigator)) {
+    showToast("Bu brauzer ekranı oyaq saxlamağı dəstəkləmir.");
+    return;
+  }
+  try {
+    if(wakeLock) {
+      await wakeLock.release();wakeLock=null;
+      $("wakeBtn").textContent="Ekranı oyaq saxla";
+      showToast("Ekran kilidi normal işləyəcək.");
+    } else {
+      wakeLock=await navigator.wakeLock.request("screen");
+      $("wakeBtn").textContent="Oyaq saxlamağı dayandır";
+      wakeLock.addEventListener("release",()=>{
+        wakeLock=null;$("wakeBtn").textContent="Ekranı oyaq saxla";
+      });
+      showToast("Ekranın sönməsinin qarşısı alındı.");
+    }
+  } catch(error) {
+    showToast("Ekranı oyaq saxlamaq mümkün olmadı.");
+  }
+}
+function checkUserOutsideView() {
+  if(!lastPosition||!map)return;
+  const bounds=map.getBounds();
+  if(!bounds.contains([lastPosition.lat,lastPosition.lng])) {
+    $("locateBtn").style.background="#087f99";
+  } else {
+    $("locateBtn").style.background="";
+  }
+}
+function toggleTilt() {
+  mapIsTilted=!mapIsTilted;
+  const container=$("map");
+  container.style.transform=mapIsTilted?"perspective(900px) rotateX(9deg) scale(1.03)":"none";
+  container.style.transformOrigin="center center";
+  container.style.transition="transform .25s ease";
+  $("tiltBtn").textContent=mapIsTilted?"Əyilməni söndür":"Əyilmə effekti";
+  showToast(mapIsTilted?"Vizual əyilmə aktivdir.":"Standart görünüş aktivdir.");
+}
+function toggleTraffic() {
+  const active=$("trafficBtn").dataset.active!=="true";
+  $("trafficBtn").dataset.active=String(active);
+  $("trafficBtn").textContent=active?"Tıxac simulyasiyasını söndür":"Tıxac simulyasiyası";
+  if(active && routeLine) drawTrafficSimulation(routeLine.getLatLngs());
+  else if(trafficLine){map.removeLayer(trafficLine);trafficLine=null;}
+  showToast(active?"Qırmızı xətt simulyasiyadır, canlı trafik deyil.":"Simulyasiya söndürüldü.");
+}
+
+async function openAdmin() {
+  const storedPin=localStorage.getItem(ADMIN_PIN_KEY);
+  if(!storedPin) {
+    showModal("Admin PIN yarat","İlk dəfə admin panelini açmaq üçün şəxsi PIN yaradın.",`
+      <label>Yeni PIN (ən azı 6 simvol)</label><input id="newAdminPin" type="password" autocomplete="new-password">`,
+      ()=>{
+        const pin=$("newAdminPin").value;
+        if(pin.length<6){showToast("PIN ən azı 6 simvol olmalıdır.");return false;}
+        localStorage.setItem(ADMIN_PIN_KEY,pin);
+        $("adminArea").hidden=false;
+        showToast("Yerli admin paneli açıldı.");
+        return true;
+      });
+    return;
+  }
+  showModal("Admin panelinə giriş","PIN daxil edin.",`
+    <label>Admin PIN</label><input id="adminPinEntry" type="password" autocomplete="current-password">`,
+    ()=>{
+      if($("adminPinEntry").value!==storedPin){showToast("PIN səhvdir.");return false;}
+      $("adminArea").hidden=false;
+      showToast("Admin paneli açıldı.");
+      return true;
+    });
+}
+
+function initSettings() {
+  $("travelMode").value=state.settings.travelMode||"driving";
+  $("areaMode").value=state.settings.areaMode||"city";
+  $("speedLimit").value=state.settings.speedLimit||60;
+  $("voiceRate").value=state.settings.voiceRate??.95;
+  $("voiceVolume").value=state.settings.voiceVolume??1;
+  $("voiceFrequency").value=String(state.settings.voiceFrequency||100);
+  $("voiceBtn").textContent=state.settings.voiceEnabled?"🔊":"🔇";
+  const hour=new Date().getHours();
+  // Avtomatik vaxt əsaslı görünüş; istifadəçi daha sonra əl ilə dəyişə bilər.
+  if(!state.settings.mapStyle)state.settings.mapStyle=(hour<7||hour>=19)?"dark":"light";
+}
+
+function wireEvents() {
+  buttonFeedback();
+  $("menuBtn").onclick=()=>$("drawer").classList.add("open");
+  $("closeDrawer").onclick=()=>$("drawer").classList.remove("open");
+  $("searchBtn").onclick=()=>searchAddress($("searchInput").value);
+  $("destinationSearchBtn").onclick=()=>searchAddress($("destinationInput").value);
+  $("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")searchAddress(e.target.value);});
+  $("destinationInput").addEventListener("keydown",e=>{if(e.key==="Enter")searchAddress(e.target.value);});
+  $("micBtn").onclick=startVoiceSearch;
+  $("locateBtn").onclick=locateUser;
+  $("voiceBtn").onclick=toggleVoice;
+  $("routeBtn").onclick=buildRoute;
+  $("clearRouteBtn").onclick=clearRoute;
+  $("repeatVoiceBtn").onclick=()=>lastSpoken?speak(lastSpoken):showToast("Təkrar ediləcək göstəriş yoxdur.");
+  $("testVoiceBtn").onclick=()=>speak("TOKMESH Navigator hazırdır.");
+  $("voiceRate").oninput=e=>{state.settings.voiceRate=Number(e.target.value);saveState();};
+  $("voiceVolume").oninput=e=>{state.settings.voiceVolume=Number(e.target.value);saveState();};
+  $("voiceFrequency").onchange=e=>{state.settings.voiceFrequency=Number(e.target.value);saveState();};
+  $("favoriteCurrentBtn").onclick=addFavorite;
+  $("addPinBtn").onclick=()=>{
+    selectingPin=true;adminPinMode=false;
+    $("drawer").classList.remove("open");
+    showToast("İndi xəritədə nişanın yerinə toxunun.");
+  };
+  $("adminPinBtn").onclick=()=>{
+    selectingPin=true;adminPinMode=true;
+    $("drawer").classList.remove("open");
+    showToast("Admin nişanı üçün xəritədə yer seçin.");
+  };
+  $("pinFilter").onchange=()=>{renderPins();renderPinList();};
+  $("darkMapBtn").onclick=()=>setMapStyle("dark");
+  $("lightMapBtn").onclick=()=>setMapStyle("light");
+  $("tiltBtn").onclick=toggleTilt;
+  $("trafficBtn").onclick=toggleTraffic;
+  $("wakeBtn").onclick=toggleWakeLock;
+  $("compassBtn").onclick=()=>{
+    if(lastPosition?.heading!==null&&lastPosition?.heading!==undefined){
+      $("compassArrow").style.transform="rotate("+lastPosition.heading+"deg)";
+      showToast("Kompas istiqaməti yeniləndi.");
+    } else showToast("Telefon kompas istiqaməti vermir. GPS hərəkəti lazım ola bilər.");
+  };
+  $("speedLimit").onchange=e=>{
+    const n=Number(e.target.value);
+    state.settings.speedLimit=Number.isFinite(n)?Math.min(250,Math.max(5,n)):60;
+    e.target.value=state.settings.speedLimit;saveState();
+  };
+  $("travelMode").onchange=e=>{state.settings.travelMode=e.target.value;saveState();};
+  $("areaMode").onchange=e=>{state.settings.areaMode=e.target.value;saveState();};
+  $("exportBtn").onclick=exportData;
+  $("importBtn").onclick=()=>$("importFile").click();
+  $("importFile").onchange=e=>importData(e.target.files?.[0]);
+  $("clearDataBtn").onclick=()=>showModal("Yerli məlumatları sil","Bütün usta nişanları, sevimlilər, tarixçə və saxlanmış marşrut silinəcək. Bu əməliyyat geri qaytarılmır.","",()=>{
+    state=structuredCloneSafe(DEFAULTS);saveState();
+    clearRoute();renderPins();renderPinList();renderFavorites();renderHistory();
+    showToast("Yerli məlumatlar silindi.");
+    return true;
+  });
+  $("adminBtn").onclick=openAdmin;
+  $("modalCancel").onclick=closeModal;
+  $("modalOk").onclick=handleModalConfirm;
+  $("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeModal();});
+  $("map").addEventListener("touchstart",()=>{}, {passive:true});
+
+  window.addEventListener("online",()=>{
+    $("offline").classList.remove("show");
+    showToast("İnternet bağlantısı bərpa edildi.");
+  });
+  window.addEventListener("offline",()=>{
+    $("offline").classList.add("show");
+    showToast("İnternet yoxdur. Son marşrut saxlanıla bilər.");
+  });
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible"&&wakeLock===null&&$("wakeBtn").textContent==="Oyaq saxlamağı dayandır") {
+      toggleWakeLock();
+    }
+  });
+  window.addEventListener("error",event=>{
+    console.error("Qlobal xəta:",event.message);
+    $("systemStatus").textContent="Bəzi əməliyyatlarda xəta yarandı. Səhifəni yenidən yükləmək olar.";
+  });
+  window.addEventListener("unhandledrejection",event=>{
+    console.error("Asinxron xəta:",event.reason);
+  });
+}
+
+function renderAll() {
+  renderPins();
+  renderPinList();
+  renderFavorites();
+  renderHistory();
+  $("savedRouteStatus").textContent=state.route?"Marşrut saxlanıb":"Marşrut yoxdur";
+}
+
+function startApp() {
+  try {
+    initSettings();
+    initMap();
+    wireEvents();
+    renderAll();
+    initGPS();
+    if(!navigator.onLine)$("offline").classList.add("show");
+    if(!speechAvailable)$("voiceStatus").textContent="Bu brauzerdə səsli sintezator dəstəklənmir.";
+  } catch(error) {
+    console.error("Başlanğıc xətası:",error);
+    showToast("Tətbiq tam başlamadı. Səhifəni yeniləyin.",5000);
+  }
+}
+
+if(document.readyState==="loading") {
+  document.addEventListener("DOMContentLoaded",startApp,{once:true});
+} else {
+  startApp();
+}
+</script>
 </body>
 </html>
