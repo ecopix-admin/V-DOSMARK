@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg-dark: #020408;
-      --card-bg: rgba(13, 19, 32, 0.88);
+      --card-bg: rgba(13, 19, 32, 0.92);
       --accent-cyan: #00f2fe;
       --accent-pink: #ff007f;
       --accent-purple: #7b2cbf;
@@ -19,54 +19,54 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
     body, html { width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main); overflow: hidden; }
 
-    /* Layout Structure */
     #app-root { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; }
     
+    /* Header */
     header {
-      height: 52px; padding: 0 16px; display: flex; justify-content: space-between; align-items: center;
-      background: rgba(2, 4, 8, 0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); z-index: 100;
+      height: 54px; padding: 0 16px; display: flex; justify-content: space-between; align-items: center;
+      background: rgba(2, 4, 8, 0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); z-index: 100;
     }
-    .brand-logo { font-size: 1.35rem; font-weight: 900; background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; }
+    .brand-logo { font-size: 1.4rem; font-weight: 900; background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; }
     .header-controls { display: flex; align-items: center; gap: 8px; }
-    .badge-mesh { font-size: 0.68rem; padding: 3px 8px; border-radius: 12px; background: rgba(0,242,254,0.15); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-weight: bold; }
+    .badge-mesh { font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; background: rgba(0,242,254,0.15); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-weight: bold; }
     .lang-selector { background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 10px; font-size: 0.75rem; outline: none; }
 
     main { flex: 1; position: relative; overflow: hidden; }
     .view-panel { position: absolute; inset: 0; display: none; flex-direction: column; }
     .view-panel.active { display: flex; }
 
-    /* VIEW 1: RADAR & GEOLOCATION MESH MAP */
+    /* VIEW 1: RADAR MAP */
     #radar-canvas { width: 100%; height: 100%; background: radial-gradient(circle at center, #0d1527 0%, #020408 100%); }
     .radar-card {
       position: absolute; top: 16px; left: 16px; right: 16px;
       background: var(--card-bg); backdrop-filter: blur(20px);
-      padding: 16px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      padding: 18px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.6);
     }
-    .profile-bar { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
-    .avatar-frame { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent-cyan); object-fit: cover; }
-    .live-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; display: inline-block; margin-right: 6px; }
+    .profile-bar { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+    .avatar-frame { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--accent-cyan); object-fit: cover; }
+    .live-dot { width: 9px; height: 9px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; display: inline-block; margin-right: 6px; }
 
-    /* VIEW 2: TIKTOK LIVE VERTICAL FEED (SWIPEABLE) */
-    .live-feed-container { width: 100%; height: 100%; overflow-y: snap-mandatory; scroll-snap-type: y mandatory; scrollbar-width: none; }
+    /* VIEW 2: TIKTOK LIVE VERTICAL FEED */
+    .live-feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
     .live-feed-container::-webkit-scrollbar { display: none; }
     
     .live-feed-item {
       width: 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always;
-      position: relative; background: #000; overflow: hidden;
+      position: relative; background: #000; overflow: hidden; display: flex; flex-direction: column;
     }
 
-    /* Video Feed Grid & Filters */
-    .video-viewport { width: 100%; height: 100%; display: flex; position: relative; background: #000; }
+    /* Video Viewport & Filters */
+    .video-viewport { flex: 1; width: 100%; display: flex; position: relative; background: #000; }
     .video-slot { flex: 1; height: 100%; position: relative; overflow: hidden; background: #05070a; }
     .video-slot video, .video-slot img {
       width: 100%; height: 100%; object-fit: cover;
-      transform: scaleX(-1); /* Correct Selfie Mirroring */
-      filter: brightness(1.06) contrast(0.96) saturate(1.12); /* Skin Beautification Filter */
+      transform: scaleX(-1); /* Güzgü əksolunması düzəlişi */
+      filter: brightness(1.06) contrast(0.96) saturate(1.12); /* Üz hamarlaşdırma filtri */
     }
 
-    /* Streamer Profile Badge */
+    /* Streamer Header Badge */
     .streamer-badge {
-      position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.65);
+      position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.7);
       padding: 4px 12px 4px 6px; border-radius: 24px; display: flex; align-items: center; gap: 8px;
       backdrop-filter: blur(14px); border: 1px solid var(--border); z-index: 25;
     }
@@ -75,15 +75,15 @@
 
     /* PK Battle Bar */
     .pk-bar-container {
-      position: absolute; top: 62px; left: 50%; transform: translateX(-50%);
-      width: 88%; max-width: 440px; height: 24px; background: rgba(0,0,0,0.65);
+      position: absolute; top: 64px; left: 50%; transform: translateX(-50%);
+      width: 88%; max-width: 440px; height: 24px; background: rgba(0,0,0,0.7);
       border-radius: 12px; overflow: hidden; display: flex; border: 1px solid var(--border); z-index: 25; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
     .pk-red { height: 100%; background: linear-gradient(90deg, #ff0844, #ffb199); transition: width 0.35s ease; display: flex; align-items: center; padding-left: 8px; font-weight: 800; font-size: 0.72rem; }
     .pk-blue { height: 100%; background: linear-gradient(90deg, #2193b0, #6dd5ed); transition: width 0.35s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-weight: 800; font-size: 0.72rem; }
     .pk-vs { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; font-size: 0.65rem; font-weight: 900; padding: 2px 6px; border-radius: 8px; }
 
-    /* Transparent Comments Stream */
+    /* Transparent Comments Overlay */
     .chat-overlay {
       position: absolute; bottom: 80px; left: 16px; width: 78%; max-width: 320px; height: 220px;
       display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 20;
@@ -91,13 +91,13 @@
     .chat-list { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; pointer-events: auto; scrollbar-width: none; }
     .chat-list::-webkit-scrollbar { display: none; }
     .chat-bubble {
-      background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(8px);
       padding: 6px 12px; border-radius: 12px; font-size: 0.82rem; border-left: 3px solid var(--accent-cyan);
       color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); word-break: break-word; line-height: 1.35;
     }
     .chat-bubble strong { color: var(--accent-cyan); margin-right: 4px; }
 
-    /* Hearts Canvas Overlay */
+    /* Floating Hearts Canvas */
     .hearts-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 18; }
 
     /* Bottom Action Controls */
@@ -107,35 +107,35 @@
     }
     .input-box { flex: 1; display: flex; gap: 8px; margin-right: 10px; }
     .input-box input {
-      flex: 1; background: rgba(0,0,0,0.55); border: 1px solid var(--border);
+      flex: 1; background: rgba(0,0,0,0.6); border: 1px solid var(--border);
       padding: 10px 16px; border-radius: 25px; color: #fff; outline: none; backdrop-filter: blur(10px); font-size: 0.85rem;
     }
     .btn-action { background: linear-gradient(45deg, var(--accent-cyan), #0082c8); border: none; color: #fff; padding: 0 16px; border-radius: 25px; font-weight: 600; cursor: pointer; }
-    .icon-btn { width: 42px; height: 42px; border-radius: 50%; background: rgba(0,0,0,0.55); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; font-size: 1.2rem; backdrop-filter: blur(10px); }
+    .icon-btn { width: 42px; height: 42px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; font-size: 1.2rem; backdrop-filter: blur(10px); }
 
-    /* Guest Mic Call Request Modal */
+    /* Guest Request Modal */
     .modal-dialog {
       position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
-      background: var(--card-bg); backdrop-filter: blur(20px); padding: 18px 22px;
-      border-radius: 20px; border: 1px solid var(--accent-cyan); display: none; flex-direction: column; align-items: center; gap: 12px; z-index: 60; width: 85%; max-width: 320px; box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+      background: var(--card-bg); backdrop-filter: blur(20px); padding: 20px;
+      border-radius: 20px; border: 1px solid var(--accent-cyan); display: none; flex-direction: column; align-items: center; gap: 14px; z-index: 60; width: 85%; max-width: 320px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
     .modal-btns { display: flex; gap: 10px; width: 100%; }
     .m-btn { flex: 1; padding: 10px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
     .m-btn.accept { background: #22c55e; color: #fff; }
     .m-btn.reject { background: #ef4444; color: #fff; }
 
-    /* Navigation Bar */
+    /* Navigation */
     nav {
-      height: 60px; background: rgba(2, 4, 8, 0.96); border-top: 1px solid var(--border);
+      height: 60px; background: rgba(2, 4, 8, 0.98); border-top: 1px solid var(--border);
       display: flex; justify-content: space-around; align-items: center; z-index: 100;
     }
     .nav-link { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-sub); cursor: pointer; font-size: 0.72rem; }
     .nav-link.active { color: var(--accent-cyan); }
     .nav-link svg { width: 22px; height: 22px; fill: currentColor; }
 
-    /* SECRET ADMIN PANEL FOR HASANOV SHAMXAL */
+    /* SECRET ADMIN PANEL - HƏSƏNOV ŞAMXAL */
     #admin-panel {
-      position: fixed; inset: 0; background: rgba(2, 4, 8, 0.96); backdrop-filter: blur(24px);
+      position: fixed; inset: 0; background: rgba(2, 4, 8, 0.98); backdrop-filter: blur(24px);
       display: none; flex-direction: column; padding: 24px; z-index: 200; overflow-y: auto;
     }
     .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 18px; }
@@ -147,7 +147,7 @@
     <header>
       <div class="brand-logo">TOKMESH</div>
       <div class="header-controls">
-        <span class="badge-mesh">0 AZN P2P MESH</span>
+        <span class="badge-mesh">0 AZN MESH</span>
         <select class="lang-selector" id="lang-select">
           <option value="az">🇦🇿 AZ</option>
           <option value="tr">🇹🇷 TR</option>
@@ -159,13 +159,13 @@
     </header>
 
     <main>
-      <!-- VIEW 1: GEOLOCATION RADAR MAP -->
+      <!-- VIEW 1: RADAR MAP -->
       <div id="radar-view" class="view-panel active">
         <canvas id="radar-canvas"></canvas>
         <div class="radar-card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong style="font-size:0.95rem;"><span class="live-dot"></span> Canlı Məkan Radarı</strong>
-            <span style="font-size:0.75rem; color:var(--accent-cyan);">ServerXərcsiz</span>
+            <span style="font-size:0.75rem; color:var(--accent-cyan);">P2P Aktiv</span>
           </div>
           <div class="profile-bar">
             <img src="https://picsum.photos/100" class="avatar-frame">
@@ -191,14 +191,14 @@
               <button class="btn-follow">+ Takib</button>
             </div>
 
-            <!-- PK Battle Header Bar -->
+            <!-- PK Header -->
             <div class="pk-bar-container" id="pk-bar">
               <div class="pk-red" id="pk-red" style="width: 50%;">1,250 P</div>
               <div class="pk-vs">VS</div>
               <div class="pk-blue" id="pk-blue" style="width: 50%;">1,250 P</div>
             </div>
 
-            <!-- Video Viewport Split Slots -->
+            <!-- Video Viewport -->
             <div class="video-viewport">
               <div class="video-slot">
                 <video id="local-video" autoplay muted playsinline></video>
@@ -208,17 +208,17 @@
               </div>
             </div>
 
-            <!-- Hearts Canvas Overlay -->
+            <!-- Hearts Overlay -->
             <canvas class="hearts-canvas" id="hearts-canvas"></canvas>
 
-            <!-- Transparent Chat Stream -->
+            <!-- Chat Stream -->
             <div class="chat-overlay">
               <div class="chat-list" id="chat-list">
-                <div class="chat-bubble"><strong>Sistem:</strong> Canlı yayım WebRTC P2P Mesh üzərindən işə salındı.</div>
+                <div class="chat-bubble"><strong>Sistem:</strong> P2P Mesh şəbəkəsi işə düşdü.</div>
               </div>
             </div>
 
-            <!-- Bottom Controls -->
+            <!-- Bottom Actions -->
             <div class="action-bar">
               <div class="input-box">
                 <input type="text" id="chat-input" placeholder="Şərh yazın...">
@@ -231,7 +231,7 @@
               </div>
             </div>
 
-            <!-- Guest Mic Request Modal -->
+            <!-- Guest Modal -->
             <div class="modal-dialog" id="guest-modal">
               <strong style="font-size:0.92rem;">🎙️ Qonaq Çağırışı</strong>
               <p style="font-size:0.78rem; color:var(--text-sub); text-align:center;"><span id="req-user">@qonaq_user</span> canlıya səsli qalxmaq istəyir.</p>
@@ -258,7 +258,7 @@
     </nav>
   </div>
 
-  <!-- SECRET ADMIN PANEL FOR HASANOV SHAMXAL -->
+  <!-- SECRET ADMIN PANEL - HƏSƏNOV ŞAMXAL -->
   <div id="admin-panel">
     <div class="admin-header">
       <h2>🛡️ Admin Panel - Həsənov Şamxal</h2>
@@ -274,7 +274,6 @@
   </div>
 
   <script>
-    // --- 1. LOCAL DATA PERSISTENCE & AUTO LANGUAGE DETECTION ---
     const APP_CONFIG = {
       username: localStorage.getItem('tokmesh_user') || '@samxal_hesenov',
       lang: navigator.language.startsWith('tr') ? 'tr' : navigator.language.startsWith('ru') ? 'ru' : 'az'
@@ -282,10 +281,7 @@
     document.getElementById('lang-select').value = APP_CONFIG.lang;
     document.getElementById('display-username').innerText = APP_CONFIG.username;
 
-    // --- 2. P2P WEBRTC SIGNALING & BROADCAST ENGINE ---
     const p2pChannel = new BroadcastChannel('tokmesh_global_mesh');
-    const peerConnections = {};
-
     const chatList = document.getElementById('chat-list');
     const chatInput = document.getElementById('chat-input');
     const btnSend = document.getElementById('btn-send');
@@ -316,7 +312,6 @@
       if (data.type === 'HEART') triggerHeartAnimation();
     };
 
-    // --- 3. WEB AUDIO SYNTHESIZER ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playAudioBeep(freq = 520, type = 'sine', duration = 0.12) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -329,7 +324,6 @@
       osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    // --- 4. FLOATING NEON HEARTS CANVAS ---
     const hCanvas = document.getElementById('hearts-canvas');
     const hCtx = hCanvas.getContext('2d');
     let hearts = [];
@@ -377,7 +371,6 @@
     }
     drawHearts();
 
-    // --- 5. CAMERA ATTACHMENT WITH BEAUTIFY FILTER ---
     async function setupCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -386,7 +379,6 @@
     }
     setupCamera();
 
-    // --- 6. GUEST MIC REQUEST DIALOG ---
     document.getElementById('btn-mic').addEventListener('click', () => {
       document.getElementById('guest-modal').style.display = 'flex';
       playAudioBeep(400, 'triangle', 0.3);
@@ -402,7 +394,6 @@
       document.getElementById('guest-modal').style.display = 'none';
     }
 
-    // --- 7. RADAR CANVAS ANIMATION ---
     const rCanvas = document.getElementById('radar-canvas');
     const rCtx = rCanvas.getContext('2d');
     function resizeRCanvas() {
@@ -436,7 +427,6 @@
     }
     animateRadar();
 
-    // --- VIEW SWITCHING & ADMIN PANEL ---
     function switchTab(id, el) {
       document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
       document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
