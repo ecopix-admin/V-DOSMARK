@@ -1,870 +1,451 @@
-```html
 <!DOCTYPE html>
-<html lang="az" class="dark h-full">
+<html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TOKMESH - Canlı Yayım & Social Mesh</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome İkonlar -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter & Outfit -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TOKMESH - Global P2P Live & Social Mesh Platform</title>
+  <style>
+    :root {
+      --bg-dark: #020408;
+      --card-bg: rgba(13, 19, 32, 0.88);
+      --accent-cyan: #00f2fe;
+      --accent-pink: #ff007f;
+      --accent-purple: #7b2cbf;
+      --accent-gold: #ffd700;
+      --text-main: #ffffff;
+      --text-sub: #94a3b8;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body, html { width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main); overflow: hidden; }
+
+    /* Layout Structure */
+    #app-root { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; }
     
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            pink: '#FE2C55',
-                            blue: '#25F4EE',
-                            dark: '#0B0E14',
-                            card: '#161B22',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Outfit', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    header {
+      height: 52px; padding: 0 16px; display: flex; justify-content: space-between; align-items: center;
+      background: rgba(2, 4, 8, 0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); z-index: 100;
+    }
+    .brand-logo { font-size: 1.35rem; font-weight: 900; background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; }
+    .header-controls { display: flex; align-items: center; gap: 8px; }
+    .badge-mesh { font-size: 0.68rem; padding: 3px 8px; border-radius: 12px; background: rgba(0,242,254,0.15); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-weight: bold; }
+    .lang-selector { background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 10px; font-size: 0.75rem; outline: none; }
 
-    <style>
-        /* Əsas Üslublar və TikTok Stilində Animasiyalar */
-        body {
-            background-color: #000;
-            color: #fff;
-            user-select: none;
-            -webkit-user-select: none;
-            overflow: hidden;
-        }
+    main { flex: 1; position: relative; overflow: hidden; }
+    .view-panel { position: absolute; inset: 0; display: none; flex-direction: column; }
+    .view-panel.active { display: flex; }
 
-        /* Kameranın Sol-Sağ Güzgü Düzəlişi (Mirror) */
-        .mirror-video {
-            transform: scaleX(-1);
-        }
+    /* VIEW 1: RADAR & GEOLOCATION MESH MAP */
+    #radar-canvas { width: 100%; height: 100%; background: radial-gradient(circle at center, #0d1527 0%, #020408 100%); }
+    .radar-card {
+      position: absolute; top: 16px; left: 16px; right: 16px;
+      background: var(--card-bg); backdrop-filter: blur(20px);
+      padding: 16px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    }
+    .profile-bar { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    .avatar-frame { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent-cyan); object-fit: cover; }
+    .live-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; display: inline-block; margin-right: 6px; }
 
-        /* Pürüzsüz Dəri / Gözəllik Filtri */
-        .beauty-filter {
-            filter: contrast(105%) brightness(108%) saturate(110%) blur(0.4px);
-        }
+    /* VIEW 2: TIKTOK LIVE VERTICAL FEED (SWIPEABLE) */
+    .live-feed-container { width: 100%; height: 100%; overflow-y: snap-mandatory; scroll-snap-type: y mandatory; scrollbar-width: none; }
+    .live-feed-container::-webkit-scrollbar { display: none; }
+    
+    .live-feed-item {
+      width: 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always;
+      position: relative; background: #000; overflow: hidden;
+    }
 
-        /* Şəffaf Üzən Ürəklər Animasiyası */
-        @keyframes floatUp {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(0.8) rotate(0deg);
-            }
-            50% {
-                opacity: 0.8;
-                transform: translateY(-150px) scale(1.2) rotate(-15deg);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-300px) scale(1.5) rotate(15deg);
-            }
-        }
+    /* Video Feed Grid & Filters */
+    .video-viewport { width: 100%; height: 100%; display: flex; position: relative; background: #000; }
+    .video-slot { flex: 1; height: 100%; position: relative; overflow: hidden; background: #05070a; }
+    .video-slot video, .video-slot img {
+      width: 100%; height: 100%; object-fit: cover;
+      transform: scaleX(-1); /* Correct Selfie Mirroring */
+      filter: brightness(1.06) contrast(0.96) saturate(1.12); /* Skin Beautification Filter */
+    }
 
-        .floating-heart {
-            position: absolute;
-            pointer-events: none;
-            animation: floatUp 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-            z-index: 50;
-        }
+    /* Streamer Profile Badge */
+    .streamer-badge {
+      position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.65);
+      padding: 4px 12px 4px 6px; border-radius: 24px; display: flex; align-items: center; gap: 8px;
+      backdrop-filter: blur(14px); border: 1px solid var(--border); z-index: 25;
+    }
+    .streamer-badge img { width: 34px; height: 34px; border-radius: 50%; transform: none; }
+    .btn-follow { background: var(--accent-pink); color: #fff; border: none; padding: 4px 10px; border-radius: 16px; font-size: 0.72rem; font-weight: bold; cursor: pointer; }
 
-        /* Şəffaf və Yuxarı Üzən Şərhlər Bölməsi */
-        .chat-overlay {
-            mask-image: linear-gradient(to top, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
-            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
-        }
+    /* PK Battle Bar */
+    .pk-bar-container {
+      position: absolute; top: 62px; left: 50%; transform: translateX(-50%);
+      width: 88%; max-width: 440px; height: 24px; background: rgba(0,0,0,0.65);
+      border-radius: 12px; overflow: hidden; display: flex; border: 1px solid var(--border); z-index: 25; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .pk-red { height: 100%; background: linear-gradient(90deg, #ff0844, #ffb199); transition: width 0.35s ease; display: flex; align-items: center; padding-left: 8px; font-weight: 800; font-size: 0.72rem; }
+    .pk-blue { height: 100%; background: linear-gradient(90deg, #2193b0, #6dd5ed); transition: width 0.35s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-weight: 800; font-size: 0.72rem; }
+    .pk-vs { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; color: #000; font-size: 0.65rem; font-weight: 900; padding: 2px 6px; border-radius: 8px; }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
+    /* Transparent Comments Stream */
+    .chat-overlay {
+      position: absolute; bottom: 80px; left: 16px; width: 78%; max-width: 320px; height: 220px;
+      display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 20;
+    }
+    .chat-list { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; pointer-events: auto; scrollbar-width: none; }
+    .chat-list::-webkit-scrollbar { display: none; }
+    .chat-bubble {
+      background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);
+      padding: 6px 12px; border-radius: 12px; font-size: 0.82rem; border-left: 3px solid var(--accent-cyan);
+      color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); word-break: break-word; line-height: 1.35;
+    }
+    .chat-bubble strong { color: var(--accent-cyan); margin-right: 4px; }
 
-        /* PK Şaquli Bölünmə (Tik Tok Split Screen) */
-        .pk-split-container {
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-            height: 100%;
-        }
+    /* Hearts Canvas Overlay */
+    .hearts-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 18; }
 
-        .pk-stream-box {
-            flex: 1;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }
+    /* Bottom Action Controls */
+    .action-bar {
+      position: absolute; bottom: 16px; left: 0; right: 0; height: 50px;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 30;
+    }
+    .input-box { flex: 1; display: flex; gap: 8px; margin-right: 10px; }
+    .input-box input {
+      flex: 1; background: rgba(0,0,0,0.55); border: 1px solid var(--border);
+      padding: 10px 16px; border-radius: 25px; color: #fff; outline: none; backdrop-filter: blur(10px); font-size: 0.85rem;
+    }
+    .btn-action { background: linear-gradient(45deg, var(--accent-cyan), #0082c8); border: none; color: #fff; padding: 0 16px; border-radius: 25px; font-weight: 600; cursor: pointer; }
+    .icon-btn { width: 42px; height: 42px; border-radius: 50%; background: rgba(0,0,0,0.55); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; font-size: 1.2rem; backdrop-filter: blur(10px); }
 
-        /* Pulse effektləri */
-        .pulse-pink {
-            box-shadow: 0 0 15px rgba(254, 44, 85, 0.6);
-        }
-    </style>
+    /* Guest Mic Call Request Modal */
+    .modal-dialog {
+      position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
+      background: var(--card-bg); backdrop-filter: blur(20px); padding: 18px 22px;
+      border-radius: 20px; border: 1px solid var(--accent-cyan); display: none; flex-direction: column; align-items: center; gap: 12px; z-index: 60; width: 85%; max-width: 320px; box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    }
+    .modal-btns { display: flex; gap: 10px; width: 100%; }
+    .m-btn { flex: 1; padding: 10px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+    .m-btn.accept { background: #22c55e; color: #fff; }
+    .m-btn.reject { background: #ef4444; color: #fff; }
+
+    /* Navigation Bar */
+    nav {
+      height: 60px; background: rgba(2, 4, 8, 0.96); border-top: 1px solid var(--border);
+      display: flex; justify-content: space-around; align-items: center; z-index: 100;
+    }
+    .nav-link { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-sub); cursor: pointer; font-size: 0.72rem; }
+    .nav-link.active { color: var(--accent-cyan); }
+    .nav-link svg { width: 22px; height: 22px; fill: currentColor; }
+
+    /* SECRET ADMIN PANEL FOR HASANOV SHAMXAL */
+    #admin-panel {
+      position: fixed; inset: 0; background: rgba(2, 4, 8, 0.96); backdrop-filter: blur(24px);
+      display: none; flex-direction: column; padding: 24px; z-index: 200; overflow-y: auto;
+    }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 18px; }
+  </style>
 </head>
-<body class="h-full w-full font-sans antialiased">
+<body>
 
-    <!-- ƏSAS MOBİL KONTEYNER -->
-    <div id="app" class="relative w-full h-full max-w-md mx-auto bg-black overflow-hidden flex flex-col justify-between">
+  <div id="app-root">
+    <header>
+      <div class="brand-logo">TOKMESH</div>
+      <div class="header-controls">
+        <span class="badge-mesh">0 AZN P2P MESH</span>
+        <select class="lang-selector" id="lang-select">
+          <option value="az">🇦🇿 AZ</option>
+          <option value="tr">🇹🇷 TR</option>
+          <option value="en">🇺🇸 EN</option>
+          <option value="ru">🇷🇺 RU</option>
+        </select>
+        <div class="icon-btn" onclick="openAdmin()" style="width:32px; height:32px; font-size:0.9rem;">⚙️</div>
+      </div>
+    </header>
 
-        <!-- YUXARI NAvİQASİYA VƏ CANLI YAYIM MƏLUMATLARI HİSSƏSİ -->
-        <header id="topBar" class="absolute top-0 left-0 right-0 z-40 p-3 flex justify-between items-center bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-            <!-- Yayınçı Profili və İzləyici Sayğacı -->
-            <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 pr-3 rounded-full border border-white/10">
-                <div class="relative">
-                    <img id="streamerAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full border border-brand-pink object-cover" alt="Avatar">
-                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-black rounded-full"></span>
-                </div>
-                <div class="flex flex-col">
-                    <span id="streamerHandle" class="text-xs font-bold leading-tight">@samxal_hesenov</span>
-                    <span class="text-[10px] text-gray-300 flex items-center gap-1">
-                        <i class="fa-solid fa-eye text-brand-blue"></i>
-                        <span id="viewerCount">1,482</span>
-                    </span>
-                </div>
-                <button onclick="toggleFollow()" id="followBtn" class="ml-1 bg-brand-pink text-white text-[11px] px-2.5 py-1 rounded-full font-semibold active:scale-95 transition">
-                    +
-                </button>
+    <main>
+      <!-- VIEW 1: GEOLOCATION RADAR MAP -->
+      <div id="radar-view" class="view-panel active">
+        <canvas id="radar-canvas"></canvas>
+        <div class="radar-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:0.95rem;"><span class="live-dot"></span> Canlı Məkan Radarı</strong>
+            <span style="font-size:0.75rem; color:var(--accent-cyan);">ServerXərcsiz</span>
+          </div>
+          <div class="profile-bar">
+            <img src="https://picsum.photos/100" class="avatar-frame">
+            <div>
+              <strong id="display-username">@samxal_hesenov</strong>
+              <div style="font-size:0.75rem; color:var(--text-sub);">Usta / Alçipan & Malyar İşi</div>
             </div>
-
-            <!-- Ürək Və Statistikalar -->
-            <div class="flex items-center gap-2">
-                <div class="flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-xs font-bold text-pink-400">
-                    <i class="fa-solid fa-heart text-brand-pink animate-pulse"></i>
-                    <span id="likeCount">24.5K</span>
-                </div>
-
-                <!-- Dil Seçimi -->
-                <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-black/50 text-white text-xs border border-white/20 rounded-full px-2 py-1 outline-none">
-                    <option value="az">🇦🇿 AZ</option>
-                    <option value="en">🇺🇸 EN</option>
-                    <option value="tr">🇹🇷 TR</option>
-                    <option value="ru">🇷🇺 RU</option>
-                </select>
-
-                <!-- Bağla / Çıx Düyməsi -->
-                <button onclick="leaveStream()" class="w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white/80 border border-white/20 active:scale-90 transition">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- PK DÖYÜŞÜ SKOR PANELİ (YALNIZ PK ZAMANI GÖRÜNÜR) -->
-        <div id="pkBar" class="hidden absolute top-16 left-3 right-3 z-30 flex flex-col gap-1">
-            <div class="flex justify-between text-xs font-black tracking-wider px-1">
-                <span class="text-red-500 flex items-center gap-1"><i class="fa-solid fa-fire"></i> <span id="redScore">12,450</span></span>
-                <span id="pkTimer" class="bg-black/60 px-2 py-0.5 rounded text-[11px] text-yellow-400 font-mono">02:45</span>
-                <span class="text-blue-400 flex items-center gap-1"><span id="blueScore">9,820</span> <i class="fa-solid fa-shield"></i></span>
-            </div>
-            <div class="w-full h-2.5 bg-black/60 rounded-full overflow-hidden flex p-0.5 border border-white/10">
-                <div id="redBar" class="h-full bg-gradient-to-r from-red-600 to-pink-500 rounded-l-full transition-all duration-300" style="width: 55%;"></div>
-                <div id="blueBar" class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-r-full transition-all duration-300" style="width: 45%;"></div>
-            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- YAYIM VEDEO/SƏHNƏ KONTEYNERİ -->
-        <div id="streamStage" class="relative w-full h-full flex-1 bg-gray-900 overflow-hidden cursor-pointer" onclick="handleTap(event)">
+      <!-- VIEW 2: TIKTOK LIVE VERTICAL FEED -->
+      <div id="live-view" class="view-panel">
+        <div class="live-feed-container">
+          <div class="live-feed-item">
             
-            <!-- STANDART VƏ YA PK CANLI KAMERA / FÖN ŞƏKİLLƏRİ -->
-            <div id="videoContainer" class="w-full h-full relative">
-                
-                <!-- Əsas Kamera Yayımlayıcı Video -->
-                <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover mirror-video beauty-filter"></video>
-                
-                <!-- Kamera Bağlı Olanda Görünən Fön Şəkli -->
-                <div id="backdropCover" class="hidden absolute inset-0 bg-cover bg-center flex items-center justify-center" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800');">
-                    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-                    <div class="relative z-10 text-center p-4">
-                        <img id="backdropAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" class="w-24 h-24 rounded-full border-4 border-brand-pink mx-auto mb-2 shadow-2xl object-cover">
-                        <h3 id="backdropName" class="text-lg font-bold">@samxal_hesenov</h3>
-                        <p class="text-xs text-gray-300" id="i18n-audio-stream">Səslı Canlı Yayım</p>
-                    </div>
-                </div>
-
-                <!-- PK Döyüşü zamanı İkinci Rəqib Ekranı (Kəsilmiş Şaquli Sol/Sağ) -->
-                <div id="pkOpponentBox" class="hidden absolute top-0 right-0 w-1/2 h-full border-l-2 border-brand-pink/50 bg-black/80 flex flex-col justify-between p-2">
-                    <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
-                    <div class="absolute bottom-4 right-2 bg-black/60 px-2 py-1 rounded-full text-[10px] font-bold text-blue-300">
-                        @p2p_rival_pro
-                    </div>
-                </div>
-
-                <!-- Ekran Üstündə Mətn / Şəkil Örtüyü (Streamer Overlay) -->
-                <div id="customTextOverlay" class="hidden absolute top-28 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 text-xs font-semibold text-yellow-300">
-                    <i class="fa-solid fa-bullhorn mr-1 text-brand-pink"></i> <span id="overlayTextContent">Xoş gəlmisiniz! Şərhlərinizi gözləyirəm 🔥</span>
-                </div>
-
-                <!-- Ekran Üstünə Sancılmış Mini Şəkil -->
-                <div id="customImgBadge" class="hidden absolute bottom-36 right-4 w-16 h-16 rounded-xl border-2 border-white/40 overflow-hidden shadow-2xl">
-                    <img src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=200" class="w-full h-full object-cover">
-                </div>
-
-                <!-- YouTube Fon Klipi / Musiqi (Səssiz/Açıq İnteqrasiya) -->
-                <div id="ytPlayerContainer" class="hidden absolute bottom-20 left-4 w-32 h-20 bg-black border border-white/20 rounded-lg overflow-hidden shadow-2xl">
-                    <iframe id="ytFrame" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
+            <div class="streamer-badge">
+              <img src="https://picsum.photos/100">
+              <div>
+                <div style="font-weight:bold; font-size:0.8rem;">@samxal_hesenov</div>
+                <div style="font-size:0.68rem; color:var(--accent-cyan);" id="like-counter">❤️ 24.8K Bəyənmə</div>
+              </div>
+              <button class="btn-follow">+ Takib</button>
             </div>
 
-            <!-- QONAQ DANIŞAN İNDİKATORU -->
-            <div id="speakingIndicator" class="hidden absolute top-24 right-4 bg-green-500/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2 animate-bounce text-xs font-bold">
-                <i class="fa-solid fa-microphone-lines"></i>
-                <span id="speakingUser">@qonaq_user</span>
-            </div>
-        </div>
-
-        <!-- ŞƏFFAF ŞƏRHLƏR VƏ HƏDİYYƏ BİLDİRİŞLƏRİ AXIŞI -->
-        <div class="absolute bottom-20 left-0 right-16 z-30 p-3 pointer-events-none flex flex-col justify-end h-64 chat-overlay">
-            <div id="chatBox" class="flex flex-col gap-2 overflow-y-auto max-h-56 pointer-events-auto pr-2">
-                <!-- Şərh Nümunələri -->
-                <div class="bg-black/40 backdrop-blur-md rounded-xl p-2 text-xs border border-white/10 max-w-[90%]">
-                    <span class="font-bold text-brand-blue cursor-pointer" onclick="replyUser('@xayal_99')">@xayal_99:</span>
-                    <span class="text-white/90">Salam qardaş, səs çox təmiz gəlir! 🙌</span>
-                </div>
-                <div class="bg-black/40 backdrop-blur-md rounded-xl p-2 text-xs border border-white/10 max-w-[90%]">
-                    <span class="font-bold text-pink-400 cursor-pointer" onclick="replyUser('@gunel_design')">@gunel_design:</span>
-                    <span class="text-white/90">PK döyüşünə dəstək olaq dostlar! ❤️🚀</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- TİKTOK STİLİ SAĞ DÜYMƏLƏR PANELİ (ACTIONS) -->
-        <div class="absolute bottom-20 right-2 z-30 flex flex-col gap-3 items-center">
-            
-            <!-- Qonaq Qalx Düyməsi -->
-            <button onclick="requestGuestJoin()" title="Qonaq Qalx" class="w-11 h-11 bg-black/50 backdrop-blur-md rounded-full flex flex-col items-center justify-center border border-white/20 active:scale-90 transition text-yellow-400">
-                <i class="fa-solid fa-user-plus text-base"></i>
-                <span class="text-[8px] font-bold mt-0.5" id="i18n-guest">Qonaq</span>
-            </button>
-
-            <!-- PK Axtarış Düyməsi -->
-            <button onclick="startPKSearch()" title="PK Döyüşü" class="w-11 h-11 bg-gradient-to-tr from-brand-pink to-purple-600 rounded-full flex flex-col items-center justify-center shadow-lg active:scale-90 transition text-white pulse-pink">
-                <i class="fa-solid fa-swords text-base"></i>
-                <span class="text-[8px] font-bold mt-0.5">PK</span>
-            </button>
-
-            <!-- Gözəllik Filtri Keçidi -->
-            <button onclick="toggleBeautyFilter()" id="beautyBtn" title="Gözəllik Filtri" class="w-11 h-11 bg-black/50 backdrop-blur-md rounded-full flex flex-col items-center justify-center border border-white/20 active:scale-90 transition text-pink-300">
-                <i class="fa-solid fa-wand-magic-sparkles text-base"></i>
-                <span class="text-[8px] font-bold mt-0.5" id="i18n-filter">Filtr</span>
-            </button>
-
-            <!-- Hədiyyə Düyməsi -->
-            <button onclick="openGiftModal()" title="Hədiyyə Göndər" class="w-11 h-11 bg-gradient-to-tr from-yellow-400 to-orange-500 rounded-full flex flex-col items-center justify-center shadow-lg active:scale-90 transition text-white">
-                <i class="fa-solid fa-gift text-lg"></i>
-                <span class="text-[8px] font-bold mt-0.5" id="i18n-gift">Hədiyyə</span>
-            </button>
-
-            <!-- Yayım Tənzimləmələri (Streamer üçün) -->
-            <button onclick="openToolsModal()" title="Alətlər" class="w-11 h-11 bg-black/50 backdrop-blur-md rounded-full flex flex-col items-center justify-center border border-white/20 active:scale-90 transition text-gray-200">
-                <i class="fa-solid fa-sliders text-base"></i>
-                <span class="text-[8px] font-bold mt-0.5" id="i18n-tools">Alətlər</span>
-            </button>
-        </div>
-
-        <!-- AŞAĞI DAHİLİ ÇAT İNPUTU VƏ GO LIVE PANELİ -->
-        <footer class="relative z-40 p-3 bg-gradient-to-t from-black via-black/80 to-transparent flex items-center gap-2">
-            
-            <div class="flex-1 relative flex items-center">
-                <input id="chatInput" type="text" placeholder="Canlı çata yaz..." onkeypress="handleChatKey(event)" class="w-full bg-white/10 backdrop-blur-md text-white text-xs px-4 py-2.5 rounded-full border border-white/20 outline-none focus:border-brand-pink transition placeholder-gray-400">
-                <button onclick="sendChatMessage()" class="absolute right-1 w-8 h-8 bg-brand-pink rounded-full flex items-center justify-center text-white active:scale-90 transition">
-                    <i class="fa-solid fa-paper-plane text-xs"></i>
-                </button>
+            <!-- PK Battle Header Bar -->
+            <div class="pk-bar-container" id="pk-bar">
+              <div class="pk-red" id="pk-red" style="width: 50%;">1,250 P</div>
+              <div class="pk-vs">VS</div>
+              <div class="pk-blue" id="pk-blue" style="width: 50%;">1,250 P</div>
             </div>
 
-            <!-- Canlı Aç Düyməsi (Main Go Live) -->
-            <button onclick="openLiveConfigModal()" class="bg-gradient-to-r from-brand-pink to-red-600 text-white font-bold text-xs px-4 py-2.5 rounded-full shadow-lg active:scale-95 transition flex items-center gap-1.5 border border-pink-400/30">
-                <i class="fa-solid fa-video text-xs"></i>
-                <span id="i18n-go-live">Canlı Aç</span>
-            </button>
-        </footer>
-
-        <!-- SWIPE / CANLI YAYIM SÜRÜŞDÜRMƏ PANELSİZ KÖMƏKÇİSİ -->
-        <div class="absolute left-2 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2 opacity-40 hover:opacity-100 transition">
-            <button onclick="switchNextStream()" class="w-7 h-7 bg-black/60 rounded-full border border-white/20 flex items-center justify-center text-white text-xs">
-                <i class="fa-solid fa-chevron-up"></i>
-            </button>
-            <button onclick="switchNextStream()" class="w-7 h-7 bg-black/60 rounded-full border border-white/20 flex items-center justify-center text-white text-xs">
-                <i class="fa-solid fa-chevron-down"></i>
-            </button>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- MODALLAR VƏ XÜSUSİ TƏNZİMLƏMƏ MƏRKƏZLƏRİ -->
-        <!-- ========================================== -->
-
-        <!-- 3, 2, 1 GERİ SAYIM MODALI -->
-        <div id="countdownModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center">
-            <span id="countdownNumber" class="text-9xl font-black text-transparent bg-clip-text bg-gradient-to-br from-brand-pink via-purple-500 to-brand-blue animate-ping">3</span>
-            <p class="text-gray-300 font-bold mt-8 text-sm tracking-widest uppercase" id="i18n-preparing">Canlı Yayım Başlayır...</p>
-        </div>
-
-        <!-- CANLI YAYIM AYARLARI MODALI -->
-        <div id="liveConfigModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end justify-center">
-            <div class="w-full bg-brand-card border-t border-white/10 rounded-t-3xl p-6 flex flex-col gap-4 animate-slide-up">
-                <div class="flex justify-between items-center border-b border-white/10 pb-3">
-                    <h3 class="text-base font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-brand-pink"></i> <span id="i18n-stream-settings">Yayım Parametrləri</span>
-                    </h3>
-                    <button onclick="closeModal('liveConfigModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-                </div>
-
-                <!-- Ləqəb / Handle -->
-                <div>
-                    <label class="text-xs text-gray-400 font-semibold mb-1 block" id="i18n-handle-label">İstifadəçi Ləqəbi (@ ilə)</label>
-                    <input id="userHandleInput" type="text" value="@samxal_hesenov" class="w-full bg-black/50 border border-white/20 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-brand-pink">
-                </div>
-
-                <!-- Yayım Müddəti Seçimi -->
-                <div>
-                    <label class="text-xs text-gray-400 font-semibold mb-1 block" id="i18n-duration-label">Yayım Müddəti Limit</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="selectDuration(30)" class="duration-btn bg-black/50 border border-white/20 py-2 rounded-xl text-xs font-bold hover:border-brand-pink focus:bg-brand-pink">30 dəq</button>
-                        <button onclick="selectDuration(60)" class="duration-btn bg-black/50 border border-white/20 py-2 rounded-xl text-xs font-bold hover:border-brand-pink focus:bg-brand-pink">1 saat</button>
-                        <button onclick="selectDuration(0)" class="duration-btn bg-brand-pink border border-brand-pink py-2 rounded-xl text-xs font-bold">Qeyri-məhdud</button>
-                    </div>
-                </div>
-
-                <!-- Fön Şəkli Seçimi (Virtual Wallpapers - 12 ədəd) -->
-                <div>
-                    <label class="text-xs text-gray-400 font-semibold mb-1 block" id="i18n-wallpaper-label">Kamera Səhnə Fönləri (Virtual Wallpapers)</label>
-                    <div class="grid grid-cols-6 gap-2 max-h-24 overflow-y-auto p-1">
-                        <img onclick="selectBackdrop('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800')" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100" class="w-full h-10 rounded-lg object-cover cursor-pointer border border-white/20 hover:scale-105 transition">
-                        <img onclick="selectBackdrop('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800')" src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=100" class="w-full h-10 rounded-lg object-cover cursor-pointer border border-white/20 hover:scale-105 transition">
-                        <img onclick="selectBackdrop('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800')" src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=100" class="w-full h-10 rounded-lg object-cover cursor-pointer border border-white/20 hover:scale-105 transition">
-                        <img onclick="selectBackdrop('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800')" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=100" class="w-full h-10 rounded-lg object-cover cursor-pointer border border-white/20 hover:scale-105 transition">
-                        <img onclick="selectBackdrop('https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800')" src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=100" class="w-full h-10 rounded-lg object-cover cursor-pointer border border-white/20 hover:scale-105 transition">
-                        <img onclick="selectBackdrop('https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=800')" src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=100" class="w-full h-10 rounded-lg object-cover cursor-pointer border border-white/20 hover:scale-105 transition">
-                    </div>
-                </div>
-
-                <button onclick="startCountdownAndLive()" class="w-full bg-gradient-to-r from-brand-pink to-purple-600 text-white font-bold py-3 rounded-xl shadow-lg active:scale-98 transition text-sm">
-                    🚀 Canlı Yayıma Başla
-                </button>
+            <!-- Video Viewport Split Slots -->
+            <div class="video-viewport">
+              <div class="video-slot">
+                <video id="local-video" autoplay muted playsinline></video>
+              </div>
+              <div class="video-slot" id="guest-slot" style="display:none;">
+                <img src="https://picsum.photos/400/700">
+              </div>
             </div>
-        </div>
 
-        <!-- ALƏTLƏR MODALI (OVERLAY, YOUTUBE, AUDIO SƏS KƏSMƏ) -->
-        <div id="toolsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end justify-center">
-            <div class="w-full bg-brand-card border-t border-white/10 rounded-t-3xl p-6 flex flex-col gap-4">
-                <div class="flex justify-between items-center border-b border-white/10 pb-3">
-                    <h3 class="text-base font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-toolbox text-brand-blue"></i> Yayımçı İnteraktiv Alətləri
-                    </h3>
-                    <button onclick="closeModal('toolsModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-                </div>
+            <!-- Hearts Canvas Overlay -->
+            <canvas class="hearts-canvas" id="hearts-canvas"></canvas>
 
-                <!-- Ekran Yazısı Əlavə Et -->
-                <div>
-                    <label class="text-xs text-gray-400 font-semibold mb-1 block">Ekrana Elan / Yazı Sancı</label>
-                    <div class="flex gap-2">
-                        <input id="overlayInput" type="text" placeholder="Məs: Şərhləri oxuyuram..." class="flex-1 bg-black/50 border border-white/20 rounded-xl px-3 py-2 text-xs text-white outline-none">
-                        <button onclick="applyTextOverlay()" class="bg-brand-blue text-black font-bold text-xs px-4 py-2 rounded-xl">Qoy</button>
-                    </div>
-                </div>
-
-                <!-- YouTube Fon Klip Linki -->
-                <div>
-                    <label class="text-xs text-gray-400 font-semibold mb-1 block">YouTube Fon Musiqisi / Kino (Video ID)</label>
-                    <div class="flex gap-2">
-                        <input id="ytInput" type="text" placeholder="Məs: dQw4w9WgXcQ" class="flex-1 bg-black/50 border border-white/20 rounded-xl px-3 py-2 text-xs text-white outline-none">
-                        <button onclick="applyYouTubeTrack()" class="bg-red-600 text-white font-bold text-xs px-4 py-2 rounded-xl">Oynat</button>
-                    </div>
-                </div>
-
-                <!-- Səs Mute Və Kamera Keçidləri -->
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="toggleAudioMute()" id="muteAudioBtn" class="bg-black/50 border border-white/20 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-white">
-                        <i class="fa-solid fa-microphone"></i> Səsi Kəs / Aç
-                    </button>
-                    <button onclick="toggleCamState()" id="toggleCamBtn" class="bg-black/50 border border-white/20 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-white">
-                        <i class="fa-solid fa-video"></i> Kameranı Söndür
-                    </button>
-                </div>
+            <!-- Transparent Chat Stream -->
+            <div class="chat-overlay">
+              <div class="chat-list" id="chat-list">
+                <div class="chat-bubble"><strong>Sistem:</strong> Canlı yayım WebRTC P2P Mesh üzərindən işə salındı.</div>
+              </div>
             </div>
-        </div>
 
-        <!-- HƏDİYYƏ MODALI -->
-        <div id="giftModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end justify-center">
-            <div class="w-full bg-brand-card border-t border-white/10 rounded-t-3xl p-5 flex flex-col gap-3">
-                <div class="flex justify-between items-center border-b border-white/10 pb-2">
-                    <h3 class="text-xs font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-gem text-yellow-400"></i> Hədiyyələr (Balans: 1,250 💎)
-                    </h3>
-                    <button onclick="closeModal('giftModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-sm"></i></button>
-                </div>
-                <div class="grid grid-cols-4 gap-3 py-2">
-                    <div onclick="sendGift('🌹 Qızılqül', 10)" class="bg-black/40 border border-white/10 p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-brand-pink transition active:scale-95">
-                        <span class="text-2xl">🌹</span>
-                        <span class="text-[10px] font-bold mt-1">10 💎</span>
-                    </div>
-                    <div onclick="sendGift('🚀 Raket', 500)" class="bg-black/40 border border-white/10 p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-brand-pink transition active:scale-95">
-                        <span class="text-2xl">🚀</span>
-                        <span class="text-[10px] font-bold mt-1">500 💎</span>
-                    </div>
-                    <div onclick="sendGift('🦁 Aslan', 1000)" class="bg-black/40 border border-white/10 p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-brand-pink transition active:scale-95">
-                        <span class="text-2xl">🦁</span>
-                        <span class="text-[10px] font-bold mt-1">1000 💎</span>
-                    </div>
-                    <div onclick="sendGift('👑 Tac', 2500)" class="bg-black/40 border border-white/10 p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-brand-pink transition active:scale-95">
-                        <span class="text-2xl">👑</span>
-                        <span class="text-[10px] font-bold mt-1">2500 💎</span>
-                    </div>
-                </div>
+            <!-- Bottom Controls -->
+            <div class="action-bar">
+              <div class="input-box">
+                <input type="text" id="chat-input" placeholder="Şərh yazın...">
+                <button class="btn-action" id="btn-send">Göndər</button>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div class="icon-btn" id="btn-mic" title="Qonaq Qalx">🎙️</div>
+                <div class="icon-btn" id="btn-pk" title="PK Başlat">⚔️</div>
+                <div class="icon-btn" id="btn-gift" title="Hədiyyə">🎁</div>
+              </div>
             </div>
-        </div>
 
-        <!-- QONAQ QALXMA BİLDİRİŞ MODALI (YAYIMÇI İÇİN TOAST) -->
-        <div id="guestNotification" class="hidden absolute top-16 left-4 right-4 z-50 bg-black/90 border border-yellow-500/50 p-3 rounded-2xl shadow-2xl flex items-center justify-between animate-bounce">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-circle-info text-yellow-400 text-lg"></i>
-                <div class="flex flex-col">
-                    <span class="text-xs font-bold text-white">Qonaq İstəyi var!</span>
-                    <span id="guestRequesterName" class="text-[10px] text-gray-300">@user_3941 canlıya qalxmaq istəyir.</span>
-                </div>
+            <!-- Guest Mic Request Modal -->
+            <div class="modal-dialog" id="guest-modal">
+              <strong style="font-size:0.92rem;">🎙️ Qonaq Çağırışı</strong>
+              <p style="font-size:0.78rem; color:var(--text-sub); text-align:center;"><span id="req-user">@qonaq_user</span> canlıya səsli qalxmaq istəyir.</p>
+              <div class="modal-btns">
+                <button class="m-btn accept" onclick="acceptGuest()">Qəbul Et</button>
+                <button class="m-btn reject" onclick="rejectGuest()">Rədd Et</button>
+              </div>
             </div>
-            <div class="flex gap-1">
-                <button onclick="acceptGuestRequest()" class="bg-green-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full">Qəbul et</button>
-                <button onclick="declineGuestRequest()" class="bg-red-600 text-white text-[10px] font-bold px-2 py-1.5 rounded-full">Rədd et</button>
-            </div>
-        </div>
 
-        <!-- GİZLİ ADMİN PANELİ (Həsənov Şamxal Məxfilik İdarəsi) -->
-        <div id="adminPanelModal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl p-6 overflow-y-auto">
-            <div class="max-w-md mx-auto flex flex-col gap-4">
-                <div class="flex justify-between items-center border-b border-white/20 pb-3">
-                    <h2 class="text-lg font-black text-brand-pink flex items-center gap-2">
-                        <i class="fa-solid fa-user-shield"></i> Admin Panel (Həsənov Şamxal)
-                    </h2>
-                    <button onclick="closeModal('adminPanelModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-                    <p class="text-xs text-gray-300 mb-2">Platforma statistikası, Reklam yerləşdirmə və P2P Node tənzimləmələri.</p>
-                    <div class="text-xs font-mono text-green-400 space-y-1">
-                        <div>Aktiv Mesh Düyünləri: 1,842 Node</div>
-                        <div>Server Məsrəfi: $0.00 (Mərkəzsiz)</div>
-                        <div>Versiya: v3.2 Pro Ultra</div>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 font-semibold mb-1 block">Reklam Banners Metni</label>
-                    <input type="text" placeholder="Xüsusi Endirim Reklamı..." class="w-full bg-black border border-white/20 rounded-xl px-3 py-2 text-xs text-white">
-                </div>
-                <button onclick="alert('Parametrlər Saxlanıldı!')" class="w-full bg-brand-pink font-bold py-2.5 rounded-xl text-xs">Yadda Saqla</button>
-                
-                <div class="text-center text-[10px] text-gray-500 mt-6 border-t border-white/10 pt-4">
-                    Platforma Yaradıcısı Və Baş Mühəndisi: <b class="text-white">Həsənov Şamxal</b>
-                </div>
-            </div>
+          </div>
         </div>
+      </div>
+    </main>
 
-        <!-- P2P CREATOR FOOTER / MƏXFİLİK TRİQERİ -->
-        <div class="absolute bottom-1 left-2 z-10 text-[9px] text-white/30 cursor-pointer" onclick="checkAdminAccess()">
-            TOKMESH v3.2 • <span class="hover:underline">Həsənov Şamxal</span>
-        </div>
+    <nav>
+      <div class="nav-link active" onclick="switchTab('radar-view', this)">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        Radar
+      </div>
+      <div class="nav-link" onclick="switchTab('live-view', this)">
+        <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+        Canlı PK
+      </div>
+    </nav>
+  </div>
 
+  <!-- SECRET ADMIN PANEL FOR HASANOV SHAMXAL -->
+  <div id="admin-panel">
+    <div class="admin-header">
+      <h2>🛡️ Admin Panel - Həsənov Şamxal</h2>
+      <div class="icon-btn" onclick="closeAdmin()">✕</div>
     </div>
+    <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom:16px;">Sistem İdarəetməsi, Reklam Yerləri və P2P Qovşaq Analitikası.</p>
+    <div style="background:rgba(255,255,255,0.05); padding:14px; border-radius:14px; margin-bottom:12px;">
+      <strong>Aktif Mesh Qovşaqları:</strong> 1,482 İstifadəçi
+    </div>
+    <div style="background:rgba(255,255,255,0.05); padding:14px; border-radius:14px;">
+      <strong>Mərkəzi Server Xərci:</strong> 0.00 AZN (P2P Mesh)
+    </div>
+  </div>
 
-    <!-- JAVASCRIPT LOGIC & P2P ARCHITECTURE -->
-    <script>
-        /* ======================================================
-           ÇOXDİLLİ DƏSTƏK VƏ LƏĞƏB (I18N MƏNLƏRİ)
-           ====================================================== */
-        const translations = {
-            az: {
-                guest: "Qonaq",
-                filter: "Filtr",
-                gift: "Hədiyyə",
-                tools: "Alətlər",
-                goLive: "Canlı Aç",
-                preparing: "Canlı Yayım Başlayır...",
-                streamSettings: "Yayım Parametrləri",
-                handleLabel: "İstifadəçi Ləqəbi (@ ilə)",
-                durationLabel: "Yayım Müddəti Limit",
-                wallpaperLabel: "Kamera Səhnə Fönləri",
-                audioStream: "Səslı Canlı Yayım"
-            },
-            en: {
-                guest: "Guest",
-                filter: "Filter",
-                gift: "Gift",
-                tools: "Tools",
-                goLive: "Go Live",
-                preparing: "Starting Live Stream...",
-                streamSettings: "Stream Settings",
-                handleLabel: "User Handle (with @)",
-                durationLabel: "Stream Duration Limit",
-                wallpaperLabel: "Camera Scene Wallpapers",
-                audioStream: "Audio Live Stream"
-            },
-            tr: {
-                guest: "Konuk",
-                filter: "Filtre",
-                gift: "Hediye",
-                tools: "Araçlar",
-                goLive: "Canlı Aç",
-                preparing: "Canlı Yayın Başlıyor...",
-                streamSettings: "Yayın Ayarları",
-                handleLabel: "Kullanıcı Adı (@ ile)",
-                durationLabel: "Yayın Süre Sınırı",
-                wallpaperLabel: "Kamera Arka Planları",
-                audioStream: "Sesli Canlı Yayın"
-            },
-            ru: {
-                guest: "Гость",
-                filter: "Фильтр",
-                gift: "Подарок",
-                tools: "Опции",
-                goLive: "В Эфир",
-                preparing: "Запуск эфира...",
-                streamSettings: "Настройки эфира",
-                handleLabel: "Никнейм (с @)",
-                durationLabel: "Лимит времени",
-                wallpaperLabel: "Фоны камеры",
-                audioStream: "Голосовой эфир"
-            }
-        };
+  <script>
+    // --- 1. LOCAL DATA PERSISTENCE & AUTO LANGUAGE DETECTION ---
+    const APP_CONFIG = {
+      username: localStorage.getItem('tokmesh_user') || '@samxal_hesenov',
+      lang: navigator.language.startsWith('tr') ? 'tr' : navigator.language.startsWith('ru') ? 'ru' : 'az'
+    };
+    document.getElementById('lang-select').value = APP_CONFIG.lang;
+    document.getElementById('display-username').innerText = APP_CONFIG.username;
 
-        let currentLang = 'az';
-        let mediaStream = null;
-        let isBeautyActive = true;
-        let isAudioMuted = false;
-        let isCamOn = true;
-        let likeCount = 24500;
-        let isPKActive = false;
+    // --- 2. P2P WEBRTC SIGNALING & BROADCAST ENGINE ---
+    const p2pChannel = new BroadcastChannel('tokmesh_global_mesh');
+    const peerConnections = {};
 
-        /* AÇILIŞDA İŞƏ DÜŞƏN VƏ İLKLƏNDİRMƏ LOGİKASI */
-        window.addEventListener('DOMContentLoaded', () => {
-            detectUserLanguage();
-            initCamera();
-            loadUserData();
-        });
+    const chatList = document.getElementById('chat-list');
+    const chatInput = document.getElementById('chat-input');
+    const btnSend = document.getElementById('btn-send');
 
-        /* DİL TƏYİNİ VƏ DƏYİŞDİRİLMƏSİ */
-        function detectUserLanguage() {
-            const userLang = navigator.language || navigator.userLanguage;
-            if (userLang.startsWith('tr')) currentLang = 'tr';
-            else if (userLang.startsWith('ru')) currentLang = 'ru';
-            else if (userLang.startsWith('en')) currentLang = 'en';
-            else currentLang = 'az';
+    function appendChatBubble(sender, text) {
+      const b = document.createElement('div');
+      b.className = 'chat-bubble';
+      b.innerHTML = `<strong>${sender}:</strong> ${text}`;
+      chatList.appendChild(b);
+      chatList.scrollTop = chatList.scrollHeight;
+    }
 
-            document.getElementById('langSelect').value = currentLang;
-            applyTranslations();
-        }
+    function sendChat() {
+      const val = chatInput.value.trim();
+      if (!val) return;
+      appendChatBubble(APP_CONFIG.username, val);
+      p2pChannel.postMessage({ type: 'CHAT', sender: APP_CONFIG.username, text: val });
+      chatInput.value = '';
+      playAudioBeep(650);
+    }
 
-        function changeLanguage(lang) {
-            currentLang = lang;
-            applyTranslations();
-        }
+    btnSend.addEventListener('click', sendChat);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChat(); });
 
-        function applyTranslations() {
-            const t = translations[currentLang];
-            document.getElementById('i18n-guest').innerText = t.guest;
-            document.getElementById('i18n-filter').innerText = t.filter;
-            document.getElementById('i18n-gift').innerText = t.gift;
-            document.getElementById('i18n-tools').innerText = t.tools;
-            document.getElementById('i18n-go-live').innerText = t.goLive;
-            document.getElementById('i18n-preparing').innerText = t.preparing;
-            document.getElementById('i18n-stream-settings').innerText = t.streamSettings;
-            document.getElementById('i18n-handle-label').innerText = t.handleLabel;
-            document.getElementById('i18n-duration-label').innerText = t.durationLabel;
-            document.getElementById('i18n-wallpaper-label').innerText = t.wallpaperLabel;
-            document.getElementById('i18n-audio-stream').innerText = t.audioStream;
-        }
+    p2pChannel.onmessage = (e) => {
+      const data = e.data;
+      if (data.type === 'CHAT') appendChatBubble(data.sender, data.text);
+      if (data.type === 'HEART') triggerHeartAnimation();
+    };
 
-        /* KAMERANIN TƏMİZ İNİSİALİZASİYASI VƏ GUZGÜ DÜZƏLİŞİ */
-        async function initCamera() {
-            try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: true
-                });
-                const videoEl = document.getElementById('localVideo');
-                videoEl.srcObject = mediaStream;
-            } catch (err) {
-                console.warn("Kamera icazəsi alınmadı, fön rejimi aktiv edilir:", err);
-                toggleCamState();
-            }
-        }
+    // --- 3. WEB AUDIO SYNTHESIZER ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playAudioBeep(freq = 520, type = 'sine', duration = 0.12) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
 
-        /* TİKTOK STİLİ EKRNA TOXUNANDA ÜZƏN ŞƏFFAF ÜRƏKLƏR */
-        function handleTap(e) {
-            likeCount++;
-            document.getElementById('likeCount').innerText = (likeCount / 1000).toFixed(1) + 'K';
+    // --- 4. FLOATING NEON HEARTS CANVAS ---
+    const hCanvas = document.getElementById('hearts-canvas');
+    const hCtx = hCanvas.getContext('2d');
+    let hearts = [];
 
-            const heart = document.createElement('div');
-            heart.className = 'floating-heart fa-solid fa-heart text-2xl';
-            
-            // Təsadüfi Rəng
-            const colors = ['#FE2C55', '#25F4EE', '#FFD700', '#FF1493', '#00FF7F'];
-            heart.style.color = colors[Math.floor(Math.random() * colors.length)];
-            
-            // Kliklənən Yer
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+    function resizeHCanvas() {
+      hCanvas.width = hCanvas.parentElement.clientWidth;
+      hCanvas.height = hCanvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeHCanvas);
+    resizeHCanvas();
 
-            heart.style.left = `${x - 10}px`;
-            heart.style.top = `${y - 10}px`;
+    function triggerHeartAnimation() {
+      hearts.push({
+        x: hCanvas.width - 50 + (Math.random() * 20 - 10),
+        y: hCanvas.height - 80,
+        size: Math.random() * 16 + 18,
+        opacity: 1,
+        speedY: Math.random() * 2 + 2.5,
+        speedX: Math.random() * 1.5 - 0.75
+      });
+    }
 
-            document.getElementById('streamStage').appendChild(heart);
+    document.getElementById('live-view').addEventListener('click', (e) => {
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+        triggerHeartAnimation();
+        p2pChannel.postMessage({ type: 'HEART' });
+        playAudioBeep(900, 'sine', 0.08);
+      }
+    });
 
-            setTimeout(() => {
-                heart.remove();
-            }, 2000);
-        }
+    function drawHearts() {
+      hCtx.clearRect(0, 0, hCanvas.width, hCanvas.height);
+      for (let i = 0; i < hearts.length; i++) {
+        let h = hearts[i];
+        h.y -= h.speedY; h.x += h.speedX; h.opacity -= 0.008;
+        hCtx.save();
+        hCtx.globalAlpha = Math.max(0, h.opacity);
+        hCtx.fillStyle = '#ff007f';
+        hCtx.font = `${h.size}px sans-serif`;
+        hCtx.fillText('❤️', h.x, h.y);
+        hCtx.restore();
+        if (h.opacity <= 0) { hearts.splice(i, 1); i--; }
+      }
+      requestAnimationFrame(drawHearts);
+    }
+    drawHearts();
 
-        /* GÖZƏLLİK FİLTRİ (BEAUTY SMOOTH SKIN) TOGGLE */
-        function toggleBeautyFilter() {
-            isBeautyActive = !isBeautyActive;
-            const videoEl = document.getElementById('localVideo');
-            const btn = document.getElementById('beautyBtn');
+    // --- 5. CAMERA ATTACHMENT WITH BEAUTIFY FILTER ---
+    async function setupCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('local-video').srcObject = stream;
+      } catch (err) { console.log('Kamera icazəsi tələb olunur:', err); }
+    }
+    setupCamera();
 
-            if (isBeautyActive) {
-                videoEl.classList.add('beauty-filter');
-                btn.classList.add('text-pink-300');
-                btn.classList.remove('text-gray-400');
-            } else {
-                videoEl.classList.remove('beauty-filter');
-                btn.classList.remove('text-pink-300');
-                btn.classList.add('text-gray-400');
-            }
-        }
+    // --- 6. GUEST MIC REQUEST DIALOG ---
+    document.getElementById('btn-mic').addEventListener('click', () => {
+      document.getElementById('guest-modal').style.display = 'flex';
+      playAudioBeep(400, 'triangle', 0.3);
+    });
 
-        /* GERİ SAYIM (3, 2, 1) VƏ CANLIYA BAŞLAMA */
-        function openLiveConfigModal() {
-            document.getElementById('liveConfigModal').classList.remove('hidden');
-        }
+    function acceptGuest() {
+      document.getElementById('guest-modal').style.display = 'none';
+      document.getElementById('guest-slot').style.display = 'block';
+      appendChatBubble('Sistem', '@qonaq_user səsli canlıya qoşuldu.');
+    }
 
-        function startCountdownAndLive() {
-            closeModal('liveConfigModal');
-            const countdownModal = document.getElementById('countdownModal');
-            const numEl = document.getElementById('countdownNumber');
-            countdownModal.classList.remove('hidden');
+    function rejectGuest() {
+      document.getElementById('guest-modal').style.display = 'none';
+    }
 
-            let count = 3;
-            numEl.innerText = count;
+    // --- 7. RADAR CANVAS ANIMATION ---
+    const rCanvas = document.getElementById('radar-canvas');
+    const rCtx = rCanvas.getContext('2d');
+    function resizeRCanvas() {
+      rCanvas.width = rCanvas.parentElement.clientWidth;
+      rCanvas.height = rCanvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeRCanvas);
+    resizeRCanvas();
 
-            const interval = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    numEl.innerText = count;
-                } else {
-                    clearInterval(interval);
-                    countdownModal.classList.add('hidden');
-                    saveUserData();
-                    
-                    // Şərhdə canlı başladı xəbərdarlığı
-                    addChatMessage("Sistem", "Canlı yayım uğurla başladı! 🎉", "text-yellow-400 font-bold");
-                }
-            }, 1000);
-        }
+    let rAngle = 0;
+    function animateRadar() {
+      rCtx.clearRect(0, 0, rCanvas.width, rCanvas.height);
+      const cx = rCanvas.width / 2, cy = rCanvas.height / 2;
+      const radius = Math.min(cx, cy) - 30;
 
-        /* PK DÖYÜŞÜ VƏ EKRAMIN İKİYƏ BÖLÜNMƏSİ (TIKTOK SPLIT) */
-        function startPKSearch() {
-            addChatMessage("Sistem", "PK Döyüşü üçün rəqib axtarılır...", "text-purple-400");
-            
-            setTimeout(() => {
-                isPKActive = true;
-                document.getElementById('pkBar').classList.remove('hidden');
-                document.getElementById('pkOpponentBox').classList.remove('hidden');
-                document.getElementById('localVideo').classList.add('w-1/2');
-                
-                // Rəqib simulyasiya videosu
-                const remoteVid = document.getElementById('remoteVideo');
-                remoteVid.src = "https://assets.mixkit.co/videos/preview/mixkit-man-holding-a-smartphone-at-night-41225-large.mp4";
-                remoteVid.loop = true;
-                remoteVid.play();
+      rCtx.strokeStyle = 'rgba(0, 242, 254, 0.18)';
+      for (let r = 1; r <= 3; r++) {
+        rCtx.beginPath();
+        rCtx.arc(cx, cy, (radius / 3) * r, 0, Math.PI * 2);
+        rCtx.stroke();
+      }
 
-                addChatMessage("Sistem", "PK Döyüşü Başladı! 🔥 Rəqib: @p2p_rival_pro", "text-brand-pink font-bold");
-            }, 2000);
-        }
+      rCtx.beginPath();
+      rCtx.moveTo(cx, cy);
+      rCtx.arc(cx, cy, radius, rAngle, rAngle + 0.25);
+      rCtx.fillStyle = 'rgba(0, 242, 254, 0.12)';
+      rCtx.fill();
 
-        /* QONAQ QALXMA İSTƏYİ */
-        function requestGuestJoin() {
-            alert("Canlı açana qonaq qalxmaq sorğusu göndərildi!");
-            // Simulyasiya
-            setTimeout(() => {
-                document.getElementById('guestNotification').classList.remove('hidden');
-            }, 1500);
-        }
+      rAngle += 0.02;
+      requestAnimationFrame(animateRadar);
+    }
+    animateRadar();
 
-        function acceptGuestRequest() {
-            document.getElementById('guestNotification').classList.add('hidden');
-            document.getElementById('speakingIndicator').classList.remove('hidden');
-            addChatMessage("Sistem", "@user_3941 canlıya qonaq kimi qoşuldu! 🎙️", "text-green-400 font-bold");
-        }
+    // --- VIEW SWITCHING & ADMIN PANEL ---
+    function switchTab(id, el) {
+      document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      el.classList.add('active');
+    }
 
-        function declineGuestRequest() {
-            document.getElementById('guestNotification').classList.add('hidden');
-        }
-
-        /* ŞƏRH YAZMA VƏ CAVAB VERMƏ */
-        function handleChatKey(e) {
-            if (e.key === 'Enter') sendChatMessage();
-        }
-
-        function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const handle = document.getElementById('userHandleInput').value || "@samxal_hesenov";
-            addChatMessage(handle, text);
-            input.value = "";
-        }
-
-        function addChatMessage(user, msg, customClass = "") {
-            const chatBox = document.getElementById('chatBox');
-            const msgEl = document.createElement('div');
-            msgEl.className = 'bg-black/40 backdrop-blur-md rounded-xl p-2 text-xs border border-white/10 max-w-[90%] animate-fade-in';
-            msgEl.innerHTML = `
-                <span class="font-bold text-brand-blue cursor-pointer" onclick="replyUser('${user}')">${user}:</span>
-                <span class="text-white/90 ${customClass}">${escapeHtml(msg)}</span>
-            `;
-            chatBox.appendChild(msgEl);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function replyUser(handle) {
-            const input = document.getElementById('chatInput');
-            input.value = `${handle} `;
-            input.focus();
-        }
-
-        /* HƏDİYYƏ GÖNDƏRMƏ */
-        function openGiftModal() {
-            document.getElementById('giftModal').classList.remove('hidden');
-        }
-
-        function sendGift(name, cost) {
-            closeModal('giftModal');
-            addChatMessage("Hədiyyə 🎁", `Yayımçıya ${name} göndərildi!`, "text-yellow-300 font-bold");
-            
-            // Skoru artır
-            if(isPKActive) {
-                const redBar = document.getElementById('redBar');
-                redBar.style.width = "75%";
-                document.getElementById('redScore').innerText = "24,800";
-            }
-        }
-
-        /* ALƏTLƏR: EKRAN YAZISI VƏ YOUTUBE MULTIMEDIA */
-        function openToolsModal() {
-            document.getElementById('toolsModal').classList.remove('hidden');
-        }
-
-        function applyTextOverlay() {
-            const txt = document.getElementById('overlayInput').value;
-            const overlay = document.getElementById('customTextOverlay');
-            if (txt) {
-                document.getElementById('overlayTextContent').innerText = txt;
-                overlay.classList.remove('hidden');
-            } else {
-                overlay.classList.add('hidden');
-            }
-            closeModal('toolsModal');
-        }
-
-        function applyYouTubeTrack() {
-            const ytId = document.getElementById('ytInput').value.trim();
-            const container = document.getElementById('ytPlayerContainer');
-            const iframe = document.getElementById('ytFrame');
-
-            if (ytId) {
-                iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0`;
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-                iframe.src = "";
-            }
-            closeModal('toolsModal');
-        }
-
-        function toggleAudioMute() {
-            if (!mediaStream) return;
-            isAudioMuted = !isAudioMuted;
-            mediaStream.getAudioTracks().forEach(track => track.enabled = !isAudioMuted);
-            alert(isAudioMuted ? "Mikrofon Söndürüldü" : "Mikrofon Açıldı");
-        }
-
-        function toggleCamState() {
-            isCamOn = !isCamOn;
-            const localVideo = document.getElementById('localVideo');
-            const backdrop = document.getElementById('backdropCover');
-
-            if (isCamOn) {
-                localVideo.classList.remove('hidden');
-                backdrop.classList.add('hidden');
-            } else {
-                localVideo.classList.add('hidden');
-                backdrop.classList.remove('hidden');
-            }
-        }
-
-        function selectBackdrop(url) {
-            document.getElementById('backdropCover').style.backgroundImage = `url('${url}')`;
-            alert("Kamera Fonu Yeniləndi!");
-        }
-
-        /* GİZLİ ADMİN PANELİ TRİQERİ */
-        function checkAdminAccess() {
-            const pass = prompt("Həsənov Şamxal Admin Giriş Şifrəsini daxil edin:");
-            if (pass === "samxal2026") {
-                document.getElementById('adminPanelModal').classList.remove('hidden');
-            } else if(pass !== null) {
-                alert("Yanlış Şifrə!");
-            }
-        }
-
-        /* YAYIMDAN ÇIXIŞ VƏ NÖVBƏTİ CANLI */
-        function leaveStream() {
-            if (confirm("Canlı yayımı tərk etmək istəyirsiniz?")) {
-                location.reload();
-            }
-        }
-
-        function switchNextStream() {
-            addChatMessage("Sistem", "Növbəti canlı yayım kanalına keçilir...", "text-brand-blue font-bold");
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        /* LOCAL STORAGE MƏLUMATLARININ QORUNMASI */
-        function saveUserData() {
-            const handle = document.getElementById('userHandleInput').value;
-            localStorage.setItem('tokmesh_handle', handle);
-        }
-
-        function loadUserData() {
-            const savedHandle = localStorage.getItem('tokmesh_handle');
-            if (savedHandle) {
-                document.getElementById('userHandleInput').value = savedHandle;
-                document.getElementById('streamerHandle').innerText = savedHandle;
-                document.getElementById('backdropName').innerText = savedHandle;
-            }
-        }
-
-        function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
-    </script>
+    function openAdmin() { document.getElementById('admin-panel').style.display = 'flex'; }
+    function closeAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
+  </script>
 </body>
 </html>
-```
