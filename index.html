@@ -1,191 +1,873 @@
+
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#10141d">
-<meta name="description" content="UstaMap & Service Hub — yaxınlıqdakı ustalar və xidmətlər">
-<title>UstaMap & Service Hub</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08111d">
+<meta name="description" content="USTAMAP — xəritədə ustalar, xidmətlər və yaxınlıqdakı elanlar">
+<title>USTAMAP — EarthView Pro</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.127/Build/Cesium/Widgets/widgets.css">
 <style>
-:root{--bg:#10141d;--panel:#191f2b;--panel2:#202838;--line:#2b3547;--text:#f4f7fc;--muted:#9ba8bd;--accent:#69e0bd;--blue:#5b9cff;--red:#ff647c;--gold:#ffcc66;--shadow:8px 8px 22px #090c12,-5px -5px 18px #1b2331}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.app{height:100dvh;display:flex;flex-direction:column;max-width:100%;overflow:hidden}.topbar{z-index:1000;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:#121722ee;border-bottom:1px solid var(--line);backdrop-filter:blur(18px)}.brand{display:flex;align-items:center;gap:9px;min-width:0;flex:1}.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#69e0bd,#5b9cff);display:grid;place-items:center;color:#111827;font-size:18px;box-shadow:0 0 20px #69e0bd33}.brand strong{display:block;font-size:15px;letter-spacing:.2px}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.lang{display:flex;gap:3px;background:#0c1018;padding:4px;border-radius:12px}.lang button{border:0;background:transparent;color:var(--muted);font-size:10px;font-weight:800;padding:7px 6px;border-radius:8px}.lang button.active{background:var(--accent);color:#071611}.iconbtn,.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)}.iconbtn{width:39px;height:39px;padding:0;display:grid;place-items:center;flex-shrink:0}.emergency{margin:9px 12px 0;padding:10px 12px;border-radius:13px;background:linear-gradient(100deg,#551b2b,#351923);border:1px solid #a43a52;color:#ffe7ec;font-weight:750;text-align:left;display:flex;align-items:center;gap:9px;box-shadow:0 0 22px #ff647c13}.emergency .pulse{width:9px;height:9px;background:var(--red);border-radius:50%;box-shadow:0 0 0 5px #ff647c20;animation:pulse 1.6s infinite}.urgent-strip{margin:7px 12px 0;display:none;gap:8px;overflow-x:auto;white-space:nowrap;padding:8px;border-radius:10px;background:#4b1b28;border:1px solid #9b344a;color:#ffe2e8;font-size:12px}.urgent-strip.show{display:flex}.controls{padding:9px 12px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}.controls::-webkit-scrollbar{display:none}.chip{white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:10px;padding:8px 10px;font-size:11px;font-weight:700}.chip.active{background:#183d37;border-color:#327b68;color:var(--accent)}.searchline{display:flex;gap:8px;padding:0 12px 9px}.searchbox{display:flex;align-items:center;gap:8px;background:#0b1018;border:1px solid var(--line);border-radius:12px;padding:0 11px;flex:1;min-width:0}.searchbox input{width:100%;border:0;background:transparent;color:var(--text);padding:11px 0;outline:none;font-size:13px}.searchbox i{color:var(--muted)}.main{position:relative;flex:1;min-height:0}.mapwrap{position:absolute;inset:0;background:#1a2230}#map{width:100%;height:100%;background:#1a2230}.leaflet-container{font-family:inherit}.leaflet-control-zoom a{background:#171e2a!important;color:#eaf2ff!important;border-color:#344055!important}.leaflet-control-attribution{font-size:9px!important;background:#111827cc!important;color:#a9b5c7!important}.leaflet-control-attribution a{color:#8cbcff!important}.map-float{position:absolute;z-index:500;right:12px;top:12px;display:flex;flex-direction:column;gap:8px}.map-float button{width:42px;height:42px;border:1px solid #3b465a;border-radius:14px;background:#111824eF;color:#eaf3ff;box-shadow:0 8px 20px #0005}.map-hint{position:absolute;z-index:500;left:12px;bottom:12px;max-width:calc(100% - 24px);background:#111824eF;border:1px solid #344055;border-radius:12px;padding:9px 12px;font-size:11px;color:#d5dfed;backdrop-filter:blur(12px)}.map-hint b{color:var(--accent)}.bottomnav{z-index:900;display:grid;grid-template-columns:repeat(4,1fr);padding:7px 8px calc(8px + env(safe-area-inset-bottom));background:#121722;border-top:1px solid var(--line)}.navitem{border:0;background:transparent;color:#7f8ca2;padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:10px}.navitem i{font-size:17px}.navitem.active{color:var(--accent)}.sheet{position:absolute;z-index:1100;inset:0;background:#0d1119f5;backdrop-filter:blur(18px);display:none;flex-direction:column;overflow:hidden}.sheet.open{display:flex}.sheethead{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 16px 13px;border-bottom:1px solid var(--line);flex-shrink:0}.sheethead h2{font-size:17px;margin:0}.sheetbody{overflow-y:auto;padding:14px 14px calc(22px + env(safe-area-inset-bottom));overscroll-behavior:contain}.card{background:linear-gradient(145deg,#1c2432,#151b26);border:1px solid #2a3548;border-radius:17px;padding:14px;margin-bottom:11px;box-shadow:0 8px 22px #0002}.card h3{margin:0 0 6px;font-size:15px}.muted{color:var(--muted)}.small{font-size:12px;line-height:1.5}.row{display:flex;align-items:center;gap:9px}.between{justify-content:space-between}.grow{flex:1;min-width:0}.tag{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:8px;background:#263346;color:#c5d8f4;font-size:10px;font-weight:750}.tag.green{background:#163b33;color:#8ff0d1}.tag.gold{background:#44361d;color:#ffdc8d}.tag.red{background:#491e2a;color:#ffb4c0}.primary{border:0;background:linear-gradient(135deg,#73e8c4,#4db8dc);color:#091b1a;font-weight:850;border-radius:12px;padding:12px 14px}.secondary{border:1px solid #354156;background:#222c3b;color:#e7edf7;border-radius:11px;padding:10px 12px}.danger{border:1px solid #763145;background:#3a1c27;color:#ffbdc8;border-radius:11px;padding:10px 12px}.full{width:100%}.field{margin:11px 0}.field label{display:block;font-size:11px;color:#b6c2d5;margin:0 0 6px;font-weight:750}.field input,.field select,.field textarea{width:100%;border:1px solid #354156;background:#0d131e;color:#f4f7fc;border-radius:11px;padding:12px;outline:none}.field textarea{resize:vertical;min-height:76px}.field input[type=file]{font-size:12px;padding:9px}.field .help{font-size:10px;color:var(--muted);margin-top:5px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.preview-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}.preview-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line)}.profilehero{display:flex;gap:12px;align-items:center}.avatar{width:58px;height:58px;flex-shrink:0;border-radius:16px;display:grid;place-items:center;font-size:25px;background:linear-gradient(135deg,#294a59,#29334a);border:1px solid #42536c}.listing{display:flex;gap:11px;align-items:center}.listing .avatar{width:48px;height:48px;font-size:21px}.listing h3{font-size:13px}.listing .small{font-size:11px}.listing-actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}.video-ad{background:#050608;border:2px solid #303747;border-radius:14px;padding:10px;margin-top:14px}.video-ad .advisual{height:125px;border-radius:8px;background:radial-gradient(circle at 70% 25%,#35546b,#141c2a 45%,#090b10 80%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}.advisual .play{font-size:32px;color:#d8f7ff;text-shadow:0 0 20px #54c8ff}.advisual .adword{position:absolute;left:12px;bottom:12px;font-weight:900;letter-spacing:1px;font-size:13px}.advisual .adlabel{position:absolute;right:9px;top:9px;background:#111a;color:#c9d7e9;border-radius:5px;padding:4px 6px;font-size:9px}.legal p{font-size:12px;line-height:1.65;color:#c5cfde}.empty{text-align:center;padding:30px 14px;color:var(--muted)}.empty i{font-size:30px;display:block;margin-bottom:10px;color:#52627b}.toast{position:absolute;z-index:3000;bottom:calc(78px + env(safe-area-inset-bottom));left:50%;transform:translate(-50%,18px);opacity:0;pointer-events:none;background:#eefbf6;color:#0b2520;border-radius:12px;padding:12px 15px;font-size:12px;font-weight:800;box-shadow:0 12px 30px #0005;transition:.25s;max-width:calc(100% - 30px);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}.marker-wrap{position:relative;width:38px;height:38px;display:grid;place-items:center}.marker-glow{position:absolute;inset:0;border-radius:50%;background:var(--mc,#69e0bd);opacity:.2;box-shadow:0 0 9px 3px var(--mc,#69e0bd),0 0 22px 6px color-mix(in srgb,var(--mc,#69e0bd) 40%,transparent);animation:pulse 2s infinite}.marker-core{position:relative;width:32px;height:32px;border-radius:12px;border:1px solid #ffffff70;background:linear-gradient(145deg,var(--mc,#69e0bd),#243044);display:grid;place-items:center;color:#fff;font-size:14px;box-shadow:0 3px 12px #0008;transition:transform .2s}.marker-wrap.nearest .marker-core{transform:scale(1.5);border:2px solid #fff;box-shadow:0 0 0 5px #ffffff25,0 0 24px var(--mc,#69e0bd)}.user-dot{width:18px;height:18px;border:3px solid #fff;border-radius:50%;background:#3287ff;box-shadow:0 0 0 7px #3287ff30,0 0 20px #3287ff;animation:userpulse 1.8s infinite}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#17202d;color:#f5f8ff}.leaflet-popup-content{margin:12px;min-width:160px}.popup-title{font-weight:850;margin-bottom:4px}.popup-sub{font-size:11px;color:#b2c0d4;margin-bottom:8px}.popup-open{border:0;background:#69e0bd;color:#10231f;font-weight:850;padding:8px 10px;border-radius:8px;width:100%}.switchrow{display:flex;gap:10px;align-items:flex-start}.switchrow input{accent-color:#69e0bd;margin-top:3px}.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.menu-grid button{min-height:80px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;text-align:left}.menu-grid i{font-size:19px;color:var(--accent)}@keyframes pulse{0%,100%{transform:scale(.88);opacity:.22}50%{transform:scale(1.18);opacity:.48}}@keyframes userpulse{0%,100%{box-shadow:0 0 0 5px #3287ff28,0 0 16px #3287ff}50%{box-shadow:0 0 0 10px #3287ff10,0 0 22px #3287ff}}@media(min-width:700px){.app{max-width:700px;margin:auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}body{background:#090c12}.topbar{padding-top:12px}.sheet{left:0;right:0}.main{min-height:300px}}@media(max-width:360px){.brand strong{font-size:13px}.brand small{display:none}.lang button{padding:7px 5px}.topbar{gap:6px}.grid2{grid-template-columns:1fr}.preview-grid{grid-template-columns:repeat(4,1fr)}}
+:root{--bg:#08111d;--panel:#101d2c;--line:#26374a;--txt:#f2f7ff;--muted:#92a5bb;--cyan:#45e0d0;--blue:#6c8cff;--gold:#ffca72;--red:#ff7785}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px system-ui,-apple-system,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}
+header{position:sticky;top:0;z-index:1000;background:#08111df5;backdrop-filter:blur(18px);border-bottom:1px solid var(--line);padding:11px 13px}
+.top{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:900;letter-spacing:.5px}
+.logo{width:37px;height:37px;flex-shrink:0;border-radius:13px;background:linear-gradient(135deg,#4af0d1,#627dff);display:grid;place-items:center;color:#07111e;font-size:22px}
+.brand span{color:var(--cyan)}
+.status{font-size:10px;color:var(--cyan);border:1px solid #27685f;border-radius:20px;padding:6px 8px;white-space:nowrap}
+.searchrow{display:flex;gap:7px;margin-top:11px}
+.searchrow input{min-width:0;flex:1}
+input,select,textarea{width:100%;background:#0a1522;color:white;border:1px solid #304358;border-radius:11px;padding:11px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan)}
+option{background:#101d2c;color:white}
+.btn{border:1px solid #31475c;border-radius:11px;padding:10px 12px;background:#17283a;color:white}
+.btn.primary{background:linear-gradient(120deg,#45e0d0,#73a4ff);border:0;color:#07131d;font-weight:800}
+.btn.small{padding:7px 10px;font-size:12px}
+.btn:active{transform:scale(.98)}
+.btn.active{border-color:var(--cyan);color:var(--cyan);background:#10302f}
+nav{display:flex;gap:7px;overflow-x:auto;margin-top:10px;padding-bottom:2px}
+nav button{white-space:nowrap;flex-shrink:0}
+main{max-width:1300px;margin:auto;padding:12px}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:9px 0}
+h2{font-size:17px;margin:0}
+.sub{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.5}
+.globeWrap,.mapWrap{border:1px solid var(--line);border-radius:17px;overflow:hidden;background:#07111b;position:relative}
+#globe{height:340px;width:100%;background:#07111b}
+.globeTools{position:absolute;left:9px;right:9px;top:9px;z-index:20;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.globeTools button{pointer-events:auto}
+.pill{background:#081522ed;border:1px solid #344a60;border-radius:10px;color:#eaf6ff;padding:8px 10px;font-size:12px;backdrop-filter:blur(8px)}
+.legend{position:absolute;bottom:9px;left:9px;z-index:20;color:#b7c9dd;background:#081522e8;padding:8px 10px;border-radius:10px;font-size:10px;pointer-events:none;max-width:95%}
+#map{height:410px;width:100%;background:#101d2c}
+.filters{display:flex;gap:7px;overflow-x:auto;padding:10px 0}
+.filters .btn{white-space:nowrap;flex-shrink:0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{border:1px solid var(--line);background:linear-gradient(155deg,#132235,#0c1724);border-radius:15px;overflow:hidden;min-width:0}
+.card img.cover{width:100%;height:115px;object-fit:cover;background:#1b2d40}
+.cardbody{padding:10px}
+.card h3{font-size:14px;margin:0 0 5px;overflow-wrap:anywhere}
+.card p{font-size:12px;color:var(--muted);margin:5px 0;overflow-wrap:anywhere;line-height:1.5}
+.price{font-weight:800;color:var(--gold)!important}
+.chip{display:inline-block;font-size:10px;border:1px solid #344a60;padding:4px 7px;border-radius:20px;color:#c6d7e9;margin:3px 2px 3px 0}
+.cardActions{display:flex;gap:6px;margin-top:9px}
+.cardActions button{flex:1;min-width:0}
+.bottomnav{position:sticky;bottom:0;z-index:800;display:flex;justify-content:space-around;background:#08111df7;border-top:1px solid var(--line);padding:9px 3px calc(9px + env(safe-area-inset-bottom));backdrop-filter:blur(18px)}
+.bottomnav button{background:none;border:0;color:#a8bbcf;font-size:11px;display:grid;gap:4px;justify-items:center}
+.bottomnav b{font-size:19px}
+.bottomnav button:focus,.bottomnav button:hover{color:var(--cyan)}
+.overlay{display:none;position:fixed;inset:0;z-index:3000;background:#020811d9;align-items:flex-end;justify-content:center;padding:10px}
+.overlay.show{display:flex}
+.sheet{width:100%;max-width:570px;max-height:92dvh;overflow:auto;background:#101d2c;border:1px solid #30465c;border-radius:22px;padding:16px;box-shadow:0 25px 90px #0009}
+.sheethead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.sheethead h2{font-size:19px}
+.close{width:36px;height:36px;flex-shrink:0;border-radius:50%;background:#203247;color:white;border:1px solid #3c5065;font-size:21px}
+.formgrid{display:grid;gap:10px}
+label{display:block;font-size:12px;color:#a9bed2;margin-bottom:5px}
+.profiletop{display:flex;gap:12px;align-items:center}
+.avatar{width:70px;height:70px;flex-shrink:0;border-radius:20px;object-fit:cover;background:#24384c;border:2px solid #49dfd0}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.detail{background:#0a1624;border:1px solid #263b50;border-radius:12px;padding:11px;min-width:0;overflow-wrap:anywhere}
+.detail small{display:block;color:var(--muted);margin-bottom:4px}
+.detail strong{overflow-wrap:anywhere}
+#toast{position:fixed;z-index:5000;bottom:85px;left:50%;transform:translateX(-50%);background:#e7fff9;color:#09201e;padding:11px 16px;border-radius:12px;box-shadow:0 8px 35px #0008;display:none;max-width:90%;font-weight:700}
+.empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed #344a60;border-radius:14px;grid-column:1/-1;line-height:1.6}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#101d2c;color:#f4f8ff}
+.leaflet-popup-content{margin:12px;min-width:180px}
+.mapcall{min-width:180px}
+.mapcall b{display:block;font-size:14px;margin-bottom:3px}
+.mapcall small{color:#9db2c8;line-height:1.5}
+.mapcall button{margin-top:9px;background:#45e0d0;color:#06151b;border:0;border-radius:8px;padding:7px 10px;font-weight:800}
+.markerDot{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#45e0d0;border:2px solid white;box-shadow:0 0 0 5px #45e0d033,0 0 18px #45e0d0;display:grid;place-items:center}
+.markerDot span{transform:rotate(45deg);font-size:14px}
+.cesium-viewer-bottom,.cesium-viewer-toolbar,.cesium-viewer-animationContainer,.cesium-viewer-timelineContainer,.cesium-viewer-fullscreenContainer{display:none!important}
+.cesium-viewer{font-family:inherit}
+.placeQuick{position:absolute;z-index:30;left:9px;right:9px;bottom:44px;max-width:390px;background:#101d2cf7;border:1px solid #45e0d0;border-radius:15px;padding:12px;box-shadow:0 12px 35px #0009;display:none}
+.placeQuick.show{display:block}
+.placeQuickHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.placeQuick p{font-size:12px;color:#b5c7da;line-height:1.5;margin:7px 0}
+.coords{overflow-wrap:anywhere;color:var(--cyan);font-size:12px}
+.photoGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px}
+.photoGrid img{width:100%;height:65px;object-fit:cover;border-radius:8px;border:1px solid #344a60}
+.photoCount{font-size:12px;color:var(--cyan)}
+.mapHint{padding:10px 12px;border:1px solid #284459;background:#0d1b29;border-radius:12px;margin:8px 0;color:#b9cadd;font-size:12px;line-height:1.6}
+.radiusPanel{border:1px solid #28504f;background:linear-gradient(130deg,#0c252b,#101d2c);border-radius:15px;padding:12px;margin:12px 0}
+.radiusTitle{font-weight:800;margin-bottom:5px}
+.radiusButtons{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
+.radiusButtons .btn{padding:9px 3px;font-size:12px}
+.radiusButtons .btn.active{background:#45e0d0;color:#07131d;font-weight:900}
+.nearStatus{font-size:12px;color:#b9cadd;line-height:1.6;margin-top:9px}
+.nearStatus strong{color:var(--cyan)}
+@media(min-width:760px){
+ header{padding:14px 24px}.top{max-width:1250px;margin:auto}
+ main{padding:20px}.grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #globe{height:500px}#map{height:500px}
+ .overlay{align-items:center}.sheet{border-radius:22px}
+ .radiusButtons{max-width:450px}
+}
+@media(max-width:370px){
+ .brand{font-size:16px}.status{font-size:9px;padding:5px}
+ .grid{grid-template-columns:1fr}
+ .card img.cover{height:160px}
+ .radiusButtons{gap:4px}.radiusButtons .btn{font-size:11px}
+}
 </style>
 </head>
 <body>
-<div class="app">
-<header class="topbar">
- <div class="brand"><div class="logo"><i class="fa-solid fa-screwdriver-wrench"></i></div><div><strong>UstaMap <span style="color:var(--accent)">&</span> Service Hub</strong><small id="subtitle">Yaxınlıqdakı ustalar və xidmətlər</small></div></div>
- <div class="lang" aria-label="Language"><button data-lang="az">AZ</button><button data-lang="en">EN</button><button data-lang="ru">RU</button><button data-lang="tr">TR</button></div>
- <button class="iconbtn" id="menuBtn" aria-label="Menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+<header>
+ <div class="top">
+  <div class="brand"><div class="logo">◎</div><div>USTA<span>MAP</span><div style="font-size:10px;color:#91a7bf;font-weight:500;letter-spacing:2px">EARTHVIEW PRO</div></div></div>
+  <div class="status" id="systemStatus">● Xəritə sistemi</div>
+ </div>
+ <div class="searchrow">
+  <input id="search" placeholder="Ölkə, şəhər, rayon, küçə və ya ünvan..." autocomplete="off">
+  <button class="btn primary" id="searchBtn" type="button">Axtar</button>
+ </div>
+ <nav>
+  <button class="btn small" onclick="flyTo(40.4093,49.8671,50000,'Bakı, Azərbaycan')">🇦🇿 Bakı</button>
+  <button class="btn small" onclick="flyTo(41.0082,28.9784,70000,'İstanbul, Türkiyə')">🇹🇷 İstanbul</button>
+  <button class="btn small" onclick="flyTo(52.52,13.405,90000,'Berlin, Almaniya')">🇩🇪 Berlin</button>
+  <button class="btn small" onclick="flyTo(51.5072,-0.1276,90000,'London, Böyük Britaniya')">🇬🇧 London</button>
+  <button class="btn small" onclick="flyTo(40.7128,-74.006,130000,'New York, ABŞ')">🇺🇸 New York</button>
+  <button class="btn small" onclick="openAdd()">＋ Elan yerləşdir</button>
+ </nav>
 </header>
-<button class="emergency" id="emergencyBtn"><span class="pulse"></span><span id="emergencyLabel">🚨 Təcili usta/xidmət lazımdır</span><i class="fa-solid fa-chevron-right" style="margin-left:auto"></i></button>
-<div class="urgent-strip" id="urgentStrip"></div>
-<div class="controls" id="radiusControls">
- <button class="chip" data-radius="100">100 m</button><button class="chip" data-radius="500">500 m</button><button class="chip" data-radius="1000">1 km</button><button class="chip" data-radius="5000">5 km</button><button class="chip" data-radius="20000">20 km</button><button class="chip active" data-radius="country" id="countryChip">Bütün ölkə</button>
-</div>
-<div class="searchline"><div class="searchbox"><i class="fa-solid fa-magnifying-glass"></i><input id="searchInput" type="search" placeholder="Usta, xidmət və ya kateqoriya axtar..."></div><button class="iconbtn" id="filterBtn" aria-label="Filters"><i class="fa-solid fa-sliders"></i></button></div>
-<main class="main">
- <div class="mapwrap"><div id="map" aria-label="UstaMap"></div></div>
- <div class="map-float"><button id="locateBtn" title="Mövqeyim"><i class="fa-solid fa-location-crosshairs"></i></button><button id="addBtn" title="Elan yerləşdir"><i class="fa-solid fa-plus"></i></button><button id="listBtn" title="Elan siyahısı"><i class="fa-solid fa-list"></i></button></div>
- <div class="map-hint"><b id="mapCount">30+</b> <span id="mapHintText">xidmət xəritədə</span> · <span id="gpsStatus">GPS gözlənilir</span></div>
- <section class="sheet" id="sheet">
-  <div class="sheethead"><h2 id="sheetTitle">Elanlar</h2><button class="iconbtn" id="closeSheet" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></div>
-  <div class="sheetbody" id="sheetBody"></div>
+
+<main>
+ <div class="sectionhead">
+  <div><h2>🌍 Canlı 3D dünya</h2><div class="sub">Peyk görüntüsü · Xidmət profilləri · Məkan seçimi</div></div>
+  <button class="btn small" onclick="resetGlobe()">Qlobus ↻</button>
+ </div>
+ <div class="globeWrap">
+  <div id="globe"></div>
+  <div class="globeTools">
+   <button class="pill" onclick="locateMe()">📍 Mənim yerim</button>
+   <button class="pill" onclick="openAdd()">＋ Dünyaya əlavə et</button>
+  </div>
+  <div class="legend">🟢 Elanlar · Qlobusu sürüşdür · Səthə toxunaraq məkan seç</div>
+  <div id="globeQuick" class="placeQuick">
+   <div class="placeQuickHead"><strong>📍 Bu məkana elan yerləşdir</strong><button class="close" style="width:30px;height:30px" onclick="hidePlaceQuick('globeQuick')">×</button></div>
+   <p id="globeQuickName">Seçilmiş məkan</p><div class="coords" id="globeQuickCoords"></div>
+   <button class="btn primary" style="width:100%;margin-top:9px" onclick="openAddAtSelected()">＋ Bu yerə elan yerləşdir</button>
+  </div>
+ </div>
+
+ <div class="sectionhead" style="margin-top:22px">
+  <div><h2>🗺️ Ətraflı xəritə</h2><div class="sub" id="locationLabel">Dünya xəritəsi · Seçilən nöqtəyə elan əlavə et</div></div>
+  <button class="btn small" onclick="locateMe()">◎ Mənim yerim</button>
+ </div>
+ <div class="mapHint">Xəritədə istənilən nöqtəyə toxunaraq məkan seç. Küçə və peyk xəritəsi arasında keçid et. GPS üçün brauzerdə məkan icazəsi tələb olunur.</div>
+ <div class="mapWrap"><div id="map"></div></div>
+ <div class="card" style="padding:14px;margin-top:10px">
+  <div class="placeQuickHead"><strong>📌 Seçilmiş məkan</strong><button class="btn small" onclick="openAddAtSelected()">＋ Bu yerə elan</button></div>
+  <div id="selectedPlace" style="margin-top:8px">Bakı, Azərbaycan</div>
+  <div id="selectedCoords" class="coords" style="margin-top:6px">40.409300, 49.867100</div>
+ </div>
+
+ <section class="radiusPanel" id="radiusPanel">
+  <div class="radiusTitle">📡 Yaxınlıqdakı elanları tap</div>
+  <div class="sub">GPS yerini müəyyən et, sonra məsafəni seç. Seçilən radiusdakı real istifadəçi elanları siyahıda və xəritədə göstərilir.</div>
+  <button class="btn primary" id="gpsNearbyBtn" style="width:100%;margin-top:10px" onclick="startNearby()">📍 Yerimi tap və yaxın elanları göstər</button>
+  <div class="radiusButtons" id="radiusButtons">
+   <button class="btn" data-radius="1" onclick="chooseRadius(1)">1 km</button>
+   <button class="btn" data-radius="2" onclick="chooseRadius(2)">2 km</button>
+   <button class="btn" data-radius="3" onclick="chooseRadius(3)">3 km</button>
+   <button class="btn" data-radius="4" onclick="chooseRadius(4)">4 km</button>
+   <button class="btn active" data-radius="5" onclick="chooseRadius(5)">5 km</button>
+  </div>
+  <div class="nearStatus" id="nearStatus">GPS hələ aktiv edilməyib. Yaxınlıqdakı elanları axtarmaq üçün yuxarıdakı düyməyə toxun.</div>
+  <button class="btn small" style="margin-top:9px" onclick="clearNearby()">Bütün elanlara qayıt</button>
  </section>
- <div class="toast" id="toast" role="status"></div>
+
+ <div class="sectionhead" style="margin-top:22px">
+  <div><h2>✨ Kəşf et</h2><div class="sub" id="listingSubtitle">Ustalar, xidmətlər və elanlar</div></div>
+  <button class="btn small" onclick="openAdd()">＋ Elan</button>
+ </div>
+ <div class="filters" id="filters"></div>
+ <div class="grid" id="listingGrid"></div>
 </main>
-<nav class="bottomnav">
- <button class="navitem active" data-view="map"><i class="fa-solid fa-map-location-dot"></i><span id="navMap">Xəritə</span></button>
- <button class="navitem" data-view="list"><i class="fa-solid fa-compass"></i><span id="navExplore">Kəşf et</span></button>
- <button class="navitem" data-view="profile"><i class="fa-solid fa-user"></i><span id="navProfile">Profilim</span></button>
- <button class="navitem" data-view="add"><i class="fa-solid fa-circle-plus"></i><span id="navAdd">Elan ver</span></button>
-</nav>
+
+<div class="bottomnav">
+ <button onclick="window.scrollTo({top:0,behavior:'smooth'})"><b>🌍</b>Dünya</button>
+ <button onclick="document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})"><b>🗺️</b>Xəritə</button>
+ <button onclick="document.getElementById('listingGrid').scrollIntoView({behavior:'smooth'})"><b>✦</b>Kəşf et</button>
+ <button onclick="startNearby()"><b>📡</b>Yaxınımda</button>
+ <button onclick="openAdd()"><b>＋</b>Elan ver</button>
 </div>
+
+<div class="overlay" id="addOverlay" onclick="if(event.target===this)closeSheet('addOverlay')">
+ <div class="sheet">
+  <div class="sheethead"><h2>＋ Yeni elan yarat</h2><button class="close" onclick="closeSheet('addOverlay')">×</button></div>
+  <form class="formgrid" id="addForm">
+   <div><label>Ad və ya usta adı *</label><input id="fName" required maxlength="70" placeholder="Məsələn: Şamxal usta"></div>
+   <div><label>Peşə / xidmət *</label><select id="fCat" required></select></div>
+   <div><label>Elanın başlığı *</label><input id="fTitle" required maxlength="100" placeholder="Məsələn: Mənzil təmiri və alçıpan"></div>
+   <div><label>Ətraflı məlumat</label><textarea id="fDesc" rows="4" maxlength="1500" placeholder="İş təcrübəsi, xidmətlər, iş vaxtı..."></textarea></div>
+   <div><label>Telefon</label><input id="fPhone" type="tel" maxlength="35" placeholder="+994..."></div>
+   <div><label>Qiymət / qiymət qeydi</label><input id="fPrice" maxlength="60" placeholder="Razılaşma ilə"></div>
+   <div><label>Ölkə, şəhər, ünvan *</label><input id="fAddress" required maxlength="220" placeholder="Bakı, Yasamal rayonu"></div>
+   <div class="details">
+    <div><label>Enlik (latitude)</label><input id="fLat" type="number" step="any" value="40.4093" required></div>
+    <div><label>Uzunluq (longitude)</label><input id="fLng" type="number" step="any" value="49.8671" required></div>
+   </div>
+   <div class="mapHint">Koordinatlar seçdiyin xəritə nöqtəsindən götürülür. İstəsən, rəqəmləri özün dəyişə bilərsən.</div>
+   <div>
+    <label>Şəkillər — maksimum 10 ədəd</label>
+    <input id="fPhotos" type="file" accept="image/*" multiple>
+    <div class="sub">Qalereyadan şəkillər seç.</div>
+   </div>
+   <div>
+    <label>📷 Birbaşa kamera ilə çək</label>
+    <input id="fCamera" type="file" accept="image/*" capture="environment">
+   </div>
+   <div id="photoPreview" class="photoGrid"></div>
+   <div id="photoCount" class="photoCount">0 / 10 şəkil seçilib</div>
+   <button class="btn primary" id="saveListingBtn" type="submit">Elanı saxla və xəritədə göstər</button>
+  </form>
+ </div>
+</div>
+
+<div class="overlay" id="profileOverlay" onclick="if(event.target===this)closeSheet('profileOverlay')">
+ <div class="sheet">
+  <div class="sheethead"><h2>Usta profili</h2><button class="close" onclick="closeSheet('profileOverlay')">×</button></div>
+  <div id="profileContent"></div>
+ </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.127/Build/Cesium/Cesium.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-(() => {
 'use strict';
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
-const I18N = {
- az:{subtitle:'Yaxınlıqdakı ustalar və xidmətlər',emergency:'🚨 Təcili usta/xidmət lazımdır',country:'Bütün ölkə',search:'Usta, xidmət və ya kateqoriya axtar...',map:'Xəritə',explore:'Kəşf et',profile:'Profilim',add:'Elan ver',listTitle:'Yaxınlıqdakı elanlar',myAds:'Şəxsi kabinet',newAd:'Yeni elan yerləşdir',filters:'Axtarış filtrləri',legal:'Məxfilik və platforma qaydaları',settings:'Menyu və parametrlər',all:'Hamısı',crafts:'Ustalar',services:'Xidmətlər',shops:'Obyektlər',farm:'Kənd təsərrüfatı',machines:'Xüsusi texnika',free:'Pulsuz elan',vip:'VIP elan · 3 AZN / 30 gün',name:'Ad / biznes adı',category:'Kateqoriya',phone:'Telefon',description:'Xidmət haqqında',city:'Şəhər / rayon',address:'Ünvan',photos:'Fotoşəkillər (maks. 10)',pick:'Xəritədə yer seç',gps:'GPS mövqeyindən istifadə et',publish:'Elanı dərc et',cancel:'Ləğv et',renew:'🔄 30 gün pulsuz yenilə',delete:'🗑️ Sil',days:'gün qalıb',expired:'Vaxtı bitib',open:'Profilə bax',call:'Zəng et',noAds:'Hələ şəxsi elanınız yoxdur.',noResults:'Uyğun elan tapılmadı.',save:'Saxla',urgentTitle:'Təcili çağırış yarat',urgentKind:'Hansı xidmət lazımdır?',urgentDetails:'Qısa izah',sendUrgent:'Təcili çağırış göndər',urgentPlaceholder:'Məs: Təkər partlayıb, təcili usta lazımdır',urgentSent:'Təcili çağırış xəritəyə əlavə edildi.',gpsWait:'GPS gözlənilir',gpsOk:'GPS aktivdir',gpsFail:'GPS alınmadı — xəritədən yer seçin',locationRequired:'GPS və ya xəritədən yer seçin.',fillRequired:'Ad, telefon və təsviri doldurun.',published:'Elan cihazınızda saxlanıldı.',renewed:'Elan 30 gün yeniləndi.',deleted:'Elan silindi.',choosePlace:'İndi xəritədə istədiyiniz yerə toxunun.',placeSelected:'Elan üçün yer seçildi.',terms1:'UstaMap yalnız elan yerləşdirmə platformasıdır və vasitəçidir.',terms2:'Platforma ustaların və ya xidmət göstərənlərin gördüyü işin keyfiyyətinə, maliyyə razılaşmalarına və ya vurduğu zərərə görə heç bir hüquqi və ya maddi məsuliyyət daşımır.',terms3:'İstifadəçilər bir-biri ilə müqavilə bağlamaqda və xidmət keyfiyyətini yoxlamaqda cavabdehdirlər.',privacy:'Məxfilik',rules:'Platforma qaydaları',legalIntro:'Davam etməzdən əvvəl qaydaları oxuyun.',demo:'Demo elan',days30:'30 günlük elan',selectCategory:'Kateqoriya seçin',distance:'Məsafə',allCountry:'Bütün ölkə',filterCategory:'Kateqoriya',filterRadius:'Axtarış radiusu',apply:'Tətbiq et',close:'Bağla',videoAd:'SPONSORLU XİDMƏT REKLAMI',adDesc:'Tikinti və xidmətlər üçün reklam sahəsi',tapMap:'Xəritədə nöqtəyə toxunun',freeGps:'Pulsuz elan üçün GPS mövqeyi istifadə edilir. VIP elanda xəritədən yer seçə bilərsiniz.',renewInfo:'Elanlar 30 gün aktiv qalır.',about:'UstaMap elanları birbaşa əlaqə üçün göstərir.',urgentActive:'Təcili çağırış',removeUrgent:'Bağla',chooseType:'Xidmət növünü seçin',permission:'Mövqe icazəsi verilməyib.',photosLimit:'Maksimum 10 foto seçilə bilər.',demoNotice:'Nümunə profillərdir — əlaqə məlumatları demo xarakterlidir.'},
- en:{subtitle:'Nearby tradespeople and services',emergency:'🚨 Need an urgent service?',country:'Entire country',search:'Search a trade, service or category...',map:'Map',explore:'Explore',profile:'My profile',add:'Post ad',listTitle:'Nearby listings',myAds:'My account',newAd:'Create a listing',filters:'Search filters',legal:'Privacy & platform rules',settings:'Menu & settings',all:'All',crafts:'Trades',services:'Services',shops:'Businesses',farm:'Agriculture',machines:'Heavy equipment',free:'Free listing',vip:'VIP listing · AZN 3 / 30 days',name:'Name / business name',category:'Category',phone:'Phone',description:'Service description',city:'City / district',address:'Address',photos:'Photos (max 10)',pick:'Choose location on map',gps:'Use GPS location',publish:'Publish listing',cancel:'Cancel',renew:'🔄 Renew free for 30 days',delete:'🗑️ Delete',days:'days left',expired:'Expired',open:'View profile',call:'Call',noAds:'You have no personal listings yet.',noResults:'No matching listings found.',save:'Save',urgentTitle:'Create emergency request',urgentKind:'What service do you need?',urgentDetails:'Short description',sendUrgent:'Send emergency request',urgentPlaceholder:'E.g. Flat tire, need urgent help',urgentSent:'Emergency request added to the map.',gpsWait:'Waiting for GPS',gpsOk:'GPS active',gpsFail:'GPS unavailable — choose a map location',locationRequired:'Use GPS or choose a map location.',fillRequired:'Enter name, phone and description.',published:'Listing saved on this device.',renewed:'Listing renewed for 30 days.',deleted:'Listing deleted.',choosePlace:'Now tap your desired location on the map.',placeSelected:'Location selected for the listing.',terms1:'UstaMap is only a listing platform and intermediary.',terms2:'The platform accepts no legal or financial liability for service quality, financial agreements, or damage caused by tradespeople or service providers.',terms3:'Users are responsible for agreements with one another and for checking service quality.',privacy:'Privacy',rules:'Platform rules',legalIntro:'Please read the rules before continuing.',demo:'Demo listing',days30:'30-day listing',selectCategory:'Choose category',distance:'Distance',allCountry:'Entire country',filterCategory:'Category',filterRadius:'Search radius',apply:'Apply',close:'Close',videoAd:'SPONSORED SERVICE AD',adDesc:'Advertising space for construction and services',tapMap:'Tap a point on the map',freeGps:'Free listings use GPS. VIP listings can be placed by selecting a point on the map.',renewInfo:'Listings stay active for 30 days.',about:'UstaMap displays listings for direct contact.',urgentActive:'Emergency request',removeUrgent:'Close',chooseType:'Choose service type',permission:'Location permission was not granted.',photosLimit:'You can select up to 10 photos.',demoNotice:'Sample profiles — contact details are demo data.'},
- ru:{subtitle:'Мастера и услуги рядом',emergency:'🚨 Срочно нужен мастер/услуга?',country:'Вся страна',search:'Поиск мастера, услуги или категории...',map:'Карта',explore:'Поиск',profile:'Мой профиль',add:'Подать объявление',listTitle:'Объявления рядом',myAds:'Личный кабинет',newAd:'Новое объявление',filters:'Фильтры поиска',legal:'Конфиденциальность и правила',settings:'Меню и настройки',all:'Все',crafts:'Мастера',services:'Услуги',shops:'Объекты',farm:'Сельское хозяйство',machines:'Спецтехника',free:'Бесплатное объявление',vip:'VIP · 3 AZN / 30 дней',name:'Имя / название бизнеса',category:'Категория',phone:'Телефон',description:'Описание услуги',city:'Город / район',address:'Адрес',photos:'Фото (макс. 10)',pick:'Выбрать место на карте',gps:'Использовать GPS',publish:'Опубликовать',cancel:'Отмена',renew:'🔄 Продлить бесплатно на 30 дней',delete:'🗑️ Удалить',days:'дней осталось',expired:'Срок истёк',open:'Открыть профиль',call:'Позвонить',noAds:'У вас пока нет личных объявлений.',noResults:'Ничего не найдено.',save:'Сохранить',urgentTitle:'Срочный вызов',urgentKind:'Какая услуга нужна?',urgentDetails:'Краткое описание',sendUrgent:'Отправить вызов',urgentPlaceholder:'Напр.: проколото колесо, нужен мастер',urgentSent:'Срочный вызов добавлен на карту.',gpsWait:'Ожидание GPS',gpsOk:'GPS активен',gpsFail:'GPS недоступен — выберите точку на карте',locationRequired:'Включите GPS или выберите место на карте.',fillRequired:'Заполните имя, телефон и описание.',published:'Объявление сохранено на устройстве.',renewed:'Объявление продлено на 30 дней.',deleted:'Объявление удалено.',choosePlace:'Теперь нажмите нужное место на карте.',placeSelected:'Место выбрано.',terms1:'UstaMap — только платформа объявлений и посредник.',terms2:'Платформа не несёт юридической или финансовой ответственности за качество работ, финансовые договорённости или ущерб.',terms3:'Пользователи сами отвечают за договорённости и проверку качества услуг.',privacy:'Конфиденциальность',rules:'Правила платформы',legalIntro:'Перед продолжением ознакомьтесь с правилами.',demo:'Демо-объявление',days30:'Объявление на 30 дней',selectCategory:'Выберите категорию',distance:'Расстояние',allCountry:'Вся страна',filterCategory:'Категория',filterRadius:'Радиус поиска',apply:'Применить',close:'Закрыть',videoAd:'РЕКЛАМА УСЛУГ',adDesc:'Рекламное место для строительства и услуг',tapMap:'Нажмите точку на карте',freeGps:'Бесплатное объявление использует GPS. Для VIP можно выбрать место на карте.',renewInfo:'Объявления активны 30 дней.',about:'UstaMap показывает объявления для прямой связи.',urgentActive:'Срочный вызов',removeUrgent:'Закрыть',chooseType:'Выберите услугу',permission:'Нет разрешения на геолокацию.',photosLimit:'Можно выбрать не более 10 фото.',demoNotice:'Примеры профилей — контакты демонстрационные.'},
- tr:{subtitle:'Yakındaki ustalar ve hizmetler',emergency:'🚨 Acil usta/hizmet mi lazım?',country:'Tüm ülke',search:'Usta, hizmet veya kategori ara...',map:'Harita',explore:'Keşfet',profile:'Profilim',add:'İlan ver',listTitle:'Yakındaki ilanlar',myAds:'Kişisel hesabım',newAd:'Yeni ilan oluştur',filters:'Arama filtreleri',legal:'Gizlilik ve platform kuralları',settings:'Menü ve ayarlar',all:'Tümü',crafts:'Ustalar',services:'Hizmetler',shops:'İşletmeler',farm:'Tarım',machines:'İş makineleri',free:'Ücretsiz ilan',vip:'VIP ilan · 3 AZN / 30 gün',name:'Ad / işletme adı',category:'Kategori',phone:'Telefon',description:'Hizmet açıklaması',city:'Şehir / ilçe',address:'Adres',photos:'Fotoğraflar (en fazla 10)',pick:'Haritadan konum seç',gps:'GPS konumunu kullan',publish:'İlanı yayınla',cancel:'İptal',renew:'🔄 30 gün ücretsiz yenile',delete:'🗑️ Sil',days:'gün kaldı',expired:'Süresi doldu',open:'Profili aç',call:'Ara',noAds:'Henüz kişisel ilanınız yok.',noResults:'Uygun ilan bulunamadı.',save:'Kaydet',urgentTitle:'Acil çağrı oluştur',urgentKind:'Hangi hizmet gerekli?',urgentDetails:'Kısa açıklama',sendUrgent:'Acil çağrı gönder',urgentPlaceholder:'Örn. Lastik patladı, acil usta lazım',urgentSent:'Acil çağrı haritaya eklendi.',gpsWait:'GPS bekleniyor',gpsOk:'GPS etkin',gpsFail:'GPS alınamadı — haritadan konum seçin',locationRequired:'GPS kullanın veya haritadan konum seçin.',fillRequired:'Ad, telefon ve açıklamayı doldurun.',published:'İlan bu cihazda kaydedildi.',renewed:'İlan 30 gün yenilendi.',deleted:'İlan silindi.',choosePlace:'Şimdi haritada istediğiniz yere dokunun.',placeSelected:'İlan konumu seçildi.',terms1:'UstaMap yalnızca ilan platformu ve aracıdır.',terms2:'Platform, iş kalitesi, mali anlaşmalar veya hizmet sağlayıcının verdiği zarardan hukuki ya da mali sorumluluk kabul etmez.',terms3:'Kullanıcılar anlaşmalardan ve hizmet kalitesini kontrol etmekten sorumludur.',privacy:'Gizlilik',rules:'Platform kuralları',legalIntro:'Devam etmeden önce kuralları okuyun.',demo:'Demo ilan',days30:'30 günlük ilan',selectCategory:'Kategori seçin',distance:'Mesafe',allCountry:'Tüm ülke',filterCategory:'Kategori',filterRadius:'Arama yarıçapı',apply:'Uygula',close:'Kapat',videoAd:'SPONSORLU HİZMET REKLAMI',adDesc:'İnşaat ve hizmet reklam alanı',tapMap:'Haritada bir noktaya dokunun',freeGps:'Ücretsiz ilan GPS kullanır. VIP ilanda haritadan yer seçebilirsiniz.',renewInfo:'İlanlar 30 gün aktif kalır.',about:'UstaMap ilanları doğrudan iletişim için gösterir.',urgentActive:'Acil çağrı',removeUrgent:'Kapat',chooseType:'Hizmet türünü seçin',permission:'Konum izni verilmedi.',photosLimit:'En fazla 10 fotoğraf seçilebilir.',demoNotice:'Örnek profiller — iletişim bilgileri demodur.'}
-};
-let lang = (()=>{const l=(navigator.language||'en').toLowerCase();return l.startsWith('az')?'az':l.startsWith('ru')?'ru':l.startsWith('tr')?'tr':'en'})();
-const t = key => (I18N[lang]&&I18N[lang][key])||I18N.en[key]||key;
-const CAT = [
- ['Alçipan ustası','Drywall installer','Мастер гипсокартона','Alçıpan ustası','crafts','fa-layer-group','#69e0bd'],
- ['Şpatlyovka / Malyar','Painter / skim coat','Маляр / шпаклёвщик','Boyacı / alçı','crafts','fa-paint-roller','#ffb86b'],
- ['Santexnik','Plumber','Сантехник','Tesisatçı','crafts','fa-faucet-drip','#5b9cff'],
- ['Elektrik ustası','Electrician','Электрик','Elektrik ustası','crafts','fa-bolt','#ffcc66'],
- ['Motorist','Auto mechanic','Автомеханик','Oto tamirci','crafts','fa-car-battery','#ff647c'],
- ['Maşinist','Machine operator','Машинист','Makine operatörü','crafts','fa-gears','#b8a1ff'],
- ['Betonçu','Concrete worker','Бетонщик','Beton ustası','crafts','fa-trowel-bricks','#c4d0df'],
- ['Şap ustası','Screed installer','Стяжка пола','Şap ustası','crafts','fa-ruler-combined','#69e0bd'],
- ['Kafel-metlax','Tile installer','Плиточник','Fayans ustası','crafts','fa-border-all','#5b9cff'],
- ['Dam örtüyü','Roofing specialist','Кровельщик','Çatı ustası','crafts','fa-house-chimney','#ffb86b'],
- ['Aşpaz','Chef','Повар','Aşçı','services','fa-utensils','#ffb86b'],
- ['Ofisiant','Waiter','Официант','Garson','services','fa-mug-hot','#69e0bd'],
- ['Bərbər','Barber','Барбер','Berber','services','fa-scissors','#b8a1ff'],
- ['Taksi xidməti','Taxi service','Такси','Taksi','services','fa-taxi','#ffcc66'],
- ['Kuryer','Courier','Курьер','Kurye','services','fa-box','#5b9cff'],
- ['Tikinti materialları','Building materials','Стройматериалы','İnşaat malzemeleri','shops','fa-store','#69e0bd'],
- ['Kafe','Cafe','Кафе','Kafe','shops','fa-mug-saucer','#ffb86b'],
- ['Avto-servis','Auto service','Автосервис','Oto servis','shops','fa-screwdriver-wrench','#5b9cff'],
- ['Market','Grocery store','Маркет','Market','shops','fa-basket-shopping','#69e0bd'],
- ['İş geyimləri','Workwear store','Спецодежда','İş kıyafetleri','shops','fa-vest','#b8a1ff'],
- ['Qoyun / keçi','Sheep / goats','Овцы / козы','Koyun / keçi','farm','fa-sheep','#ffb86b'],
- ['Cins pişik / it','Pedigree cats / dogs','Породистые кошки / собаки','Cins kedi / köpek','farm','fa-paw','#b8a1ff'],
- ['Quşçuluq','Poultry','Птицеводство','Kümes hayvancılığı','farm','fa-kiwi-bird','#ffcc66'],
- ['Yem satışı','Animal feed','Корма','Yem satışı','farm','fa-wheat-awn','#69e0bd'],
- ['Baytar','Veterinarian','Ветеринар','Veteriner','farm','fa-stethoscope','#5b9cff'],
- ['Avtokran','Mobile crane','Автокран','Mobil vinç','machines','fa-truck-monster','#ffb86b'],
- ['Evakuator','Tow truck','Эвакуатор','Çekici','machines','fa-truck-pickup','#ff647c'],
- ['Betonomexanik','Concrete mixer','Бетономешалка','Beton mikseri','machines','fa-truck-moving','#69e0bd'],
- ['Ekskavator','Excavator','Экскаватор','Ekskavatör','machines','fa-tractor','#ffcc66'],
- ['Qazel','Cargo van','Газель','Panelvan','machines','fa-truck','#5b9cff'],
- ['Söküntü ustası','Demolition worker','Мастер демонтажа','Yıkım ustası','crafts','fa-hammer','#ff647c'],
- ['Armaturçu','Rebar installer','Арматурщик','Demir ustası','crafts','fa-grip-lines','#c4d0df'],
- ['Qəlib ustası','Formwork carpenter','Опалубщик','Kalıp ustası','crafts','fa-hammer','#b8a1ff'],
- ['Hörgü ustası','Bricklayer','Каменщик','Duvar ustası','crafts','fa-trowel-bricks','#ffb86b'],
- ['Fasad ustası','Facade installer','Фасадчик','Cephe ustası','crafts','fa-building','#5b9cff'],
- ['İzolyasiya ustası','Insulation installer','Мастер изоляции','Yalıtım ustası','crafts','fa-house','#69e0bd'],
- ['Parket ustası','Parquet installer','Паркетчик','Parke ustası','crafts','fa-border-all','#b8a1ff'],
- ['Laminat ustası','Laminate flooring','Укладчик ламината','Laminat ustası','crafts','fa-border-all','#5b9cff'],
- ['Qapı-pəncərə ustası','Doors and windows','Двери и окна','Kapı pencere ustası','crafts','fa-door-open','#ffb86b'],
- ['Mebel ustası','Furniture maker','Мебельщик','Mobilyacı','crafts','fa-couch','#b8a1ff'],
- ['Qaynaqçı','Welder','Сварщик','Kaynakçı','crafts','fa-fire-burner','#ff647c'],
- ['Dəmirçi','Metalworker','Металлообработчик','Metal ustası','crafts','fa-hammer','#c4d0df'],
- ['Damcı suvarma ustası','Irrigation installer','Мастер орошения','Sulama ustası','crafts','fa-droplet','#5b9cff'],
- ['Kondisioner ustası','AC technician','Мастер кондиционеров','Klima ustası','crafts','fa-snowflake','#69e0bd'],
- ['Kombi ustası','Boiler technician','Мастер котлов','Kombi ustası','crafts','fa-temperature-half','#ffb86b'],
- ['Lift ustası','Elevator technician','Лифтовой мастер','Asansör ustası','crafts','fa-elevator','#b8a1ff'],
- ['Kamera və siqnalizasiya','CCTV and alarms','Камеры и сигнализация','Kamera ve alarm','services','fa-video','#5b9cff'],
- ['İnternet və şəbəkə','Internet and networking','Интернет и сети','İnternet ve ağ','services','fa-wifi','#69e0bd'],
- ['Kompüter təmiri','Computer repair','Ремонт компьютеров','Bilgisayar tamiri','services','fa-laptop','#b8a1ff'],
- ['Telefon təmiri','Phone repair','Ремонт телефонов','Telefon tamiri','services','fa-mobile-screen','#5b9cff'],
- ['Məişət texnikası təmiri','Appliance repair','Ремонт бытовой техники','Beyaz eşya tamiri','services','fa-plug','#ffb86b'],
- ['Təmizlik xidməti','Cleaning service','Уборка','Temizlik hizmeti','services','fa-broom','#69e0bd'],
- ['Ev köçürmə','Moving service','Переезд','Taşınma hizmeti','services','fa-boxes-stacked','#5b9cff'],
- ['Uşaq baxıcısı','Childcare','Няня','Çocuk bakıcısı','services','fa-child-reaching','#ffb86b'],
- ['Yaşlılara qulluq','Elder care','Уход за пожилыми','Yaşlı bakımı','services','fa-hand-holding-heart','#ff647c'],
- ['Fotoqraf','Photographer','Фотограф','Fotoğrafçı','services','fa-camera','#b8a1ff'],
- ['Video çəkiliş','Videography','Видеосъёмка','Video çekimi','services','fa-video','#5b9cff'],
- ['Tərcüməçi','Translator','Переводчик','Tercüman','services','fa-language','#69e0bd'],
- ['Mühasib','Accountant','Бухгалтер','Muhasebeci','services','fa-calculator','#ffb86b'],
- ['Hüquqi məsləhət','Legal consultation','Юридическая консультация','Hukuki danışmanlık','services','fa-scale-balanced','#b8a1ff'],
- ['Daşınmaz əmlak','Real estate','Недвижимость','Gayrimenkul','shops','fa-house','#69e0bd'],
- ['Avtomobil satışı','Car sales','Продажа автомобилей','Araç satışı','shops','fa-car','#5b9cff'],
- ['Ehtiyat hissələri','Spare parts','Запчасти','Yedek parça','shops','fa-gears','#ffb86b'],
- ['Alət icarəsi','Tool rental','Аренда инструментов','Alet kiralama','shops','fa-toolbox','#b8a1ff'],
- ['Tikinti texnikası icarəsi','Construction equipment rental','Аренда строительной техники','İş makinesi kiralama','shops','fa-truck-monster','#ff647c'],
- ['Gül mağazası','Florist','Цветочный магазин','Çiçekçi','shops','fa-seedling','#69e0bd'],
- ['Aptek','Pharmacy','Аптека','Eczane','shops','fa-prescription-bottle-medical','#5b9cff'],
- ['Restoran','Restaurant','Ресторан','Restoran','shops','fa-utensils','#ffb86b'],
- ['Çörək və şirniyyat','Bakery and sweets','Пекарня и сладости','Fırın ve tatlı','shops','fa-bread-slice','#c4d0df'],
- ['İstixana','Greenhouse','Теплица','Sera','farm','fa-seedling','#69e0bd'],
- ['Tərəvəz və meyvə','Fruit and vegetables','Овощи и фрукты','Meyve sebze','farm','fa-apple-whole','#ff647c'],
- ['Toxum və ting','Seeds and seedlings','Семена и саженцы','Tohum ve fide','farm','fa-leaf','#69e0bd'],
- ['Arıçılıq','Beekeeping','Пчеловодство','Arıcılık','farm','fa-bug','#ffcc66'],
- ['İri buynuzlu mal-qara','Cattle','Крупный рогатый скот','Büyükbaş hayvan','farm','fa-cow','#ffb86b'],
- ['At və eşşək','Horses and donkeys','Лошади и ослы','At ve eşek','farm','fa-horse','#b8a1ff'],
- ['Traktor','Tractor','Трактор','Traktör','machines','fa-tractor','#69e0bd'],
- ['Yük maşını','Truck','Грузовик','Kamyon','machines','fa-truck','#5b9cff'],
- ['Mini ekskavator','Mini excavator','Мини-экскаватор','Mini ekskavatör','machines','fa-tractor','#ffb86b'],
- ['Forklift','Forklift','Погрузчик','Forklift','machines','fa-dolly','#b8a1ff'],
- ['Generator icarəsi','Generator rental','Аренда генератора','Jeneratör kiralama','machines','fa-plug','#ffcc66'],
- ['Su maşını','Water tanker','Водовоз','Su tankeri','machines','fa-truck-droplet','#5b9cff'],
- ['Zibil daşınması','Waste removal','Вывоз мусора','Moloz taşıma','machines','fa-dumpster','#c4d0df']
+
+const STORE='ustamap_earthview_listings_v3';
+const OLD_STORES=['ustamap_earthview_listings_v2'];
+const fallbackPhoto='https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop';
+
+const CATEGORIES=[
+['Tikinti','🧱'],['Beton işləri','🏗️'],['Armatur və qəlib','🔩'],
+['Alçıpan','🪚'],['Malyar və rəngsaz','🎨'],['Divar kağızı','🧻'],
+['Kafel-metlax','🧱'],['Döşəmə və parket','🪵'],['Dam örtüyü','🏠'],
+['Fasad və izolyasiya','🏢'],['Santexnik','🔧'],['Elektrik','⚡'],
+['Qaz ustası','🔥'],['Qaynaq və metal','🧲'],['Qapı və pəncərə','🚪'],
+['Mebel ustası','🪑'],['Dülgər','🪚'],['Kondisioner','❄️'],
+['Soyuducu təmiri','🧊'],['Paltaryuyan təmiri','🧺'],
+['Məişət texnikası','🔌'],['Telefon təmiri','📱'],
+['Kompüter və IT','💻'],['Avtomobil təmiri','🚗'],
+['Avtoelektrik','🔋'],['Təkər və şin','🛞'],['Yükdaşıma','🚚'],
+['Ev və ofis köçürmə','📦'],['Təmizlik','🧹'],['Bağbanlıq','🌱'],
+['Kənd təsərrüfatı','🚜'],['Heyvandarlıq','🐄'],
+['Suvarma sistemləri','💧'],['Qapı və kilid','🔐'],
+['Şüşə və güzgü','🪞'],['Reklam və lövhə','🪧'],
+['Foto və video','📸'],['Tikiş və geyim','🧵'],
+['Gözəllik xidməti','💇'],['Tədris və repetitor','📚'],
+['Daşınmaz əmlak','🏘️'],['İcarə xidmətləri','🔑'],
+['Usta köməkçisi','👷'],['Digər','🌐']
 ];
-const namesAz=['Elvin Məmmədov','Rəşad Əliyev','Tural Həsənov','Nihat Quliyev','Orxan İsmayılov','Vüqar Rzayev','Anar Hüseynov','Samir Abbasov','Emin Cəfərov','Kamal Ələkbərov','Aysel Kərimova','Murad Əhmədov','Rauf Vəliyev','Eldar Məmmədli','Fuad Babayev','Usta Market','Nar Kafe','AvtoPro Servis','Araz Mini Market','ProWork Geyim','Qurban təsərrüfatı','Pet House Baku','Şəfəq Quşçuluq','Bərəkət Yem','VetCare','Qafqaz Avtokran','Yol Kömək','BetonMix','Bakı Ekskavator','Qazel Express'];
-const descAz=['Alçıpan arakəsmə, tavan və dekor işləri. Ölçü və qiymət üçün əlaqə saxlayın.','Daxili rəngləmə, şpatlyovka, divar kağızı və təmir işləri.','Su xətti, kran, kanalizasiya və sızma problemləri.','Mənzil və obyektlərdə elektrik montajı və nasazlıq axtarışı.','Mühərrik diaqnostikası, yağ dəyişimi və gündəlik təmir.','Tikinti texnikası operatoru, razılaşma ilə işə çıxış.','Beton tökmə, armatur və qəlib işləri.','Döşəmə üçün sement şapı və səthin hazırlanması.','Hamam, mətbəx və döşəmə kafel-metlax işləri.','Dam örtüyü, metal kirəmit və su izolyasiyası.','Ev və tədbirlər üçün sifarişlə yemək hazırlanması.','Sürətli və nəzakətli servis, tədbirlər üçün də mümkündür.','Kişi saç kəsimi və saqqal forması.','Şəhərdaxili sifarişlə taksi xidməti.','Sənəd və kiçik bağlamaların çatdırılması.','Sement, boya, alət və gündəlik tikinti materialları.','İsti içkilər, səhər yeməyi və yüngül qəlyanaltılar.','Asqı, əyləc və mühərrik üzrə ilkin yoxlama.','Gündəlik ərzaq və məişət məhsulları.','İşçi geyimi, əlcək və qoruyucu vasitələr.','Sağlam qoyun və keçi, təsərrüfatdan satış.','Ev heyvanları üçün baxım və cins heyvan elanları.','Yumurta və quş məhsulları, təsərrüfat sifarişləri.','Heyvanlar üçün müxtəlif yem və qarışıq yemlər.','Heyvan müayinəsi və peyvənd üçün əlaqə saxlayın.','Tikinti üçün avtokran, əvvəlcədən sifarişlə.','Yol yardımı və avtomobilin evakuasiyası.','Beton qarışdırıcı texnika sifarişlə.','Torpaq qazıntısı və sahənin hazırlanması.','Yük və mebel daşınması üçün qazel xidməti.'];
-const demoCenter=[40.4093,49.8671];
-let currentPos=null, selectedPlace=null, radius='country', categoryFilter='all', query='', activeSheet='', activeListing=null, mapPickMode=false, photoData=[], urgentItems=[];
-let ads=[], markers=[], userMarker=null, map=null, nearestId=null;
-const STORE='ustamap_ads_v1', URGENT_STORE='ustamap_urgent_v1';
-function loadStore(){try{const x=JSON.parse(localStorage.getItem(STORE)||'[]');ads=Array.isArray(x)?x:[]}catch(e){ads=[]}try{urgentItems=JSON.parse(localStorage.getItem(URGENT_STORE)||'[]')}catch(e){urgentItems=[]}}
-function saveAds(){try{localStorage.setItem(STORE,JSON.stringify(ads))}catch(e){toast('Yaddaş doludur. Foto sayını azaldın.')}}function saveUrgent(){try{localStorage.setItem(URGENT_STORE,JSON.stringify(urgentItems))}catch(e){}}
-const demos=CAT.map((c,i)=>({id:'demo-'+i,name:namesAz[i]||c[0],category:c[0],group:c[4],icon:c[5],color:c[6],description:descAz[i]||`${c[0]} üzrə xidmət və sifarişlər. Qiymət və mövcudluq üçün əlaqə saxlayın.`,phone:'+994 50 000 '+String(1000+i).slice(-4),city:i%3===0?'Bakı':i%3===1?'Sumqayıt':'Xırdalan',address:i%3===0?'Nərimanov, Bakı':i%3===1?'Mərkəz, Sumqayıt':'Mərkəz, Xırdalan',lat:demoCenter[0]+(Math.sin(i*2.7)*0.055),lng:demoCenter[1]+(Math.cos(i*1.9)*0.075),createdAt:Date.now()-((i%22)*86400000),demo:true,photos:[]}));
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function daysLeft(ad){return Math.ceil((Number(ad.createdAt)+30*86400000-Date.now())/86400000)}
-function distM(a,b){const R=6371000,p1=a.lat*Math.PI/180,p2=b.lat*Math.PI/180,dp=(b.lat-a.lat)*Math.PI/180,dl=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(Math.min(1,h)))}
-function allListings(){return [...demos,...ads.filter(a=>a.lat!=null&&a.lng!=null)]}
-function visibleListings(){let list=allListings();if(categoryFilter!=='all')list=list.filter(a=>['crafts','services','shops','farm','machines'].includes(categoryFilter)?a.group===categoryFilter:a.category===categoryFilter);if(query){const q=query.toLocaleLowerCase();list=list.filter(a=>[a.name,a.category,a.description,a.city,a.address].join(' ').toLocaleLowerCase().includes(q))}if(currentPos&&radius!=='country'){const lim=Number(radius);list=list.filter(a=>distM(currentPos,{lat:a.lat,lng:a.lng})<=lim)}return list}
-function labelCategory(c){const item=CAT.find(x=>x[0]===c);return item?item[['az','en','ru','tr'].indexOf(lang)]:c}
-function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2600)}
-function setLang(l){lang=l;document.documentElement.lang=l;$$('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===l));$('#subtitle').textContent=t('subtitle');$('#emergencyLabel').textContent=t('emergency');$('#searchInput').placeholder=t('search');$('#countryChip').textContent=t('country');$('#navMap').textContent=t('map');$('#navExplore').textContent=t('explore');$('#navProfile').textContent=t('profile');$('#navAdd').textContent=t('add');$('#gpsStatus').textContent=currentPos?t('gpsOk'):t('gpsWait');renderMarkers();if(activeSheet)renderSheet(activeSheet)}
-function initMap(){map=L.map('map',{zoomControl:false,preferCanvas:true}).setView(demoCenter,11);L.control.zoom({position:'bottomright'}).addTo(map);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(map);map.on('move',()=>{updateNearest();});map.on('click',e=>{if(mapPickMode){selectedPlace={lat:e.latlng.lat,lng:e.latlng.lng};mapPickMode=false;toast(t('placeSelected'));$('#gpsStatus').textContent=t('placeSelected');if(activeSheet==='add')renderSheet('add');}});renderMarkers();setTimeout(()=>map.invalidateSize(),200)}
-function markerIcon(ad,nearest=false){const c=ad.color||'#69e0bd',icon=ad.icon||'fa-screwdriver-wrench';return L.divIcon({className:'',html:`<div class="marker-wrap ${nearest?'nearest':''}" style="--mc:${c}"><div class="marker-glow"></div><div class="marker-core"><i class="fa-solid ${icon}"></i></div></div>`,iconSize:[38,38],iconAnchor:[19,19]})}
-function renderMarkers(){if(!map)return;markers.forEach(m=>map.removeLayer(m));markers=[];visibleListings().forEach(ad=>{const m=L.marker([ad.lat,ad.lng],{icon:markerIcon(ad,ad.id===nearestId),keyboard:true,title:ad.name}).addTo(map);m.bindPopup(`<div class="popup-title">${esc(ad.name)}</div><div class="popup-sub">${esc(labelCategory(ad.category))} · ${esc(ad.city||'')}</div><button class="popup-open" onclick="window.__openListing('${esc(ad.id)}')">${esc(t('open'))}</button>`);m.on('click',()=>{activeListing=ad.id});markers.push(m)});$('#mapCount').textContent=visibleListings().length;$('#mapHintText').textContent=t('map');updateNearest()}
-function updateNearest(){if(!map)return;const center=map.getCenter();const list=visibleListings();if(!list.length)return;let best=null,bd=Infinity;list.forEach(a=>{const d=map.distance(center,[a.lat,a.lng]);if(d<bd){bd=d;best=a}});if(best&&best.id!==nearestId){nearestId=best.id;markers.forEach(m=>{const ll=m.getLatLng(),ad=list.find(a=>a.lat===ll.lat&&a.lng===ll.lng);if(ad)m.setIcon(markerIcon(ad,ad.id===nearestId))})}}
-window.__openListing=id=>{activeListing=id;openSheet('detail')};
-function setUserPosition(pos){currentPos={lat:pos.coords.latitude,lng:pos.coords.longitude};if(userMarker)map.removeLayer(userMarker);userMarker=L.marker([currentPos.lat,currentPos.lng],{icon:L.divIcon({className:'',html:'<div class="user-dot"></div>',iconSize:[22,22],iconAnchor:[11,11]}),zIndexOffset:1000}).addTo(map).bindPopup('Sizin mövqeyiniz');$('#gpsStatus').textContent=t('gpsOk');if(radius!=='country')renderMarkers()}
-function getGPS(center=true){if(!navigator.geolocation){toast(t('gpsFail'));return}$('#gpsStatus').textContent=t('gpsWait');navigator.geolocation.getCurrentPosition(p=>{setUserPosition(p);if(center)map.setView([currentPos.lat,currentPos.lng],15);if(activeSheet==='add')renderSheet('add')},()=>{ $('#gpsStatus').textContent=t('gpsFail');toast(t('permission'))},{enableHighAccuracy:true,timeout:12000,maximumAge:30000})}
-function openSheet(view,opts={}){activeSheet=view;$('#sheet').classList.add('open');renderSheet(view,opts);$$('.navitem').forEach(b=>b.classList.toggle('active',b.dataset.view===view||(view==='detail'&&b.dataset.view==='list')))}
-function closeSheet(){activeSheet='';$('#sheet').classList.remove('open');mapPickMode=false;$$('.navitem').forEach(b=>b.classList.toggle('active',b.dataset.view==='map'))}
-function renderSheet(view,opts={}){const body=$('#sheetBody');let title=t('listTitle'),content='';if(view==='list'){title=t('listTitle');content=listHTML(visibleListings())}else if(view==='profile'){title=t('myAds');content=profileHTML()}else if(view==='add'){title=t('newAd');content=addHTML()}else if(view==='detail'){const ad=allListings().find(a=>a.id===activeListing);title=ad?ad.name:t('open');content=ad?detailHTML(ad):'<div class="empty">—</div>'}else if(view==='menu'){title=t('settings');content=menuHTML()}else if(view==='legal'){title=t('legal');content=legalHTML()}else if(view==='filters'){title=t('filters');content=filtersHTML()}else if(view==='urgent'){title=t('urgentTitle');content=urgentHTML()}$('#sheetTitle').textContent=title;body.innerHTML=content;bindSheetEvents(view)}
-function listHTML(list){if(!list.length)return `<div class="empty"><i class="fa-solid fa-magnifying-glass"></i>${t('noResults')}</div>`;return `<div class="card"><div class="row between"><span class="tag green">${list.length} ${t('listTitle').toLowerCase()}</span><span class="small muted">${t('demoNotice')}</span></div></div>`+list.map(ad=>`<div class="card"><div class="listing"><div class="avatar" style="color:${ad.color||'#69e0bd'}"><i class="fa-solid ${ad.icon||'fa-screwdriver-wrench'}"></i></div><div class="grow"><h3>${esc(ad.name)}</h3><div class="small muted">${esc(labelCategory(ad.category))} · ${esc(ad.city||'')}</div><div class="small">${esc(ad.description)}</div><div class="row" style="margin-top:6px;flex-wrap:wrap"><span class="tag">${ad.demo?t('demo'):t('days30')}</span>${currentPos?`<span class="tag">${formatDistance(distM(currentPos,{lat:ad.lat,lng:ad.lng}))}</span>`:''}</div></div></div><div class="listing-actions"><button class="primary" data-detail="${esc(ad.id)}">${t('open')}</button><button class="secondary" data-route="${ad.lat},${ad.lng}"><i class="fa-solid fa-location-arrow"></i></button></div></div>`).join('')}
-function formatDistance(m){return m<1000?Math.round(m)+' m':(m/1000).toFixed(1)+' km'}
-function profileHTML(){if(!ads.length)return `<div class="card"><div class="empty"><i class="fa-solid fa-user-astronaut"></i>${t('noAds')}<br><button class="primary" data-action="add" style="margin-top:14px">${t('add')}</button></div></div><div class="card small muted">${t('renewInfo')} ${t('demoNotice')}</div>`;return `<div class="card"><div class="row between"><div><h3>${t('myAds')}</h3><div class="small muted">${ads.length} ${t('listTitle').toLowerCase()}</div></div><button class="primary" data-action="add"><i class="fa-solid fa-plus"></i> ${t('add')}</button></div></div>`+ads.map(a=>{const d=daysLeft(a);return `<div class="card"><div class="listing"><div class="avatar"><i class="fa-solid ${a.icon||'fa-screwdriver-wrench'}"></i></div><div class="grow"><h3>${esc(a.name)}</h3><div class="small muted">${esc(a.category)} · ${esc(a.city||'')}</div><span class="tag ${d<=3?'red':'green'}">${d>0?d+' '+t('days'):t('expired')}</span></div></div><div class="listing-actions"><button class="secondary" data-renew="${esc(a.id)}">${t('renew')}</button><button class="danger" data-delete="${esc(a.id)}">${t('delete')}</button><button class="secondary" data-detail="${esc(a.id)}">${t('open')}</button></div></div>`}).join('')}
-function detailHTML(ad){const own=!ad.demo;const pics=(ad.photos||[]).map(src=>`<img src="${src}" alt="" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-bottom:6px">`).join('');return `<div class="card"><div class="profilehero"><div class="avatar" style="color:${ad.color||'#69e0bd'}"><i class="fa-solid ${ad.icon||'fa-screwdriver-wrench'}"></i></div><div class="grow"><h3>${esc(ad.name)}</h3><div class="small muted">${esc(labelCategory(ad.category))} · ${esc(ad.city||'')}</div><div style="margin-top:6px"><span class="tag ${own?'green':'gold'}">${own?t('days30'):t('demo')}</span></div></div></div><p class="small">${esc(ad.description)}</p><div class="small muted"><i class="fa-solid fa-location-dot"></i> ${esc(ad.address||ad.city||'')} </div>${own?`<div class="small muted" style="margin-top:5px">${esc(ad.phone||'')}</div>`:`<div class="small muted" style="margin-top:8px">${t('demoNotice')}</div>`}<div style="margin-top:12px;display:flex;gap:8px"><button class="primary" data-call="${esc(ad.phone||'')}"><i class="fa-solid fa-phone"></i> ${t('call')}</button><button class="secondary" data-route="${ad.lat},${ad.lng}"><i class="fa-solid fa-location-arrow"></i> ${t('tapMap')}</button></div></div>${pics?`<div class="card">${pics}</div>`:''}<div class="video-ad"><div class="small muted" style="margin-bottom:8px">${t('videoAd')}</div><div class="advisual"><div class="adlabel">SPONSORED</div><i class="fa-solid fa-play play"></i><div class="adword">BUILD • REPAIR • SERVICE</div></div><div class="small muted" style="margin-top:8px">${t('adDesc')}</div></div>${own?`<div class="card"><div class="small muted">${t('renewInfo')}</div><button class="secondary full" style="margin-top:9px" data-renew="${esc(ad.id)}">${t('renew')}</button></div>`:''}`}
-function addHTML(){const cats=CAT.map(c=>`<option value="${esc(c[0])}">${esc(c[['az','en','ru','tr'].indexOf(lang)])}</option>`).join('');return `<div class="card small muted">${t('freeGps')}<br>${t('renewInfo')}</div><form id="adForm"><div class="field"><label>${t('name')} *</label><input name="name" required maxlength="70" placeholder="${t('name')}"></div><div class="field"><label>${t('category')} *</label><select name="category" required><option value="">${t('selectCategory')}</option>${cats}</select></div><div class="field"><label>Elan növü</label><div class="grid2"><label class="card" style="margin:0;padding:10px"><input type="radio" name="plan" value="free" checked> <b>${t('free')}</b><div class="small muted">0 AZN</div></label><label class="card" style="margin:0;padding:10px"><input type="radio" name="plan" value="vip"> <b>${t('vip')}</b></label></div></div><div class="field"><label>${t('phone')} *</label><input name="phone" type="tel" required maxlength="30" placeholder="+994 ..."></div><div class="field"><label>${t('description')} *</label><textarea name="description" required maxlength="700" placeholder="${t('description')}"></textarea></div><div class="grid2"><div class="field"><label>${t('city')}</label><input name="city" id="adCity" maxlength="80" placeholder="Bakı"></div><div class="field"><label>${t('address')}</label><input name="address" id="adAddress" maxlength="120" placeholder="Küçə / ərazi"></div></div><div class="field"><label>${t('photos')}</label><input id="photoInput" type="file" accept="image/*" multiple capture="environment"><div class="help">Şəkillər bu cihazda saxlanılır; yaddaş limiti cihazdan asılıdır.</div><div id="photoPreview" class="preview-grid"></div></div><div class="card"><div class="row between"><div class="grow"><b class="small">${t('pick')}</b><div class="small muted" id="selectedCoords">${selectedPlace?selectedPlace.lat.toFixed(5)+', '+selectedPlace.lng.toFixed(5):currentPos?currentPos.lat.toFixed(5)+', '+currentPos.lng.toFixed(5):t('locationRequired')}</div></div><button type="button" class="secondary" id="pickPlaceBtn"><i class="fa-solid fa-map-pin"></i></button></div><button type="button" class="secondary full" style="margin-top:9px" id="useGpsBtn"><i class="fa-solid fa-location-crosshairs"></i> ${t('gps')}</button></div><label class="switchrow small muted"><input type="checkbox" name="agree" required><span>${t('terms1')} ${t('terms3')}</span></label><button class="primary full" type="submit" style="margin-top:14px">${t('publish')}</button></form>`}
-function menuHTML(){return `<div class="menu-grid"><button class="card secondary" data-action="profile"><i class="fa-solid fa-user"></i><b>${t('myAds')}</b></button><button class="card secondary" data-action="add"><i class="fa-solid fa-circle-plus"></i><b>${t('newAd')}</b></button><button class="card secondary" data-action="filters"><i class="fa-solid fa-sliders"></i><b>${t('filters')}</b></button><button class="card secondary" data-action="legal"><i class="fa-solid fa-shield-halved"></i><b>${t('legal')}</b></button></div><div class="card"><h3>${t('privacy')}</h3><p class="small muted">Elanlar və seçilmiş şəkillər bu cihazın localStorage yaddaşında saxlanılır. GPS yalnız siz icazə verdikdə alınır. Xəritə plitələri OpenStreetMap serverlərindən, ünvan axtarışı isə Nominatim xidmətindən gəlir.</p><p class="small muted">${t('about')}</p></div>`}
-function legalHTML(){return `<div class="card legal"><h3>${t('privacy')}</h3><p>Elan məlumatları bu brauzerdə saxlanılır və avtomatik olaraq başqa istifadəçilərə ötürülmür. Bu tək-fayllı versiyada elanlar yalnız həmin cihazda görünür; server olmadığı üçün digər istifadəçilərlə sinxronlaşmır. GPS məlumatı yalnız icazə verildikdə oxunur. Ünvanın avtomatik tapılması üçün koordinatlar Nominatim xidmətinə sorğu ilə göndərilir.</p><h3>${t('rules')}</h3><p>${t('terms1')}</p><p>${t('terms2')}</p><p>${t('terms3')}</p><p>VIP qiyməti bu prototipdə yalnız elan növünün etiketidir. Real ödəniş prosessoru qoşulmadığından ödəniş tutulmur və VIP ödənişi təsdiqlənmir. Elan yerləşdirmə qaydalarına və yerli qanunlara əməl etmək istifadəçinin məsuliyyətindədir.</p><button class="primary full" data-action="close">${t('close')}</button></div>`}
-function filtersHTML(){return `<div class="card"><div class="field"><label>${t('filterCategory')}</label><select id="filterCategory"><option value="all">${t('all')}</option>${[['crafts','crafts'],['services','services'],['shops','shops'],['farm','farm'],['machines','machines']].map(x=>`<option value="${x[0]}" ${categoryFilter===x[0]?'selected':''}>${t(x[1])}</option>`).join('')}<optgroup label="Bütün peşələr və xidmətlər">${CAT.map(c=>`<option value="${esc(c[0])}" ${categoryFilter===c[0]?'selected':''}>${esc(c[['az','en','ru','tr'].indexOf(lang)])}</option>`).join('')}</optgroup></select></div><div class="field"><label>${t('filterRadius')}</label><select id="filterRadius">${[['100','100 m'],['500','500 m'],['1000','1 km'],['5000','5 km'],['20000','20 km'],['country',t('allCountry')]].map(x=>`<option value="${x[0]}" ${radius===x[0]?'selected':''}>${x[1]}</option>`).join('')}</select></div><button class="primary full" data-action="applyFilters">${t('apply')}</button></div>`}
-function urgentHTML(){return `<form id="urgentForm"><div class="field"><label>${t('urgentKind')}</label><select name="kind">${['Təkər təmiri','Santexnik','Elektrik','Evakuator','Qapı / kilid','Digər xidmət'].map(x=>`<option>${x}</option>`).join('')}</select></div><div class="field"><label>${t('urgentDetails')}</label><textarea name="details" maxlength="300" placeholder="${t('urgentPlaceholder')}"></textarea></div><div class="field"><label>${t('phone')}</label><input name="phone" type="tel" placeholder="+994 ..."></div><button class="primary full" type="submit">${t('sendUrgent')}</button><p class="small muted">Bu demo çağırış yalnız bu cihazda görünür; serverə və digər ustalara göndərilmir.</p></form>`}
-function bindSheetEvents(view){$$('[data-detail]').forEach(b=>b.onclick=()=>{activeListing=b.dataset.detail;renderSheet('detail')});$$('[data-route]').forEach(b=>b.onclick=()=>{const [lat,lng]=b.dataset.route.split(',').map(Number);closeSheet();map.setView([lat,lng],15)});$$('[data-action]').forEach(b=>b.onclick=()=>{const a=b.dataset.action;if(a==='add')openSheet('add');else if(a==='profile')openSheet('profile');else if(a==='filters')openSheet('filters');else if(a==='legal')openSheet('legal');else if(a==='close')closeSheet();else if(a==='applyFilters'){categoryFilter=$('#filterCategory').value;radius=$('#filterRadius').value;$$('[data-radius]').forEach(x=>x.classList.toggle('active',x.dataset.radius===radius));renderMarkers();openSheet('list')}});$$('[data-renew]').forEach(b=>b.onclick=()=>{const a=ads.find(x=>x.id===b.dataset.renew);if(a){a.createdAt=Date.now();saveAds();toast(t('renewed'));renderSheet('profile');renderMarkers()}});$$('[data-delete]').forEach(b=>b.onclick=()=>{if(confirm(t('delete')+'?')){ads=ads.filter(x=>x.id!==b.dataset.delete);saveAds();toast(t('deleted'));renderSheet('profile');renderMarkers()}});$$('[data-call]').forEach(b=>b.onclick=()=>{const p=b.dataset.call;if(p&&p.startsWith('+'))location.href='tel:'+p;else toast(t('demoNotice'))});const form=$('#adForm');if(form){const radios=$$('input[name="plan"]');radios.forEach(r=>r.onchange=()=>{if(r.checked&&r.value==='free'&&!currentPos)getGPS(false)});$('#pickPlaceBtn').onclick=()=>{if(form.plan.value==='free'){toast(t('freeGps'));return}closeSheet();mapPickMode=true;toast(t('choosePlace'))};$('#useGpsBtn').onclick=()=>{getGPS(false);setTimeout(()=>{if(currentPos){selectedPlace={...currentPos};$('#selectedCoords').textContent=currentPos.lat.toFixed(5)+', '+currentPos.lng.toFixed(5);reverseGeocode(currentPos.lat,currentPos.lng).then(a=>{if(a.city)$('#adCity').value=a.city;if(a.address)$('#adAddress').value=a.address})}},700)};$('#photoInput').onchange=async e=>{const files=[...e.target.files].slice(0,10);if(e.target.files.length>10)toast(t('photosLimit'));photoData=[];for(const f of files){if(!f.type.startsWith('image/'))continue;try{photoData.push(await compressImage(f))}catch(err){}}$('#photoPreview').innerHTML=photoData.map(src=>`<img src="${src}" alt="preview">`).join('')};form.onsubmit=async e=>{e.preventDefault();const fd=new FormData(form),plan=fd.get('plan');let point=plan==='free'?currentPos:selectedPlace||currentPos;if(!point){toast(t('locationRequired'));getGPS(false);return}if(!fd.get('name').trim()||!fd.get('phone').trim()||!fd.get('description').trim()){toast(t('fillRequired'));return}const cat=CAT.find(c=>c[0]===fd.get('category'));let city=fd.get('city')||'',address=fd.get('address')||'';if(!city||!address){const rev=await reverseGeocode(point.lat,point.lng);city=city||rev.city;address=address||rev.address}const ad={id:'ad-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:fd.get('name').trim(),category:fd.get('category'),group:cat?cat[4]:'crafts',icon:cat?cat[5]:'fa-screwdriver-wrench',color:cat?cat[6]:'#69e0bd',phone:fd.get('phone').trim(),description:fd.get('description').trim(),city,address,lat:point.lat,lng:point.lng,createdAt:Date.now(),photos:photoData.slice(0,10),vip:plan==='vip',demo:false};ads.unshift(ad);saveAds();selectedPlace=null;photoData=[];renderMarkers();toast(t('published'));activeListing=ad.id;openSheet('detail');map.setView([ad.lat,ad.lng],14)}}
-const uf=$('#urgentForm');if(uf)uf.onsubmit=e=>{e.preventDefault();const fd=new FormData(uf),p=currentPos||{lat:map.getCenter().lat,lng:map.getCenter().lng};urgentItems.unshift({id:'u'+Date.now(),kind:fd.get('kind'),details:fd.get('details')||'',phone:fd.get('phone')||'',lat:p.lat,lng:p.lng,at:Date.now()});saveUrgent();renderUrgent();renderMarkers();toast(t('urgentSent'));closeSheet()}}
-function compressImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.78))};img.src=reader.result};reader.readAsDataURL(file)})}
-async function reverseGeocode(lat,lng){try{const url=`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`;const r=await fetch(url,{headers:{'Accept-Language':lang}});if(!r.ok)throw new Error('geocode');const j=await r.json(),a=j.address||{};return {city:a.city||a.town||a.village||a.county||a.state||'',address:[a.road,a.house_number,a.suburb||a.neighbourhood].filter(Boolean).join(', ')||j.display_name||''}}catch(e){return {city:'',address:''}}}
-function renderUrgent(){const el=$('#urgentStrip');if(!urgentItems.length){el.classList.remove('show');el.innerHTML='';return}el.classList.add('show');el.innerHTML=urgentItems.slice(0,5).map(u=>`<span><i class="fa-solid fa-triangle-exclamation"></i> <b>${esc(t('urgentActive'))}:</b> ${esc(u.kind)} ${esc(u.details)} <button data-remove-urgent="${esc(u.id)}" style="background:transparent;border:0;color:#ffc3ce;margin-left:5px">×</button></span>`).join('');$$('[data-remove-urgent]').forEach(b=>b.onclick=()=>{urgentItems=urgentItems.filter(u=>u.id!==b.dataset.removeUrgent);saveUrgent();renderUrgent()})}
-function bindMain(){ $$('.lang button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));$('#menuBtn').onclick=()=>openSheet('menu');$('#closeSheet').onclick=closeSheet;$('#emergencyBtn').onclick=()=>openSheet('urgent');$('#addBtn').onclick=()=>openSheet('add');$('#listBtn').onclick=()=>openSheet('list');$('#filterBtn').onclick=()=>openSheet('filters');$('#locateBtn').onclick=()=>getGPS(true);$('#searchInput').oninput=e=>{query=e.target.value.trim();renderMarkers()};$$('[data-radius]').forEach(b=>b.onclick=()=>{radius=b.dataset.radius;$$('[data-radius]').forEach(x=>x.classList.toggle('active',x===b));if(radius!=='country'&&!currentPos)getGPS(false);renderMarkers()});$$('.navitem').forEach(b=>b.onclick=()=>{const v=b.dataset.view;if(v==='map')closeSheet();else if(v==='list')openSheet('list');else if(v==='profile')openSheet('profile');else if(v==='add')openSheet('add')})}
-function init(){loadStore();initMap();bindMain();setLang(lang);renderUrgent();getGPS(false);if('serviceWorker' in navigator && location.protocol.startsWith('https')){const sw=`const CACHE='ustamap-shell-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([self.location.href]).catch(()=>{}))));self.addEventListener('fetch',e=>{if(e.request.method==='GET'&&new URL(e.request.url).origin===location.origin)e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))})`;try{const blob=new Blob([sw],{type:'text/javascript'});navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{})}catch(e){}}}
-document.addEventListener('DOMContentLoaded',init);
-})();
+
+let listings=[];
+let activeFilter='Hamısı';
+let selectedLocation={lat:40.4093,lng:49.8671,name:'Bakı, Azərbaycan'};
+let globe=null,map=null;
+let globeEntities=[],leafletMarkers=[];
+let toastTimer=null,chosenPhotos=[];
+let userPosition=null,nearbyEnabled=false,nearbyRadius=5;
+let userMarker=null,userCircle=null;
+
+function escapeHTML(v=''){
+ return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function safePhoto(l){
+ return l&&(l.photos&&l.photos.length?l.photos[0]:l.photo)||fallbackPhoto;
+}
+function allPhotos(l){
+ return l&&Array.isArray(l.photos)&&l.photos.length?l.photos:(l&&l.photo?[l.photo]:[]);
+}
+function toast(msg){
+ const el=document.getElementById('toast');
+ el.textContent=msg;el.style.display='block';
+ clearTimeout(toastTimer);
+ toastTimer=setTimeout(()=>el.style.display='none',3500);
+}
+function closeSheet(id){document.getElementById(id).classList.remove('show')}
+function hidePlaceQuick(id){document.getElementById(id).classList.remove('show')}
+function safeId(id){return String(id).replace(/[^a-zA-Z0-9_-]/g,'')}
+
+function buildCategoryControls(){
+ const filters=document.getElementById('filters');
+ const select=document.getElementById('fCat');
+ filters.innerHTML='';
+ const all=document.createElement('button');
+ all.type='button';all.className='btn small active';all.dataset.cat='Hamısı';
+ all.textContent='Hamısı';
+ all.onclick=()=>setFilter('Hamısı',all);
+ filters.appendChild(all);
+ CATEGORIES.forEach(([name,icon])=>{
+  const b=document.createElement('button');
+  b.type='button';b.className='btn small';b.dataset.cat=name;
+  b.textContent=icon+' '+name;
+  b.onclick=()=>setFilter(name,b);
+  filters.appendChild(b);
+ });
+ select.innerHTML='';
+ CATEGORIES.forEach(([name,icon])=>{
+  const o=document.createElement('option');
+  o.value=name;o.textContent=icon+' '+name;select.appendChild(o);
+ });
+}
+
+function iconFor(cat){
+ const item=CATEGORIES.find(x=>x[0]===cat);
+ return item?item[1]:'👤';
+}
+function setSelectedLocation(lat,lng,name){
+ lat=Number(lat);lng=Number(lng);
+ if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180)return;
+ selectedLocation={lat,lng,name:name||lat.toFixed(5)+', '+lng.toFixed(5)};
+ document.getElementById('selectedPlace').textContent=selectedLocation.name;
+ document.getElementById('selectedCoords').textContent=lat.toFixed(6)+', '+lng.toFixed(6);
+ document.getElementById('fLat').value=lat;
+ document.getElementById('fLng').value=lng;
+ document.getElementById('fAddress').value=selectedLocation.name;
+ document.getElementById('locationLabel').textContent=selectedLocation.name;
+}
+function openAdd(){
+ setSelectedLocation(selectedLocation.lat,selectedLocation.lng,selectedLocation.name);
+ document.getElementById('addOverlay').classList.add('show');
+}
+function openAddAtSelected(){
+ hidePlaceQuick('globeQuick');
+ openAdd();
+}
+function showGlobeQuick(lat,lng){
+ setSelectedLocation(lat,lng,lat.toFixed(5)+', '+lng.toFixed(5));
+ document.getElementById('globeQuickName').textContent=selectedLocation.name;
+ document.getElementById('globeQuickCoords').textContent='Enlik: '+lat.toFixed(6)+' · Uzunluq: '+lng.toFixed(6);
+ document.getElementById('globeQuick').classList.add('show');
+}
+
+/* Təqdimat nöqtələri real xidmət elanları deyil. */
+function demoListings(){
+ const places=[
+ ['Bakı, Azərbaycan',40.4093,49.8671],
+ ['İstanbul, Türkiyə',41.0082,28.9784],
+ ['Berlin, Almaniya',52.52,13.405],
+ ['London, Böyük Britaniya',51.5072,-0.1276],
+ ['New York, ABŞ',40.7128,-74.006],
+ ['Paris, Fransa',48.8566,2.3522],
+ ['Tbilisi, Gürcüstan',41.7151,44.8271],
+ ['Dubay, BƏƏ',25.2048,55.2708],
+ ['Moskva, Rusiya',55.7558,37.6173],
+ ['Seul, Cənubi Koreya',37.5665,126.978],
+ ['Tokio, Yaponiya',35.6762,139.6503],
+ ['Sidney, Avstraliya',-33.8688,151.2093]
+ ];
+ return places.map((p,i)=>({
+  id:'demo_'+i,name:'USTAMAP təqdimat profili',
+  cat:CATEGORIES[i%CATEGORIES.length][0],
+  title:'Xidmət profili — təqdimat nümunəsi',
+  desc:'Bu, xəritənin nümayişi üçün yaradılmış nümunədir. Real usta və təsdiqlənmiş xidmət deyil.',
+  phone:'',price:'Nümunə',address:p[0],lat:p[1],lng:p[2],
+  photo:'',photos:[],sample:true
+ }));
+}
+function validListing(x){
+ return x&&typeof x==='object'&&x.id&&Number.isFinite(Number(x.lat))&&
+  Number.isFinite(Number(x.lng))&&Math.abs(Number(x.lat))<=90&&
+  Math.abs(Number(x.lng))<=180&&typeof x.name==='string'&&typeof x.title==='string';
+}
+function loadListings(){
+ let saved=[];
+ try{
+  let raw=localStorage.getItem(STORE);
+  if(!raw){
+   for(const key of OLD_STORES){
+    raw=localStorage.getItem(key);
+    if(raw)break;
+   }
+  }
+  const parsed=JSON.parse(raw||'[]');
+  if(Array.isArray(parsed))saved=parsed.filter(validListing).map(x=>({...x,sample:false}));
+ }catch(e){saved=[]}
+ listings=demoListings().concat(saved);
+}
+function saveListings(){
+ try{
+  localStorage.setItem(STORE,JSON.stringify(listings.filter(x=>!x.sample)));
+  return true;
+ }catch(e){
+  toast('Brauzer yaddaşı dolub. Şəkilləri azalt və ya daha kiçik şəkillər seç.');
+  return false;
+ }
+}
+
+/* Məsafəni Yer kürəsinin əyriliyini nəzərə alaraq hesabla. */
+function distanceKm(lat1,lon1,lat2,lon2){
+ const rad=x=>x*Math.PI/180;
+ const dLat=rad(lat2-lat1),dLon=rad(lon2-lon1);
+ const a=Math.sin(dLat/2)**2+
+  Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(dLon/2)**2;
+ return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(Math.max(0,1-a)));
+}
+function visibleListings(){
+ let arr=listings.filter(l=>activeFilter==='Hamısı'||l.cat===activeFilter);
+ if(nearbyEnabled&&userPosition){
+  arr=arr.filter(l=>!l.sample&&distanceKm(
+   userPosition.lat,userPosition.lng,Number(l.lat),Number(l.lng)
+  )<=nearbyRadius);
+ }
+ return arr;
+}
+function chooseRadius(km){
+ nearbyRadius=Math.max(1,Math.min(5,Number(km)||5));
+ document.querySelectorAll('#radiusButtons button').forEach(b=>{
+  b.classList.toggle('active',Number(b.dataset.radius)===nearbyRadius);
+ });
+ if(nearbyEnabled)updateNearby();
+}
+function startNearby(){
+ if(!navigator.geolocation){
+  toast('Bu brauzer GPS məkanını dəstəkləmir.');return;
+ }
+ const btn=document.getElementById('gpsNearbyBtn');
+ btn.disabled=true;btn.textContent='📡 Məkan müəyyən edilir…';
+ navigator.geolocation.getCurrentPosition(pos=>{
+  userPosition={lat:pos.coords.latitude,lng:pos.coords.longitude};
+  nearbyEnabled=true;
+  setSelectedLocation(userPosition.lat,userPosition.lng,'Mənim yerim');
+  if(map){
+   map.setView([userPosition.lat,userPosition.lng],15);
+   drawUserLocation();
+  }
+  if(globe){
+   globe.camera.flyTo({
+    destination:Cesium.Cartesian3.fromDegrees(userPosition.lng,userPosition.lat,12000),
+    duration:1.3
+   });
+  }
+  updateNearby();
+  btn.disabled=false;btn.textContent='📍 Yerimi yenilə və yaxın elanları göstər';
+  toast('GPS müəyyən edildi. '+nearbyRadius+' km radiusda elanlar axtarılır.');
+ },err=>{
+  btn.disabled=false;btn.textContent='📍 Yerimi tap və yaxın elanları göstər';
+  let message='GPS tapılmadı. Məkan icazəsini yoxla.';
+  if(err&&err.code===1)message='Məkan icazəsi verilməyib. Brauzer parametrlərindən icazə ver.';
+  if(err&&err.code===3)message='GPS sorğusu vaxtı bitdi. Açıq havada yenidən cəhd et.';
+  document.getElementById('nearStatus').textContent=message;
+  toast(message);
+ },{enableHighAccuracy:true,timeout:20000,maximumAge:60000});
+}
+function drawUserLocation(){
+ if(!map||!userPosition)return;
+ if(userMarker)map.removeLayer(userMarker);
+ if(userCircle)map.removeLayer(userCircle);
+ userMarker=L.circleMarker([userPosition.lat,userPosition.lng],{
+  radius:8,color:'#fff',weight:3,fillColor:'#3988ff',fillOpacity:1
+ }).addTo(map).bindPopup('📍 Sənin GPS mövqeyin');
+ userCircle=L.circle([userPosition.lat,userPosition.lng],{
+  radius:nearbyRadius*1000,color:'#45e0d0',weight:2,fillColor:'#45e0d0',
+  fillOpacity:.07
+ }).addTo(map);
+}
+function updateNearby(){
+ if(!userPosition)return;
+ if(userCircle&&map){
+  userCircle.setRadius(nearbyRadius*1000);
+ }
+ const nearby=listings.filter(l=>!l.sample&&distanceKm(
+  userPosition.lat,userPosition.lng,Number(l.lat),Number(l.lng)
+ )<=nearbyRadius);
+ const km=nearbyRadius;
+ document.getElementById('nearStatus').innerHTML=
+  'Radius: <strong>'+km+' km</strong> · Bu cihazda saxlanmış elanlardan tapılan: <strong>'+
+  nearby.length+'</strong><br>'+
+  (nearby.length?'Elanları aşağıdakı siyahıda və xəritədə görə bilərsən.':
+  'Bu məsafədə uyğun elan tapılmadı. Daha böyük radius seç və ya yeni elan yerləşdir.');
+ document.getElementById('listingSubtitle').textContent=nearbyEnabled?
+  '📡 '+km+' km radiusda '+nearby.length+' elan':'Ustalar, xidmətlər və elanlar';
+ renderListings();renderMapMarkers();renderGlobeMarkers();
+}
+function clearNearby(){
+ nearbyEnabled=false;
+ if(userCircle&&map){map.removeLayer(userCircle);userCircle=null}
+ if(userMarker&&map){map.removeLayer(userMarker);userMarker=null}
+ document.getElementById('nearStatus').textContent='Yaxınlıq filtri söndürüldü. Bütün elanlar göstərilir.';
+ document.getElementById('listingSubtitle').textContent='Ustalar, xidmətlər və elanlar';
+ renderListings();renderMapMarkers();renderGlobeMarkers();
+}
+
+function initGlobe(){
+ if(!window.Cesium){
+  document.getElementById('globe').innerHTML='<div style="padding:25px">3D qlobus kitabxanası yüklənmədi. İnterneti yoxla.</div>';
+  document.getElementById('systemStatus').textContent='● Qlobus kitabxanası yüklənmədi';
+  return;
+ }
+ try{
+  globe=new Cesium.Viewer('globe',{
+   imageryProvider:false,terrainProvider:new Cesium.EllipsoidTerrainProvider(),
+   animation:false,timeline:false,baseLayerPicker:false,geocoder:false,
+   homeButton:false,sceneModePicker:false,navigationHelpButton:false,
+   fullscreenButton:false,infoBox:false,selectionIndicator:false,
+   shouldAnimate:false
+  });
+  globe.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
+   url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+   maximumLevel:19,credit:'Esri World Imagery'
+  }));
+  globe.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
+   url:'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+   maximumLevel:19,alpha:.9,credit:'Esri Reference'
+  }));
+  globe.scene.globe.enableLighting=true;
+  globe.scene.globe.showGroundAtmosphere=true;
+  globe.scene.screenSpaceCameraController.minimumZoomDistance=150;
+  globe.scene.screenSpaceCameraController.maximumZoomDistance=30000000;
+  globe.camera.flyTo({
+   destination:Cesium.Cartesian3.fromDegrees(49.8,35,19000000),
+   duration:1.5
+  });
+  globe.screenSpaceEventHandler.setInputAction(function(evt){
+   const picked=globe.scene.pick(evt.position);
+   if(picked&&picked.id&&picked.id.properties&&picked.id.properties.listingId){
+    openProfile(picked.id.properties.listingId.getValue());return;
+   }
+   const ray=globe.camera.getPickRay(evt.position);
+   if(!ray)return;
+   const cart=globe.scene.globe.pick(ray,globe.scene);
+   if(!cart){toast('Yer kürəsinin görünən səthinə toxun.');return}
+   const c=Cesium.Cartographic.fromCartesian(cart);
+   showGlobeQuick(Cesium.Math.toDegrees(c.latitude),Cesium.Math.toDegrees(c.longitude));
+  },Cesium.ScreenSpaceEventType.LEFT_CLICK);
+  renderGlobeMarkers();
+  document.getElementById('systemStatus').textContent='● Xəritə sistemi aktivdir';
+ }catch(e){
+  console.error(e);
+  document.getElementById('globe').innerHTML='<div style="padding:20px">Qlobus yüklənmədi. İnterneti yoxlayıb səhifəni yenilə.</div>';
+ }
+}
+function renderGlobeMarkers(){
+ if(!globe||!window.Cesium)return;
+ globeEntities.forEach(e=>globe.entities.remove(e));globeEntities=[];
+ visibleListings().forEach(l=>{
+  if(!Number.isFinite(+l.lat)||!Number.isFinite(+l.lng))return;
+  const entity=globe.entities.add({
+   position:Cesium.Cartesian3.fromDegrees(+l.lng,+l.lat,100),
+   point:{
+    pixelSize:l.sample?6:12,
+    color:l.sample?Cesium.Color.ORANGE:Cesium.Color.fromCssColorString('#45e0d0'),
+    outlineColor:Cesium.Color.WHITE,outlineWidth:2,
+    disableDepthTestDistance:Number.POSITIVE_INFINITY
+   },
+   label:{
+    text:iconFor(l.cat)+' '+l.name,
+    font:'11px sans-serif',showBackground:true,
+    backgroundColor:Cesium.Color.fromCssColorString('#081522').withAlpha(.85),
+    fillColor:Cesium.Color.WHITE,outlineColor:Cesium.Color.BLACK,outlineWidth:2,
+    style:Cesium.LabelStyle.FILL_AND_OUTLINE,
+    pixelOffset:new Cesium.Cartesian2(0,-20),
+    distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,2500000),
+    disableDepthTestDistance:Number.POSITIVE_INFINITY
+   },
+   properties:{listingId:l.id}
+  });
+  globeEntities.push(entity);
+ });
+}
+function resetGlobe(){
+ if(globe)globe.camera.flyTo({
+  destination:Cesium.Cartesian3.fromDegrees(49.8,35,19000000),duration:1.5
+ });
+}
+function initMap(){
+ if(!window.L){
+  document.getElementById('map').innerHTML='<div style="padding:20px">Xəritə kitabxanası yüklənmədi. İnterneti yoxla.</div>';
+  return;
+ }
+ map=L.map('map',{zoomControl:true,worldCopyJump:true}).setView([40.4093,49.8671],5);
+ const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19,attribution:'© OpenStreetMap contributors'
+ }).addTo(map);
+ const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+  maxZoom:19,attribution:'Tiles © Esri'
+ });
+ L.control.layers({'Küçə xəritəsi':osm,'Peyk görüntüsü':sat},{},{collapsed:true}).addTo(map);
+ map.on('click',e=>{
+  setSelectedLocation(e.latlng.lat,e.latlng.lng,e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5));
+  const html='<div class="mapcall"><b>📍 Seçilmiş məkan</b><small>'+
+   escapeHTML(selectedLocation.name)+'<br>'+e.latlng.lat.toFixed(6)+', '+e.latlng.lng.toFixed(6)+
+   '</small><br><button onclick="openAddAtSelected()">Bu məkana elan qoy ＋</button></div>';
+  L.popup({closeButton:true,autoClose:true,closeOnClick:false})
+   .setLatLng(e.latlng).setContent(html).openOn(map);
+ });
+ renderMapMarkers();
+}
+function renderMapMarkers(){
+ if(!map||!window.L)return;
+ leafletMarkers.forEach(m=>map.removeLayer(m));leafletMarkers=[];
+ visibleListings().forEach(l=>{
+  const id=safeId(l.id);
+  const html='<div class="mapcall"><b>'+escapeHTML(iconFor(l.cat)+' '+l.name)+'</b><small>'+
+   escapeHTML(l.cat)+' · '+escapeHTML(l.address)+'</small><br>'+
+   '<button onclick="openProfile(\''+id+'\')">Profilə bax ↗</button> '+
+   '<button onclick="selectListingPlace(\''+id+'\')">Buraya elan ＋</button></div>';
+  const marker=L.marker([+l.lat,+l.lng],{icon:L.divIcon({
+   className:'customMarker',
+   html:'<div class="markerDot" style="'+(l.sample?'background:#ffca72;box-shadow:0 0 0 5px #ffca7233,0 0 18px #ffca72':'')+'"><span>'+iconFor(l.cat)+'</span></div>',
+   iconSize:[30,36],iconAnchor:[15,30]
+  })}).addTo(map).bindPopup(html);
+  marker.on('click',()=>setSelectedLocation(+l.lat,+l.lng,l.address));
+  leafletMarkers.push(marker);
+ });
+}
+function selectListingPlace(id){
+ const l=listings.find(x=>String(x.id)===String(id));if(!l)return;
+ setSelectedLocation(+l.lat,+l.lng,l.address);openAddAtSelected();
+}
+function flyTo(lat,lng,zoom=50000,name='Seçilmiş məkan'){
+ lat=Number(lat);lng=Number(lng);
+ if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180){
+  toast('Koordinatlar düzgün deyil.');return;
+ }
+ setSelectedLocation(lat,lng,name);
+ if(map){
+  const z=Math.max(3,Math.min(18,Math.round(16-Math.log10(Math.max(zoom,1)))));
+  map.flyTo([lat,lng],z,{duration:1.1});
+ }
+ if(globe)globe.camera.flyTo({
+  destination:Cesium.Cartesian3.fromDegrees(lng,lat,Math.max(2500,zoom)),
+  duration:1.5
+ });
+}
+async function searchPlace(){
+ const q=document.getElementById('search').value.trim();
+ if(!q){toast('Axtarış üçün ölkə, şəhər və ya ünvan yaz.');return}
+ const btn=document.getElementById('searchBtn');
+ btn.disabled=true;btn.textContent='Axtarılır…';
+ try{
+  const url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(q);
+  const r=await fetch(url,{headers:{'Accept-Language':'az,en'}});
+  if(!r.ok)throw Error('search');
+  const data=await r.json();
+  if(!data.length){toast('Məkan tapılmadı. Ünvanı başqa cür yaz.');return}
+  const p=data[0],lat=+p.lat,lng=+p.lon;
+  const name=p.display_name||q;
+  flyTo(lat,lng,Math.max(4000,120000/Math.pow(1.4,Math.min(+p.place_rank||10,20))),name);
+  toast('Məkan tapıldı. Elan üçün xəritədə istədiyin nöqtəni seç.');
+ }catch(e){
+  toast('Axtarış alınmadı. İnterneti yoxla və yenidən cəhd et.');
+ }finally{
+  btn.disabled=false;btn.textContent='Axtar';
+ }
+}
+document.getElementById('searchBtn').addEventListener('click',searchPlace);
+document.getElementById('search').addEventListener('keydown',e=>{
+ if(e.key==='Enter')searchPlace();
+});
+function locateMe(){
+ startNearby();
+}
+function setFilter(cat,el){
+ activeFilter=cat;
+ document.querySelectorAll('#filters button').forEach(b=>{
+  b.classList.toggle('active',b===el);
+ });
+ renderListings();renderMapMarkers();renderGlobeMarkers();
+}
+function renderListings(){
+ const grid=document.getElementById('listingGrid');
+ const items=visibleListings();
+ if(!items.length){
+  grid.innerHTML='<div class="empty">'+
+   (nearbyEnabled?
+    'Seçilmiş radiusda bu kateqoriyaya uyğun elan tapılmadı.<br>Radiusu artır və ya başqa kateqoriya seç.':
+    'Bu kateqoriyada elan yoxdur. İlk elanı sən əlavə et.')+
+   '</div>';
+  return;
+ }
+ grid.innerHTML=items.map(l=>{
+  const photo=safePhoto(l);
+  const dist=nearbyEnabled&&userPosition?
+   '<p>📍 Səndən '+distanceKm(userPosition.lat,userPosition.lng,+l.lat,+l.lng).toFixed(2)+' km</p>':'';
+  return '<article class="card">'+
+   '<img class="cover" loading="lazy" src="'+escapeHTML(photo)+'" alt="Elan şəkli" onerror="this.onerror=null;this.src=\''+fallbackPhoto+'\'">'+
+   '<div class="cardbody"><span class="chip">'+escapeHTML(iconFor(l.cat)+' '+l.cat)+'</span>'+
+   (l.sample?'<span class="chip">Nümunə</span>':'')+
+   '<h3>'+escapeHTML(l.title)+'</h3><p>👤 '+escapeHTML(l.name)+'</p>'+
+   '<p>📍 '+escapeHTML(l.address)+'</p>'+dist+
+   '<p class="price">'+escapeHTML(l.price||'Razılaşma ilə')+'</p>'+
+   (allPhotos(l).length>1?'<p>🖼️ '+allPhotos(l).length+' şəkil</p>':'')+
+   '<div class="cardActions"><button class="btn small" onclick="flyTo('+Number(l.lat)+','+Number(l.lng)+',15000,\''+escapeHTML(l.address).replace(/'/g,'')+'\')">Xəritə</button>'+
+   '<button class="btn small primary" onclick="openProfile(\''+safeId(l.id)+'\')">Profilə bax</button></div></div></article>';
+ }).join('');
+}
+function openProfile(id){
+ const l=listings.find(x=>String(x.id)===String(id));if(!l)return;
+ const photos=allPhotos(l);
+ const gallery=photos.length?
+  '<div class="photoGrid">'+photos.map(p=>'<img src="'+escapeHTML(p)+'" alt="Elan şəkli" loading="lazy">').join('')+'</div>':'';
+ const distance=nearbyEnabled&&userPosition?
+  '<div class="detail"><small>Səndən məsafə</small><strong>'+
+  distanceKm(userPosition.lat,userPosition.lng,+l.lat,+l.lng).toFixed(2)+' km</strong></div>':'';
+ const idSafe=safeId(l.id);
+ document.getElementById('profileContent').innerHTML=
+  '<div class="profiletop"><img class="avatar" src="'+escapeHTML(safePhoto(l))+'" onerror="this.onerror=null;this.src=\''+fallbackPhoto+'\'" alt="Profil">'+
+  '<div><h2>'+escapeHTML(l.name)+'</h2><span class="chip">'+escapeHTML(iconFor(l.cat)+' '+l.cat)+'</span><div class="sub">'+escapeHTML(l.address)+'</div></div></div>'+
+  '<h2 style="margin-top:18px">'+escapeHTML(l.title)+'</h2>'+
+  '<p style="line-height:1.7;color:#c0cfdf;white-space:pre-wrap">'+escapeHTML(l.desc||'Əlavə məlumat qeyd edilməyib.')+'</p>'+
+  gallery+'<div class="details"><div class="detail"><small>Qiymət</small><strong>'+escapeHTML(l.price||'Razılaşma ilə')+'</strong></div>'+
+  '<div class="detail"><small>Peşə</small><strong>'+escapeHTML(l.cat)+'</strong></div>'+
+  '<div class="detail"><small>Ünvan</small><strong>'+escapeHTML(l.address)+'</strong></div>'+
+  '<div class="detail"><small>Koordinatlar</small><strong>'+Number(l.lat).toFixed(5)+', '+Number(l.lng).toFixed(5)+'</strong></div>'+
+  distance+
+  '<div class="detail"><small>Elan tipi</small><strong>'+(l.sample?'Təqdimat nümunəsi':'İstifadəçi elanı')+'</strong></div></div>'+
+  '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="flyTo('+Number(l.lat)+','+Number(l.lng)+',12000,\''+escapeHTML(l.address).replace(/'/g,'')+'\');closeSheet(\'profileOverlay\')">🗺️ Xəritədə göstər</button>'+
+  (l.phone?'<a class="btn" style="text-decoration:none" href="tel:'+escapeHTML(l.phone)+'">📞 Zəng et</a>':'')+
+  (l.phone?'<button class="btn" onclick="copyText('+JSON.stringify(l.phone)+')">Nömrəni köçür</button>':'')+
+  (!l.sample?'<button class="btn" onclick="deleteListing(\''+idSafe+'\')">Elanı sil</button>':'')+'</div>'+
+  '<p class="sub" style="margin-top:15px">'+
+  (l.sample?'Bu profil yalnız nümayiş üçündür; real usta deyil.':'Profil məlumatlarını elanı yerləşdirən şəxs daxil edib.')+'</p>';
+ document.getElementById('profileOverlay').classList.add('show');
+}
+async function copyText(s){
+ try{
+  await navigator.clipboard.writeText(s);
+  toast('Köçürüldü.');
+ }catch(e){
+  toast('Nömrə: '+s);
+ }
+}
+function deleteListing(id){
+ const l=listings.find(x=>String(x.id)===String(id));
+ if(!l||l.sample)return;
+ if(!confirm('Bu elanı bu cihazdan silmək istəyirsən?'))return;
+ const old=listings;
+ listings=listings.filter(x=>String(x.id)!==String(id));
+ if(!saveListings()){listings=old;return}
+ closeSheet('profileOverlay');refreshAll();toast('Elan bu cihazdan silindi.');
+}
+
+function addPhotoFile(file){
+ return new Promise((resolve,reject)=>{
+  if(!file||!file.type.startsWith('image/')){
+   reject(Error('Şəkil faylı seçilməyib'));return;
+  }
+  const reader=new FileReader();
+  reader.onerror=()=>reject(Error('Fayl oxunmadı'));
+  reader.onload=()=>{
+   const img=new Image();
+   img.onerror=()=>reject(Error('Şəkil açıla bilmədi'));
+   img.onload=()=>{
+    const canvas=document.createElement('canvas');
+    const scale=Math.min(1,1000/Math.max(img.width,img.height));
+    canvas.width=Math.max(1,Math.round(img.width*scale));
+    canvas.height=Math.max(1,Math.round(img.height*scale));
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    resolve(canvas.toDataURL('image/jpeg',.68));
+   };
+   img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+ });
+}
+function renderPhotoPreview(){
+ const box=document.getElementById('photoPreview');
+ box.innerHTML=chosenPhotos.map((p,i)=>
+  '<div style="position:relative"><img src="'+p+'" alt="Seçilmiş şəkil">'+
+  '<button type="button" onclick="removeChosenPhoto('+i+')" style="position:absolute;right:1px;top:1px;border:0;border-radius:50%;background:#ff5b6a;color:white;width:22px;height:22px">×</button></div>'
+ ).join('');
+ document.getElementById('photoCount').textContent=chosenPhotos.length+' / 10 şəkil seçilib';
+}
+function removeChosenPhoto(i){
+ chosenPhotos.splice(i,1);renderPhotoPreview();
+}
+async function importPhotos(files){
+ const arr=Array.from(files||[]);
+ if(!arr.length)return;
+ for(const file of arr){
+  if(chosenPhotos.length>=10){toast('Maksimum 10 şəkil əlavə etmək olar.');break}
+  try{
+   const p=await addPhotoFile(file);
+   chosenPhotos.push(p);renderPhotoPreview();
+  }catch(e){toast('Şəkillərdən biri oxunmadı.')}
+ }
+}
+document.getElementById('fPhotos').addEventListener('change',async e=>{
+ await importPhotos(e.target.files);e.target.value='';
+});
+document.getElementById('fCamera').addEventListener('change',async e=>{
+ await importPhotos(e.target.files);e.target.value='';
+});
+
+document.getElementById('addForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const btn=document.getElementById('saveListingBtn');
+ if(btn.disabled)return;
+ const name=document.getElementById('fName').value.trim();
+ const title=document.getElementById('fTitle').value.trim();
+ const address=document.getElementById('fAddress').value.trim();
+ const lat=Number(document.getElementById('fLat').value);
+ const lng=Number(document.getElementById('fLng').value);
+ if(!name||!title||!address||!Number.isFinite(lat)||!Number.isFinite(lng)||
+  Math.abs(lat)>90||Math.abs(lng)>180){
+  toast('Məlumatları və koordinatları yoxla.');return;
+ }
+ btn.disabled=true;btn.textContent='Elan saxlanılır…';
+ const item={
+  id:'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+  name,cat:document.getElementById('fCat').value,title,
+  desc:document.getElementById('fDesc').value.trim(),
+  phone:document.getElementById('fPhone').value.trim(),
+  price:document.getElementById('fPrice').value.trim()||'Razılaşma ilə',
+  address,lat,lng,photo:chosenPhotos[0]||'',photos:chosenPhotos.slice(),
+  createdAt:new Date().toISOString(),sample:false
+ };
+ const previous=listings;
+ listings=[item,...listings.filter(x=>!x.sample)];
+ if(!saveListings()){
+  listings=previous;btn.disabled=false;btn.textContent='Elanı saxla və xəritədə göstər';return;
+ }
+ chosenPhotos=[];renderPhotoPreview();
+ closeSheet('addOverlay');
+ document.getElementById('addForm').reset();
+ document.getElementById('fCat').value=CATEGORIES[0][0];
+ btn.disabled=false;btn.textContent='Elanı saxla və xəritədə göstər';
+ refreshAll();
+ if(nearbyEnabled&&userPosition){
+  const d=distanceKm(userPosition.lat,userPosition.lng,lat,lng);
+  if(d<=nearbyRadius)toast('Elan saxlandı! Səndən '+d.toFixed(2)+' km məsafədədir.');
+  else toast('Elan saxlandı. Seçilən radiusdan kənardadır.');
+ }else{
+  toast('Elan bu cihazda saxlandı və xəritədə göstərildi.');
+ }
+ flyTo(lat,lng,10000,address);
+});
+
+function refreshAll(){
+ renderListings();renderMapMarkers();renderGlobeMarkers();
+ if(nearbyEnabled)updateNearby();
+}
+function init(){
+ buildCategoryControls();
+ loadListings();
+ initGlobe();
+ initMap();
+ renderListings();
+ document.querySelectorAll('#radiusButtons button').forEach(b=>{
+  b.classList.toggle('active',Number(b.dataset.radius)===nearbyRadius);
+ });
+ window.addEventListener('resize',()=>{
+  if(map)map.invalidateSize();
+  if(globe)globe.resize();
+ });
+}
+init();
 </script>
 </body>
 </html>
